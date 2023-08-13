@@ -1,0 +1,1 @@
+﻿$import_users | ForEach-Object {New-ADUser -Name $($_.First + " " + $_.Last) -DisplayName $($_.First + " " + $_.Last) -AccountPassword $(ConvertTo-SecureString $_.Password -AsPlainText -Force) -Enabled $True} 

@@ -1,0 +1,1 @@
+﻿$import_users | ForEach-Object {Remove-ADUser -Identity $($_.First + $_.Last)}
