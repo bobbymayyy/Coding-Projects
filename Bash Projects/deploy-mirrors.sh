@@ -78,7 +78,10 @@ elif [[ "$1" == delete ]]; then
         #Delete mirrors in extrapolated bridge.
 
         #-----------------------------------
+        echo "Remaining mirrors:"
+        echo "========================================================================"
         ovs-vsctl list mirror
+        echo "========================================================================"
         #List remaining mirrors.
         echo "Bye :)"
 
