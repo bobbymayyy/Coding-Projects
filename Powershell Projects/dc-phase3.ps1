@@ -31,7 +31,7 @@ w32tm /config /manualpeerlist:$TimePeerList /syncfromflags:manual /reliable:yes 
 ############################################################################
 #Recycle Bin
 
-$ForestFQDN = "purple.mat"
+$ForestFQDN = ""
 $SchemaDC   = "dc1.purple.mat"
 
 Enable-ADOptionalFeature –Identity 'Recycle Bin Feature' –Scope ForestOrConfigurationSet –Target $ForestFQDN -Server $SchemaDC -confirm:$False
