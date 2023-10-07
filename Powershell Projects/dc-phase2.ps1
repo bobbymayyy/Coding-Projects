@@ -1,10 +1,10 @@
 ﻿############################################################################
 #ADDS and Promote
 
-$DomainName  = "purple.mat"
+$DomainName  = ""
 $netBIOSName = "purple"
 $DomainMode  = "Win2012R2"
-$Password = '1qaz2wsx!QAZ@WSX'
+$Password = ''
 
 Install-WindowsFeature AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
 
