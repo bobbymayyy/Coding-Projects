@@ -4,8 +4,8 @@
 
 wget_D=$(apt --installed list 2>/dev/null | egrep "wget")
 jq_D=$(apt --installed list 2>/dev/null | egrep "jq")
-key=''
-folder=''
+key='' #Put an API key you can create at Google Cloud' console for Google Drive API here.
+folder='' #This is the folder ID not the whole copied link.
 
 clear
 if [[ -z "$folder" ]]; then
@@ -36,7 +36,7 @@ fi
 #------------------------------------------
 clear
 echo "=============================================================================="
-file_list=$(wget -qO- "https://www.googleapis.com/drive/v3/files?q=$folder+in+parents&key=$key")
+file_list=$(wget -qO- "https://www.googleapis.com/drive/v3/files?q='$folder'+in+parents&key=$key")
 echo $file_list | jq '.files[] | {name} | join(" ")'
 echo "=============================================================================="
 read -p "Would you like to download a file (y/n): " choice
