@@ -5,6 +5,7 @@
 wget_D=$(apt --installed list 2>/dev/null | egrep "wget")
 jq_D=$(apt --installed list 2>/dev/null | egrep "jq")
 key=''
+folder=''
 
 if [[ -z "$wget_D" ]]; then
         echo "============================================================================="
@@ -26,7 +27,7 @@ fi
 #------------------------------------------
 clear
 echo "=============================================================================="
-file_list=$(wget -qO- "https://www.googleapis.com/drive/v3/files?q='1yxAK7REPXWIFw4MAPIN25aiSnk6a1ZcP'+in+parents&key=$key")
+file_list=$(wget -qO- "https://www.googleapis.com/drive/v3/files?q=$folder+in+parents&key=$key")
 echo $file_list | jq '.files[] | {name} | join(" ")'
 echo "=============================================================================="
 read -p "Would you like to download a file (y/n): " choice
@@ -44,7 +45,7 @@ while [[ $choice =~ y|Y ]]; do
 
         #----------------------------------------
         echo "=============================================================================="
-        echo $file_list | jq -r --arg file "$file" '.files[] | select(.name|test($file))'
+        echo $file_list | jq -r --arg file "$file" '[.files[] | select(.name|test($file))][0]'
         echo "=============================================================================="
         read -p "Please enter the name again to confirm or change your choice (case insensitive): " file
         clear
@@ -52,10 +53,10 @@ while [[ $choice =~ y|Y ]]; do
 
         #----------------------------------------
         echo "=============================================================================="
-        echo $file_list | jq -r --arg file "$file" '.files[] | select(.name|test($file))'
+        echo $file_list | jq -r --arg file "$file" '[.files[] | select(.name|test($file))][0]'
         echo "=============================================================================="
-        file_id=$(echo $file_list | jq -r --arg file "$file" '.files[] | select(.name|test($file)) | .id')
-        file_name=$(echo $file_list | jq -r --arg file "$file" '.files[] | select(.name|test($file)) | .name')
+        file_id=$(echo $file_list | jq -r --arg file "$file" '[.files[] | select(.name|test($file))][0] | .id')
+        file_name=$(echo $file_list | jq -r --arg file "$file" '[.files[] | select(.name|test($file))][0] | .name')
         wget "https://www.googleapis.com/drive/v3/files/$file_id?alt=media&key=$key" -O $file_name
         echo "=============================================================================="
         #Lists specific info for file selected and stores the file id and name to download the file.
