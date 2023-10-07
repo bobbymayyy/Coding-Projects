@@ -4,6 +4,7 @@
 
 wget_D=$(apt --installed list 2>/dev/null | egrep "wget")
 jq_D=$(apt --installed list 2>/dev/null | egrep "jq")
+key=''
 
 if [[ -z "$wget_D" ]]; then
         echo "============================================================================="
@@ -25,7 +26,7 @@ fi
 #------------------------------------------
 clear
 echo "=============================================================================="
-file_list=$(wget -qO- "https://www.googleapis.com/drive/v3/files?q='1yxAK7REPXWIFw4MAPIN25aiSnk6a1ZcP'+in+parents&key=AIzaSyBLKQj8thzTcmaYYdk8oEuBjRWqyuJHY0E")
+file_list=$(wget -qO- "https://www.googleapis.com/drive/v3/files?q='1yxAK7REPXWIFw4MAPIN25aiSnk6a1ZcP'+in+parents&key=$key")
 echo $file_list | jq '.files[] | {name} | join(" ")'
 echo "=============================================================================="
 read -p "Would you like to download a file (y/n): " choice
@@ -55,7 +56,7 @@ while [[ $choice =~ y|Y ]]; do
         echo "=============================================================================="
         file_id=$(echo $file_list | jq -r --arg file "$file" '.files[] | select(.name|test($file)) | .id')
         file_name=$(echo $file_list | jq -r --arg file "$file" '.files[] | select(.name|test($file)) | .name')
-        wget "https://www.googleapis.com/drive/v3/files/$file_id?alt=media&key=AIzaSyBLKQj8thzTcmaYYdk8oEuBjRWqyuJHY0E" -O $file_name
+        wget "https://www.googleapis.com/drive/v3/files/$file_id?alt=media&key=$key" -O $file_name
         echo "=============================================================================="
         #Lists specific info for file selected and stores the file id and name to download the file.
 
