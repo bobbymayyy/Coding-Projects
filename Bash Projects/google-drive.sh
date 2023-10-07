@@ -7,6 +7,15 @@ jq_D=$(apt --installed list 2>/dev/null | egrep "jq")
 key=''
 folder=''
 
+clear
+if [[ -z "$folder" ]]; then
+        read -p "Please paste a public Google Drive folder link: " link
+        folder=$(echo $link | awk -F"/" '{print $NF}' | awk -F"?" '{print $1}')
+
+fi
+#This will check if folder is hardcoded and if not, will prompt for a link.
+
+#------------------------------------------
 if [[ -z "$wget_D" ]]; then
         echo "============================================================================="
         echo "Installing dependency wget..."
