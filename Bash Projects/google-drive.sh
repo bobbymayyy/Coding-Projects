@@ -22,7 +22,7 @@ clear
 if [[ -z "$key" ]]; then
         echo "You're missing an API key"
         echo "Open me up and put one in between the single quotes next to the 'key' variable."
-        return 1
+        exit
 
 fi
 #This will check if you have an API key in the variable.
