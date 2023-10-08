@@ -6,7 +6,9 @@ wget_D=$(apt --installed list 2>/dev/null | egrep "wget")
 jq_D=$(apt --installed list 2>/dev/null | egrep "jq")
 key='' #Put an API key you can create at Google Cloud' console for Google Drive API here.
 folder='' #This is the folder ID not the whole copied link.
+#This establishes some variables.
 
+#------------------------------------------
 clear
 if [[ -z "$folder" ]]; then
         read -p "Please paste a public Google Drive folder link: " link
@@ -14,6 +16,16 @@ if [[ -z "$folder" ]]; then
 
 fi
 #This will check if folder is hardcoded and if not, will prompt for a link.
+
+#------------------------------------------
+clear
+if [[ -z "$key" ]]; then
+        echo "You're missing an API key"
+        echo "Open me up and put one in between the single quotes next to the 'key' variable."
+        return 1
+
+fi
+#This will check if you have an API key in the variable.
 
 #------------------------------------------
 if [[ -z "$wget_D" ]]; then
