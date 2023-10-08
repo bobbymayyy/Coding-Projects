@@ -1,0 +1,38 @@
+---
+- name: Docker runtime setup on kube
+  hosts: kubernetes
+  become: true
+  become_user: root
+  tasks:
+  - name: Install pre-req packages
+    dnf: name={{ item }} state=present
+    with_items:
+      - dnf-plugins-core
+  - name: Add Docker repo
+    command: "dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo"
+  - name: Install Docker Engine
+    dnf: name={{ item }} state=present
+    with_items:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+  - name: Ensure group "docker" exists
+    group:
+      name: docker
+      state: present
+  - name: Add the user "bobbymayyy" to the "docker" group
+    user:
+      name: bobbymayyy
+      group: bobbymayyy
+      groups: docker
+      append: yes
+  - name: Reload systemd daemon
+    systemd:
+      daemon_reload: yes
+  - name: Enable and start Docker service
+    service:
+      name: docker
+      enabled: yes
+      state: started
+  - name: Validate Docker installation
+    command: "docker run hello-world"
