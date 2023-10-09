@@ -9,6 +9,13 @@
       path: /etc/containerd/config.toml
       regexp: disabled_plugins = \["cri"\]
       replace: enabled_plugins = ["cri"]\n[plugins."io.containerd.grpc.v1.cri".containerd]\nendpoint = "unix:///var/run/containerd/containerd.sock"
+  - name: Template cni config
+    template:
+      src: ../templates/10-containerd-net.conflist.j2
+      dest: /etc/cni/net.d/10-containerd-net.conflist
+      owner: root
+      group: root
+      mode: 0644
   - name: Restart containerd
     service:
       name: containerd
