@@ -9,6 +9,11 @@
       path: /etc/containerd/config.toml
       regexp: disabled_plugins = \["cri"\]
       replace: enabled_plugins = ["cri"]\n[plugins."io.containerd.grpc.v1.cri".containerd]\nendpoint = "unix:///var/run/containerd/containerd.sock"
+  - name: Create cni net.d directory
+    file:
+      path: /etc/cni/net.d
+      state: directory
+      mode: 0755
   - name: Template cni config
     template:
       src: ../templates/10-containerd-net.conflist.j2
