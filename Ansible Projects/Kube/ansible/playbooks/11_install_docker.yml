@@ -9,7 +9,9 @@
     with_items:
       - dnf-plugins-core
   - name: Add Docker repo
-    command: "dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo"
+    command: 
+      cmd: dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+    changed_when: true
   - name: Install Docker Engine
     dnf: name={{ item }} state=present
     with_items:
@@ -29,10 +31,19 @@
   - name: Reload systemd daemon
     systemd:
       daemon_reload: yes
+  - name: Template cni config
+    template:
+      src: ../templates/10-containerd-net.conflist.j2
+      dest: /etc/cni/net.d/10-containerd-net.conflist
+      owner: root
+      group: root
+      mode: 0644
   - name: Enable and start Docker service
     service:
       name: docker
       enabled: yes
       state: started
   - name: Validate Docker installation
-    command: "docker run hello-world"
+    command: 
+      cmd: docker run hello-world
+    changed_when: true

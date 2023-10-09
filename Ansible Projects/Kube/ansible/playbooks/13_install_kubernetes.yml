@@ -4,10 +4,13 @@
   become: true
   become_user: root
   tasks:
-  - name: Copy the kubernetes repo file
-    copy:
-      src: /home/bobbymayyy/Kube/ansible/playbooks/kubernetes_setup/kubernetes.repo
+  - name: Template kubernetes repo
+    template:
+      src: ../templates/kubernetes.repo.j2
       dest: /etc/yum.repos.d/kubernetes.repo
+      owner: root
+      group: root
+      mode: 0644
   - name: Set SELinux in permissive mode
     selinux:
       policy: targeted
