@@ -12,6 +12,11 @@
     selinux:
       policy: targeted
       state: permissive
+  - name: Disable firewalld
+    service:
+      name: firewalld
+      state: stopped
+      enabled: false
   - name: Install kubeadm, kubectl and kubelet
     dnf:
       name: '{{ item  }}'

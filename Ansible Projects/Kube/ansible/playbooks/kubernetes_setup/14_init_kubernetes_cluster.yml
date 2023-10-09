@@ -1,5 +1,5 @@
 ---
-- name: Install kubernetes tools
+- name: Initialize kubernetes infra
   hosts: 1.1.1.1  #Kube master
   become: true
   become_user: root
@@ -7,8 +7,12 @@
   - name: Edit toml for containerd
     replace:
       path: /etc/containerd/config.toml
-      regexp: 'disabled_plugins = ["cri"]'
-      replace: 'enabled_plugins = ["cri"]\n[plugins."io.containerd.grpc.v1.cri".containerd]\nendpoint = "unix:///var/run/containerd/containerd.sock"'
+      regexp: disabled_plugins = \["cri"\]
+      replace: enabled_plugins = ["cri"]\n[plugins."io.containerd.grpc.v1.cri".containerd]\nendpoint = "unix:///var/run/containerd/containerd.sock"
+  - name: Restart containerd
+    service:
+      name: containerd
+      state: restarted
   - name: Initialize kubernetes cluster #Default is 10.244.0.0/16
     shell: |
       kubeadm init --pod-network-cidr=10.244.0.0/16
