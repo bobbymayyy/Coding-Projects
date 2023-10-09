@@ -1,6 +1,6 @@
 ---
 - name: Join the worker node
-  hosts: 2.2.2.2 #Kube worker
+  hosts: workers #Kube workers
   become: yes
   become_user: root
   tasks:

@@ -1,6 +1,6 @@
 ---
 - name: Deploy flannel networking policy
-  hosts: 1.1.1.1 #Kube master
+  hosts: master #Kube master
   tasks:
   - name: Wait a bit...
     pause:

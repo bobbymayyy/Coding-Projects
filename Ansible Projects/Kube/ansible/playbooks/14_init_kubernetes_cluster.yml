@@ -1,6 +1,6 @@
 ---
 - name: Initialize kubernetes infra
-  hosts: 1.1.1.1  #Kube master
+  hosts: master  #Kube master
   become: true
   become_user: root
   tasks:
