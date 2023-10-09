@@ -2,6 +2,9 @@
 - name: Deploy flannel networking policy
   hosts: 1.1.1.1 #Kube master
   tasks:
+  - name: Wait a bit...
+    pause:
+      seconds: 20
   - name: Apply the flannel networking policy definition
     shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
   - name: Get the token for joining the worker nodes
