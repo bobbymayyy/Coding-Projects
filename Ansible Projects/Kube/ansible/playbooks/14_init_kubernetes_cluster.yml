@@ -6,7 +6,7 @@
   tasks:
   - name: Initialize kubernetes cluster #Default is 10.244.0.0/16
     shell: |
-      kubeadm init --pod-network-cidr=10.244.0.0/16
+      kubeadm init --apiserver-advertise-address=192.168.50.55 --pod-network-cidr=10.244.0.0/16
     register: init_output
   - name: Print the initialization output
     debug: msg="{{ init_output }}"
