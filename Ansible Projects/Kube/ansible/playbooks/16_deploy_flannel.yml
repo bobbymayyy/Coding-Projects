@@ -14,6 +14,7 @@
     unarchive:
       src: /tmp/cni-plugins-linux-amd64-v1.2.0.tgz
       dest: /opt/cni/bin
+      remote_src: true
   - name: Apply the flannel networking policy definition
     shell: kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
   - name: Get the token for joining the worker nodes
