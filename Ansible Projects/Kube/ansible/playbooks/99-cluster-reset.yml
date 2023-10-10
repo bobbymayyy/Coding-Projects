@@ -24,3 +24,17 @@
     service:
       name: containerd.service
       state: stopped
+  - name: Stop docker
+    service:
+      name: docker.service
+      state: stopped
+  - name: Remove Docker Engine
+    dnf: name={{ item }} state=absent
+    with_items:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+  - name: Destroy /etc/cni/net.d
+    shell:
+      cmd: rm -rf /etc/cni/net.d
+    changed_when: true
