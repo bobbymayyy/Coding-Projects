@@ -46,7 +46,7 @@
     replace:
       path: /etc/containerd/config.toml
       regexp: disabled_plugins = \["cri"\]
-      replace: enabled_plugins = ["cri"]\n[plugins."io.containerd.grpc.v1.cri".containerd]\nendpoint = "unix:///var/run/containerd/containerd.sock"
+      replace: enabled_plugins = ["cri"]\n[plugins]\n[plugins."io.containerd.grpc.v1.cri"]\n[plugins."io.containerd.grpc.v1.cri".containerd]\n[plugins."io.containerd.grpc.v1.cri".containerd.runtimes]\n[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]\nruntime_type = "io.containerd.runc.v2"\n[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]\nSystemdCgroup = true\nendpoint = "unix:///var/run/containerd/containerd.sock"
   - name: Create cni net.d directory
     file:
       path: /etc/cni/net.d
