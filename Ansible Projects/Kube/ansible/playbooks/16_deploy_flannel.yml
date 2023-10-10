@@ -6,7 +6,7 @@
     pause:
       seconds: 60
   - name: Apply the flannel networking policy definition
-    shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+    shell: kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
   - name: Get the token for joining the worker nodes
     shell: kubeadm token create --print-join-command
     register: kubernetes_join_command
