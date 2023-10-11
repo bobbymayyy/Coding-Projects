@@ -1,0 +1,48 @@
+---
+- name: System settings configuration
+  hosts: kubernetes
+  become: true
+  become_user: root
+  tasks:
+    - name: Install a modularity appstream for CRI-O with default profile
+      ansible.builtin.dnf:
+        name: '@cri-o:1.25/default'
+        state: present
+    - name: Enable CRI-O
+      ansible.builtin.service:
+        name: crio
+        state: started
+        enabled: true
+    - name: Install Kubernetes
+      ansible.builtin.dnf: name={{ item }} state=present
+      with_items:
+      - kubernetes-kubeadm
+      - kubernetes-node
+      - kubernetes-client
+      - cri-tools
+      - iproute-tc
+      - container-selinux
+    - name: Set kubelet address to serve on all interfaces
+      ansible.builtin.replace:
+        path: /etc/kubernetes/kubelet
+        regexp: '^KUBELET_ADDRESS.*$'
+        replace: 'KUBELET_ADDRESS="--address=0.0.0.0"'
+    - name: Specify kubelet port by uncommenting
+      ansible.builtin.replace:
+        path: /etc/kubernetes/kubelet
+        regexp: '^#KUBELET_PORT.*$'
+        replace: 'KUBELET_PORT="--port=10250"'
+    - name: Set kubelet hostname using ansible_host var
+      ansible.builtin.replace:
+        path: /etc/kubernetes/kubelet
+        regexp: '^KUBELET_HOSTNAME.*$'
+        replace: 'KUBELET_HOSTNAME="--hostname-override={{ ansible_host }}"'
+    - name: Set kubelet extra args
+      ansible.builtin.replace:
+        path: /etc/systemd/system/kubelet.service.d/kubeadm.conf
+        regexp: '^Environment="KUBELET_EXTRA_ARGS.*$'
+        replace: 'Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=systemd --container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock"'
+    - name: Enable but don't start kubelet
+      ansible.builtin.service:
+        name: kubelet
+        enabled: true
