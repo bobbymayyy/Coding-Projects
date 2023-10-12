@@ -1,0 +1,12 @@
+---
+- name: Configure control plane node for kubernetes
+  hosts: control
+  become: true
+  become_user: root
+  tasks:
+    - name: Initialize kubernetes cluster
+      ansible.builtin.shell: |
+        kubeadm init --control-plane-endpoint={{ ansible_host }} --pod-network-cidr=10.244.0.0/16 --cri-socket=unix:///var/run/crio/crio.sock 
+      register: init_output
+    - name: Print the initialization output
+      ansible.builtin.debug: msg="{{ init_output }}"
