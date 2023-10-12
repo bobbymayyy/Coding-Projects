@@ -1,5 +1,5 @@
 ---
-- name: System settings configuration
+- name: System settings configuration for Fedora
   hosts: kubernetes
   become: true
   become_user: root
