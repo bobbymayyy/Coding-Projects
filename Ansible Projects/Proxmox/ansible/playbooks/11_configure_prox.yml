@@ -8,6 +8,16 @@
     - name: Print storage information from Proxmox
       ansible.builtin.debug: msg="Your zfs pool is {{ zpool }}"
     - name: Create zfs device from zpool
-      ansible.builtin.command: pvesm add zfspool {{ zfs_device }} --pool {{ zpool }}
+      ansible.builtin.command: pvesm add zfspool {{ item }} --pool {{ zpool }}
+      with_items:
+      - kube
+      - lima
+      - zed
+      - quin
+      - kevi
       changed_when: true
-    - name: 
+    - name: Check on progress
+      ansible.builtin.command: pvesm status
+      register: zfsstatus
+    - name: Print status
+      ansible.builtin.debug: msg="{{ zfsstatus }}"
