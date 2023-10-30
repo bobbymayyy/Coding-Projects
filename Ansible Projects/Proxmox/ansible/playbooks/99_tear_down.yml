@@ -7,16 +7,15 @@
       register: zpool
     - name: Print storage information from Proxmox
       ansible.builtin.debug: msg="Your zfs pool is {{ zpool }}"
-    - name: Create zfs device from zpool
-      ansible.builtin.command: pvesm remove {{ item }}
+    - name: Remove zfs device from zpool
+      ansible.builtin.command: pvesm remove zfspool {{ item }} --pool {{ zpool.stdout }}
       with_items:
       - kube
       - lima
       - zed
       - quin
       - kevi
-      register: removedev
-      failed_when: "'does not exist' not in removedev.stderr"
+      ignore_errors: true
     - name: Check on progress
       ansible.builtin.command: pvesm status
       register: zfsstatus
