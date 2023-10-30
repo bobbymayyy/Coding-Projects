@@ -8,7 +8,7 @@
     - name: Print storage information from Proxmox
       ansible.builtin.debug: msg="Your zfs pool is {{ zpool }}"
     - name: Remove zfs device from zpool
-      ansible.builtin.command: pvesm remove zfspool {{ item }} --pool {{ zpool.stdout }}
+      ansible.builtin.command: pvesm remove {{ item }}
       with_items:
       - kube
       - lima
