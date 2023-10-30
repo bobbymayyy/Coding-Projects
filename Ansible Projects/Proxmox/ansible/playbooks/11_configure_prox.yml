@@ -1,0 +1,13 @@
+---
+- name: System settings configuration for Proxmox
+  hosts: prox
+  tasks:
+    - name: Gather storage information from Proxmox
+      ansible.builtin.command: pvesm zfsscan
+      register: zpool
+    - name: Print storage information from Proxmox
+      ansible.builtin.debug: msg="Your zfs pool is {{ zpool }}"
+    - name: Create zfs device from zpool
+      ansible.builtin.command: pvesm add zfspool {{ zfs_device }} --pool {{ zpool }}
+      changed_when: true
+    - name: 
