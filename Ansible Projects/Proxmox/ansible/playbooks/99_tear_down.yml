@@ -15,7 +15,8 @@
       - zed
       - quin
       - kevi
-      changed_when: true
+      register: removedev
+      ok_when: "'does not exist' in removedev.stderr"
     - name: Check on progress
       ansible.builtin.command: pvesm status
       register: zfsstatus
