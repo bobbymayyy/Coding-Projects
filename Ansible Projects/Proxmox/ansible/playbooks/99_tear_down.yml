@@ -1,5 +1,5 @@
 ---
-- name: System deployment for Proxmox
+- name: System tear down for Proxmox
   hosts: prox
   tasks:
     - name: Gather storage information from Proxmox
@@ -8,7 +8,7 @@
     - name: Print storage information from Proxmox
       ansible.builtin.debug: msg="Your zfs pool is {{ zpool }}"
     - name: Create zfs device from zpool
-      ansible.builtin.command: pvesm add zfspool {{ item }} --pool {{ zpool['stdout'] }} 
+      ansible.builtin.command: pvesm remove {{ item }}
       with_items:
       - kube
       - lima
