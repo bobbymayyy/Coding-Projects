@@ -17,7 +17,9 @@ clear
 #==========================================================
 echo "=============================================="
 if [[ "$choice" =~ [aA] ]]; then
-    echo "A"
+    echo "A - Bash Environment"
+    cd ansible
+    ansible-playbook -kK playbooks/11_configure_prox.yml
 elif [[ "$choice" =~ [bB] ]]; then
     echo "B"
 elif [[ "$choice" =~ [cC] ]]; then

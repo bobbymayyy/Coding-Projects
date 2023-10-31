@@ -10,7 +10,7 @@
     - name: Create zfs device from zpool
       ansible.builtin.command: pvesm add zfspool {{ item }} --pool {{ zpool.stdout }}
       with_items:
-      - bash
+      - ansible
       changed_when: true
     - name: Check on progress
       ansible.builtin.command: pvesm status

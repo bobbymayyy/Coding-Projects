@@ -10,11 +10,7 @@
     - name: Remove zfs device from zpool
       ansible.builtin.command: pvesm remove {{ item }}
       with_items:
-      - kube
-      - lima
-      - zed
-      - quin
-      - kevi
+      - ansible
       ignore_errors: true
     - name: Check on progress
       ansible.builtin.command: pvesm status
