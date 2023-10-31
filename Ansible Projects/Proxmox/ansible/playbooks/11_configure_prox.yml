@@ -16,4 +16,4 @@
       ansible.builtin.command: pvesm status
       register: zfsstatus
     - name: Print status
-      ansible.builtin.debug: msg="{{ zfsstatus.stdout }}"
+      ansible.builtin.debug: msg="{{ zfsstatus.stdout_lines }}"
