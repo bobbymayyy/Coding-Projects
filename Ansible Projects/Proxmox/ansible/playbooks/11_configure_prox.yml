@@ -1,23 +1,19 @@
 ---
-- name: System deployment for Proxmox
+- name: Bash deployment for Proxmox
   hosts: prox
   tasks:
     - name: Gather storage information from Proxmox
       ansible.builtin.command: pvesm zfsscan
       register: zpool
     - name: Print storage information from Proxmox
-      ansible.builtin.debug: msg="Your zfs pool is {{ zpool }}"
+      ansible.builtin.debug: msg="Your zfs pool is {{ zpool.stdout }}"
     - name: Create zfs device from zpool
       ansible.builtin.command: pvesm add zfspool {{ item }} --pool {{ zpool.stdout }}
       with_items:
-      - kube
-      - lima
-      - zed
-      - quin
-      - kevi
+      - bash
       changed_when: true
     - name: Check on progress
       ansible.builtin.command: pvesm status
       register: zfsstatus
     - name: Print status
-      ansible.builtin.debug: msg="{{ zfsstatus }}"
+      ansible.builtin.debug: msg="{{ zfsstatus.stdout }}"
