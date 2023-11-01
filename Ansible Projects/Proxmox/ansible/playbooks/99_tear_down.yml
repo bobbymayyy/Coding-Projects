@@ -9,13 +9,12 @@
         api_user: root@pam
         api_password: 1qaz2wsx!QAZ@WSX
         state: stopped
+      changed_when: true
     - name: Remove fedora container
       community.general.proxmox:
         vmid: 102
-        api_host: "{{ ansible_host }}"
-        api_user: root@pam
-        api_password: 1qaz2wsx!QAZ@WSX
         state: absent
+      changed_when: true
     - name: Gather storage information from Proxmox
       ansible.builtin.command: pvesm zfsscan
       register: zpool

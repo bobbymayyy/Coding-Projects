@@ -11,7 +11,7 @@
       ansible.builtin.command: pvesm add zfspool {{ item }} --pool {{ zpool.stdout }}
       with_items:
       - ansible
-      changed_when: true
+      ignore_errors: true
     - name: Check on progress
       ansible.builtin.command: pvesm status
       register: zfsstatus
@@ -38,8 +38,5 @@
         description: CREATED WITH ANSIBLE
     - name: Start the container
       community.general.proxmox:
-        api_host: "{{ ansible_host }}"
-        api_user: root@pam
-        api_user: 1qaz2wsx!QAZ@WSX
         vmid: 102
         state: started
