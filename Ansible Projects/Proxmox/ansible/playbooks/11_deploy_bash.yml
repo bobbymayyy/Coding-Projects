@@ -17,3 +17,11 @@
       register: zfsstatus
     - name: Print status
       ansible.builtin.debug: msg="{{ zfsstatus.stdout_lines }}"
+    - name: Gather storage info using Proxmox module
+      community.general.proxmox:
+        api_host: "{{ ansible_host }}"
+        api_user: root@pam
+        api_password: 1qaz2wsx!QAZ@WSX
+      register: proxmox_storage
+    - name: Print info about storage from Proxmox module
+      ansible.builtin.debug: msg="{{ proxmox_storage }}"
