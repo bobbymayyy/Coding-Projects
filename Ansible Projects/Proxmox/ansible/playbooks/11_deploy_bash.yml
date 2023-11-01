@@ -36,7 +36,9 @@
           - nesting=1
         unprivileged: true
         description: CREATED WITH ANSIBLE
+      changed_when: true
     - name: Start the container
       community.general.proxmox:
         vmid: 102
         state: started
+      changed_when: true
