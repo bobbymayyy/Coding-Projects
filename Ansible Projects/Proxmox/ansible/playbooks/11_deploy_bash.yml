@@ -17,7 +17,7 @@
       register: zfsstatus
     - name: Print status
       ansible.builtin.debug: msg="{{ zfsstatus.stdout_lines }}"
-    - name: Create a fedora container
+    - name: Create a new container
       community.general.proxmox:
         api_host: "{{ ansible_host }}"
         api_user: root@pam
@@ -38,7 +38,7 @@
         description: CREATED WITH ANSIBLE
       changed_when: true
       register: newcontainer
-    - name: Start the container
+    - name: Start the new container
       community.general.proxmox:
         api_host: "{{ ansible_host }}"
         api_user: root@pam
