@@ -35,4 +35,5 @@
         hostname: ansible.nerd.cpb.mil
         ostemplate: local:vztmpl/fedora-38-default_20230607_amd64.tar.xz
         storage: ansible
+        unprivileged: true
         description: CREATED WITH ANSIBLE
