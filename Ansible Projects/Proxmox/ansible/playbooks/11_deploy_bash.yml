@@ -18,12 +18,10 @@
     - name: Print status
       ansible.builtin.debug: msg="{{ zfsstatus.stdout_lines }}"
     - name: Gather storage info using Proxmox module
-      community.general.proxmox:
+      community.general.proxmox_storage_info:
         api_host: "{{ ansible_host }}"
         api_user: root@pam
         api_password: 1qaz2wsx!QAZ@WSX
-        node: nerd
-        hostname: proxmox.nerd.cpb.mil
       register: proxmox_storage
     - name: Print info about storage from Proxmox module
       ansible.builtin.debug: msg="{{ proxmox_storage }}"
