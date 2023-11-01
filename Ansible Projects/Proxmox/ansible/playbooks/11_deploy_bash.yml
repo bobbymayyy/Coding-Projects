@@ -34,5 +34,5 @@
         password: 123456
         hostname: ansible.nerd.cpb.mil
         ostemplate: local:vztmpl/fedora-38-default_20230607_amd64.tar.xz
-        storage: 'rootfs: ansible=base-100-disk-1,size=8G'
+        disk: 'rootfs: ansible=base-100-disk-1,size=8G'
         description: CREATED WITH ANSIBLE
