@@ -36,4 +36,10 @@
           - nesting=1
         unprivileged: true
         description: CREATED WITH ANSIBLE
+    - name: Start the container
+      community.general.proxmox:
+        api_host: {{ ansible_host }}
+        api_user: root@pam
+        api_user: 1qaz2wsx!QAZ@WSX
+        vmid: 102
         state: started
