@@ -5,14 +5,14 @@
     - name: Remove fedora container
       community.general.proxmox:
         vmid: 102
-        api_host: {{ ansible_host }}
+        api_host: "{{ ansible_host }}"
         api_user: root@pam
         api_password: 1qaz2wsx!QAZ@WSX
         state: stopped
     - name: Remove fedora container
       community.general.proxmox:
         vmid: 102
-        api_host: {{ ansible_host }}
+        api_host: "{{ ansible_host }}"
         api_user: root@pam
         api_password: 1qaz2wsx!QAZ@WSX
         state: absent
