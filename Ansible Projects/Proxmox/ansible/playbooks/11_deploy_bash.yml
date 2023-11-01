@@ -47,4 +47,4 @@
         state: started
       changed_when: true
     - name: Print information returned about the new container
-      ansible.builtin.debug: msg="{{ newcontainer.msg | regex_search('VM \d*') }}"
+      ansible.builtin.debug: msg="{{ newcontainer.msg | regex_search('VM \d*') | regex_search('\d*') }}"
