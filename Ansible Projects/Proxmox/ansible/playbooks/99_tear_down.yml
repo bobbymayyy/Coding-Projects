@@ -6,7 +6,7 @@
       community.general.proxmox:
         api_host: "{{ ansible_host }}"
         api_user: root@pam
-        api_password: 1qaz2wsx!QAZ@WSX
+        api_password: 
         vmid: 102
         state: stopped
       changed_when: true
@@ -14,7 +14,7 @@
       community.general.proxmox:
         api_host: "{{ ansible_host }}"
         api_user: root@pam
-        api_password: 1qaz2wsx!QAZ@WSX
+        api_password: 
         vmid: 102
         state: absent
       changed_when: true

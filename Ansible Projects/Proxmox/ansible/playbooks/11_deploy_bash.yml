@@ -21,7 +21,7 @@
       community.general.proxmox:
         api_host: "{{ ansible_host }}"
         api_user: root@pam
-        api_password: 1qaz2wsx!QAZ@WSX
+        api_password: 
         node: nerd
         password: 123456
         hostname: ansible.nerd.cpb.mil
@@ -42,7 +42,7 @@
       community.general.proxmox:
         api_host: "{{ ansible_host }}"
         api_user: root@pam
-        api_password: 1qaz2wsx!QAZ@WSX
+        api_password: 
         vmid: 102
         state: started
       changed_when: true
