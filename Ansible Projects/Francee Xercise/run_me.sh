@@ -128,6 +128,7 @@ elif [[ "$choice" =~ [dD] ]]; then
         echo "This could also be the case if you did not set up DHCP on your own for the same subnet as Proxmox management."
     else
         echo "One second..."
+    fi
 else
     clear
     echo "============================================="
