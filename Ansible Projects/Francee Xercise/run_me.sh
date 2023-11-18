@@ -33,6 +33,7 @@ read -rsn1
 clear
 echo "============================================="
 choice=n
+info_choice=n
 while [[ "$choice" =~ [nN] ]]; do
     echo "I have quite a bit of resources on the USB I am running from..."
     echo "---------------------------------------------"
@@ -43,7 +44,35 @@ while [[ "$choice" =~ [nN] ]]; do
     if [[ "$choice" =~ [nN] ]]; then
         clear
         echo "============================================="
-        echo "No problem, go ahead and do that now.. then come back and run me again."
+        echo "Would you like a walkthrough of the graphical install for Proxmox?"
+        read info_choice
+        if [[ "$info_choice" =~ [nN] ]]; then
+            clear
+            echo "============================================="
+            echo "No problem, go ahead and do that now.. then come back and run me again."
+        elif [[ "$info_choice" =~ [yY] ]]; then
+            clear
+            echo "============================================="
+            echo "Sure :)"
+            echo "Agree to terms and conditions >"
+            echo "---------"
+            echo "Choose your storage that you made with BIOS or PERC (No need for changing options) >"
+            echo "---------"
+            echo "Put a country and timezone >"
+            echo "---------"
+            echo "Provide a root password for CLI and GUI login (Email can be defender@cpb.mil) >"
+            echo "---------"
+            echo "Choose your PROXMOX management interface (you need to be able to connect to this NIC from the computer you are on)"
+            echo "Hostname can be set to <ANYTHING>.cpb.mil (may or may not need gateway but can be added after install)"
+            echo "DNS server should be something like 8.8.8.8 if you have access to the internet through PROXMOX management interface and not using DHCP >"
+            echo "---------"
+            echo "Finish install >"
+            echo "============================================="
+        else
+            clear
+            echo echo "============================================="
+            echo "Thats not a choice :("
+            info_choice=n
     elif [[ "$choice" =~ [yY] ]]; then
         clear
         echo "============================================="
@@ -181,5 +210,9 @@ clear
 echo "============================================="
 echo "We are going to add the Proxmox SSH fingerprint to our computer now so we have one less thing to worry about with Ansible."
 ssh root@$prox_ip
+
+clear
+echo "============================================="
+echo "Welcome back :)"
 echo "/////////////////////////////////////////////"
 echo "Goodbye :)"
