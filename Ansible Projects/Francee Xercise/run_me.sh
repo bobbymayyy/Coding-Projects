@@ -43,6 +43,7 @@ while [[ -z "$location" ]]; do
     else
         echo "Please specify using l or p, respectively."
         location=''
+    fi
 done
 
 
