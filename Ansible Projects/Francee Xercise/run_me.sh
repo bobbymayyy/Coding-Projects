@@ -149,13 +149,34 @@ if [[ $(echo "${host_octets[0]}") == $(echo "${prox_octets[0]}") ]] && [[ $(echo
     echo "============================================="
     echo "You are in the same subnet as your Proxmox installation."
     echo "Testing connection..."
-    ping -c 5 $prox_ip
+    echo "----------------"
+    test=$(ping -c 3 $prox_ip | grep 'bytes from')
+    if [[ -z $test ]]; then
+        echo "Connection test failed."
+        echo "Attempting to correct the situation..."
+    else
+        echo "Connection test successful."
+        echo "Moving on..."
+    fi
 else
     clear 
     echo "============================================="
     echo "You are not in the same subnet as your Proxmox installation."
     echo "Attempting to correct the situation..."
+    ip addr del $host_ip/24 dev $host_int
+    ip addr add $(echo "${prox_octets[0]}").$(echo "${prox_octets[1]}").$(echo "${prox_octets[2]}").69/24 dev $host_int
+    echo "Testing connection..."
+    echo "----------------"
+    test=$(ping -c 3 $prox_ip | grep 'bytes from')
+    if [[ -z $test ]]; then
+        echo "Connection test failed."
+        echo "Attempting to correct the situation..."
+    else
+        echo "Connection test successful."
+        echo "Moving on..."
+    fi
 fi
 
+clear
 echo "============================================="
 echo "Goodbye :)"
