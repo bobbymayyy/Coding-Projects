@@ -144,6 +144,6 @@ prox_octets+=($(echo $prox_ip | awk -F. '{print $2}'))
 prox_octets+=($(echo $prox_ip | awk -F. '{print $3}'))
 prox_octets+=($(echo $prox_ip | awk -F. '{print $4}'))
 echo "${host_octets[-1]}"
-echo "${host_octets[-1]}"
+echo "${prox_octets[-1]}"
 
 echo "Goodbye :)"
