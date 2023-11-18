@@ -73,6 +73,7 @@ while [[ "$choice" =~ [nN] ]]; do
             echo echo "============================================="
             echo "Thats not a choice :("
             info_choice=n
+        fi
     elif [[ "$choice" =~ [yY] ]]; then
         clear
         echo "============================================="
