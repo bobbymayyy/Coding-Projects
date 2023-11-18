@@ -23,12 +23,14 @@ while [[ -z "$location" ]]; do
     echo "I would like to get some information to and from you before we start."
     echo "---------------------------------------------"
     echo "I should be plugged into your laptop or the Proxmox node(s) that you have installed."
+    echo "/////////////////////////////////////////////////////////////////////////////////////////////////////"
     echo "Laptop                                        |                                       Proxmox Node(s)"
     echo "-----------------------------------------------------------------------------------------------------"
     echo "Plug into Cisco's port 1                               Plug Proxmox management NIC into Cisco port 13"
     echo "Plug Cisco port 13 into Proxmox management NIC  May plug in laptop to Cisco port 1 but must assign IP"
     echo "Ansible will run pointed at Proxmox node(s)                          Ansible will run pointed at self"
     echo "-----------------------------------------------------------------------------------------------------"
+    echo "/////////////////////////////////////////////////////////////////////////////////////////////////////"
     echo "POC for this infrastructure is SPC May for any other questions."
     echo "============================================="
     echo "Am I running from your laptop or a Proxmox Node? (l/p)"
@@ -38,6 +40,14 @@ while [[ -z "$location" ]]; do
     echo "============================================="
     if [[ "$location" =~ [lL] ]]; then
         echo "Laptop Control Node"
+        echo "--------------------"
+        echo "List out IP address(es) of the Proxmox nodes, pressing enter after each one."
+        echo "--------------------"
+        read -a prox_ips
+        for i in ${prox_ips[@]}; do
+            echo $i
+        done
+        
     elif [[ $location =~ [pP] ]]; then
         echo "Proxmox Control Node"
     else
