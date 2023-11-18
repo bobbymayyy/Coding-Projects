@@ -135,14 +135,14 @@ else
     echo "Thats not a choice :("
 fi
 
-host_octets+=$(echo $host_ip | awk -F. '{print $1}')
-host_octets+=$(echo $host_ip | awk -F. '{print $2}')
-host_octets+=$(echo $host_ip | awk -F. '{print $3}')
-host_octets+=$(echo $host_ip | awk -F. '{print $4}')
-prox_octets+=$(echo $host_ip | awk -F. '{print $1}')
-prox_octets+=$(echo $host_ip | awk -F. '{print $2}')
-prox_octets+=$(echo $host_ip | awk -F. '{print $3}')
-prox_octets+=$(echo $host_ip | awk -F. '{print $4}')
+host_octets+=($(echo $host_ip | awk -F. '{print $1}'))
+host_octets+=($(echo $host_ip | awk -F. '{print $2}'))
+host_octets+=($(echo $host_ip | awk -F. '{print $3}'))
+host_octets+=($(echo $host_ip | awk -F. '{print $4}'))
+prox_octets+=($(echo $prox_ip | awk -F. '{print $1}'))
+prox_octets+=($(echo $prox_ip | awk -F. '{print $2}'))
+prox_octets+=($(echo $prox_ip | awk -F. '{print $3}'))
+prox_octets+=($(echo $prox_ip | awk -F. '{print $4}'))
 echo "${host_octets[-1]}"
 echo "${host_octets[-1]}"
 
