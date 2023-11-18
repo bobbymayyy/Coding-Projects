@@ -47,6 +47,11 @@ while [[ "$choice" =~ [nN] ]]; do
         clear
         echo "============================================="
         echo "Okay :)"
+    else
+        clear
+        echo "============================================="
+        echo "Thats not a choice :("
+        choice=n
     fi
 done
 
