@@ -37,7 +37,8 @@ while [[ "$choice" =~ [nN] ]]; do
     echo "---------------------------------------------"
     ls -la .
     echo "============================================="
-    read -p "Have you already installed Proxmox baremetal on the node(s) you would like to use? (y/n)" choice
+    echo "Have you already installed Proxmox baremetal on the node(s) you would like to use? (y/n)"
+    read choice
     if [[ "$choice" =~ [nN] ]]; then
         clear
         echo "============================================="
@@ -46,13 +47,10 @@ while [[ "$choice" =~ [nN] ]]; do
         clear
         echo "============================================="
         echo "Okay :)"
-    else
-        clear
-        echo "============================================="
-        echo "That wasn't a choice :("
     fi
 done
 
 echo "=================="
-read -p "What IP address did you assign to the Proxmox management interface when you installed?" ip_addr
+echo "What IP address did you assign to the Proxmox management interface when you installed?"
+read ip_addr
 echo $ip_addr
