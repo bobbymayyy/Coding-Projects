@@ -215,5 +215,8 @@ ssh root@$prox_ip
 clear
 echo "============================================="
 echo "Welcome back :)"
+echo "I am going to finalize some things and ask you some questions so we can start the Ansible."
+
+
 echo "/////////////////////////////////////////////"
 echo "Goodbye :)"
