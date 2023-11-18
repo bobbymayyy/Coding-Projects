@@ -179,4 +179,7 @@ fi
 
 clear
 echo "============================================="
+echo "We are going to add the Proxmox SSH fingerprint to our computer now so we have one less thing to worry about with Ansible."
+ssh root@$prox_ip
+echo "/////////////////////////////////////////////"
 echo "Goodbye :)"
