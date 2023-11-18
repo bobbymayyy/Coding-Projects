@@ -144,7 +144,7 @@ prox_octets+=($(echo $prox_ip | awk -F. '{print $2}'))
 prox_octets+=($(echo $prox_ip | awk -F. '{print $3}'))
 prox_octets+=($(echo $prox_ip | awk -F. '{print $4}'))
 
-if [[ $(echo "${host_octets[0]}") == $(echo "${prox_octets[0]}") ]] && [[ $(echo "${host_octets[0]}") == $(echo "${prox_octets[1]}") ]] && [[ $(echo "${host_octets[0]}") == $(echo "${prox_octets[2]}") ]]; then
+if [[ $(echo "${host_octets[0]}") == $(echo "${prox_octets[0]}") ]] && [[ $(echo "${host_octets[1]}") == $(echo "${prox_octets[1]}") ]] && [[ $(echo "${host_octets[2]}") == $(echo "${prox_octets[2]}") ]]; then
     clear
     echo "============================================="
     echo "You are in the same subnet as your Proxmox installation."
