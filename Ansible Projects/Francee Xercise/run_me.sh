@@ -43,7 +43,10 @@ while [[ -z "$location" ]]; do
         echo "--------------------"
         echo "List out IP address(es) of the Proxmox nodes, pressing enter after each one."
         echo "--------------------"
-        read -a prox_ips
+        while read line; do
+            prox_ips=("${prox_ips[@]}" $line)
+        done
+        echo "--------------------"
         for i in ${prox_ips[@]}; do
             echo $i
         done
