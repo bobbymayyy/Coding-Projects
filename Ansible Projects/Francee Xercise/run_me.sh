@@ -22,7 +22,8 @@ echo "I would like to give you some helpful tips before we get started."
 echo "---------------------------------------------"
 echo "The Proxmox that you have installed or plan to install should be located in the same subnet as us so that the Ansible I run can see the Proxmox."
 echo "The Cisco switch has been updated to have vlans separating the Proxmox management and Security Onion management for this exercise."
-echo "You can plug the laptop I am on into the first port on the switch and you will be able to statically assign yourself an IP in the subnet you will or have created."
+echo "You can plug the laptop I am on into the first port on the switch and you should statically assign yourself an IP in the subnet you will or have created."
+echo "This script assumes you are using a CIDR of 24 as this subnet will only be for the administration of Proxmox."
 echo "You can then plug the switch into one of the ports on the node(s)."
 echo "POC for this infrastructure is SPC May for any other questions."
 echo "============================================="
@@ -101,7 +102,41 @@ while [[ "$choice" =~ [nN] ]]; do
         choice=n
     fi
 done
-echo "Is this the correct choice? (y/n)"
 
+echo "=================="
+ip a show $prox_int
+echo "============================================="
+echo "Did you assign this IP address statically or with DHCP? (s/d)"
+read ip_negotiation
+
+if [[ "$choice" =~ [sS] ]]; then
+    clear
+    echo "============================================="
+    echo "Okay :)"
+    host_ip=$(ip a show $prox_int | grep 'inet ' | awk '{print $2}' | awk -F/ '{print $1}')
+    echo "One second..."
+elif [[ "$choice" =~ [dD] ]]; then
+    clear
+    echo "============================================="
+    echo "Okay :)"
+    echo "Running DHClient..."
+    dhclient -v
+    host_ip=$(ip a show $prox_int | grep 'inet ' | awk '{print $2}' | awk -F/ '{print $1}')
+    if [[ $host_ip =~ [169.254.*] ]]; then
+        echo "APIPA will not work for this..."
+        echo "Something is wrong and the networking needs to be looked at to see why you are not getting a DHCP address."
+        echo "This could also be the case if you did not set up DHCP on your own for the same subnet as Proxmox management."
+    else
+        echo "One second..."
+else
+    clear
+    echo "============================================="
+    echo "Thats not a choice :("
+fi
+
+for i in $(echo $host_ip | awk -F. '{print $0}'); do
+    host_octets+=($i)
+done
+echo "${host_octets[-1]}"
 
 echo "Goodbye :)"
