@@ -63,7 +63,7 @@ echo "One second..."
 
 host_int=$(ip a | grep 'state UP' | awk '{print $2}' | awk -NF: '{print $1}')
 
-for i in host_int; do
+for i in $host_int; do
     ip link show $i
 done
 
