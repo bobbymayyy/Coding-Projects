@@ -179,6 +179,4 @@ fi
 
 clear
 echo "============================================="
-echo "ip addr del $host_ip/24 dev $host_int"
-echo "ip addr add $(echo "${prox_octets[0]}").$(echo "${prox_octets[1]}").$(echo "${prox_octets[2]}").69/24 dev $host_int"
 echo "Goodbye :)"
