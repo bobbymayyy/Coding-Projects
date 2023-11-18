@@ -1,0 +1,58 @@
+#!/bin/bash
+
+clear
+echo "============================================="
+meridiem=$(date | awk '{print $5}')
+
+if [[ "$meridiem" == AM ]]; then
+    echo "Good Morning :)"
+else
+    echo "Good Afternoon :)"
+fi
+echo "=================="
+
+echo "I am your virtual assistant to help deploy Defensive Security infrastructure for your exercise in France; you can call me Francee Xercise."
+echo "============================================="
+echo "Press any key to continue..."
+read -rsn1
+
+clear
+echo "============================================="
+echo "I would like to give you some helpful tips before we get started."
+echo "---------------------------------------------"
+echo "The Proxmox that you have installed or plan to install should be located in the same subnet as us so that the Ansible I run can see the Proxmox."
+echo "The Cisco switch has been updated to have vlans separating the Proxmox management and Security Onion management for this exercise."
+echo "You can plug the laptop I am on into the first port on the switch and you will be able to statically assign yourself an IP in the subnet you will or have created."
+echo "You can then plug the switch into one of the ports on the node(s)."
+echo "POC for this infrastructure is SPC May for any other questions."
+echo "============================================="
+echo "Press any key to continue..."
+read -rsn1
+
+clear
+echo "============================================="
+choice=n
+while [[ "$choice" =~ [nN] ]]; do
+    echo "I have quite a bit of resources on the USB I am running from..."
+    echo "---------------------------------------------"
+    ls -la .
+    echo "============================================="
+    read -p "Have you already installed Proxmox baremetal on the node(s) you would like to use? (y/n)" choice
+    if [[ "$choice" =~ [nN] ]]; then
+        clear
+        echo "============================================="
+        echo "No problem, go ahead and do that now.. then come back and run me again."
+    elif [[ "$choice" =~ [yY] ]]; then
+        clear
+        echo "============================================="
+        echo "Okay :)"
+    else
+        clear
+        echo "============================================="
+        echo "That wasn't a choice :("
+    fi
+done
+
+echo "=================="
+read -p "What IP address did you assign to the Proxmox management interface when you installed?" ip_addr
+echo $ip_addr
