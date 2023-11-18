@@ -83,6 +83,10 @@ while [[ "$choice" =~ [nN] ]]; do
     if [[ "$choice" =~ [nN] ]]; then
         clear
         echo "============================================="
+        for i in $host_int; do
+            ip a show $i
+        done
+        echo "============================================="
         echo "Which of these currently UP interfaces is connected to the same subnet as Proxmox?"
         echo "The name after the number please..."
         read prox_int
