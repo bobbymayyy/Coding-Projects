@@ -62,9 +62,42 @@ echo "============================================="
 echo "One second..."
 
 host_int=$(ip a | grep 'state UP' | awk '{print $2}' | awk -NF: '{print $1}')
-
+clear
+echo "============================================="
 for i in $host_int; do
-    ip link show $i
+    ip a show $i
 done
+echo "============================================="
+echo "Which of these currently UP interfaces is connected to the same subnet as Proxmox?"
+echo "The name after the number please..."
+read prox_int
+
+clear
+echo "============================================="
+choice=n
+while [[ "$choice" =~ [nN] ]]; do
+    ip a show $prox_int
+    echo "============================================="
+    echo "Is this the correct choice? (y/n)"
+    read choice
+    if [[ "$choice" =~ [nN] ]]; then
+        clear
+        echo "============================================="
+        echo "Which of these currently UP interfaces is connected to the same subnet as Proxmox?"
+        echo "The name after the number please..."
+        read prox_int
+    elif [[ "$choice" =~ [yY] ]]; then
+        clear
+        echo "============================================="
+        echo "Okay :)"
+    else
+        clear
+        echo "============================================="
+        echo "Thats not a choice :("
+        choice=n
+    fi
+done
+echo "Is this the correct choice? (y/n)"
+
 
 echo "Goodbye :)"
