@@ -138,6 +138,6 @@ fi
 for i in $(echo $host_ip | awk -F. '{print $0}'); do
     host_octets+=($i)
 done
-echo "${host_octets[-1]}"
+echo "{$host_octets[-1]}"
 
 echo "Goodbye :)"
