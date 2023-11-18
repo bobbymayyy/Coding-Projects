@@ -11,25 +11,57 @@ else
 fi
 echo "=================="
 
-echo "I am your virtual assistant to help deploy Defensive Security infrastructure for your exercise in France; you can call me Francee Xercise."
+echo "I am your virtual assistant to help deploy Defensive Security infrastructure."
 echo "============================================="
 echo "Press any key to continue..."
 read -rsn1
 
 clear
-echo "============================================="
-echo "I would like to give you some helpful tips before we get started."
-echo "---------------------------------------------"
-echo "The Proxmox that you have installed or plan to install should be located in the same subnet as us so that the Ansible I run can see the Proxmox."
-echo "The Cisco switch has been updated to have vlans separating the Proxmox management and Security Onion management for this exercise."
-echo "You can plug the laptop I am on into the first port on the switch and you should statically assign yourself an IP in the subnet you will or have created."
-echo "This script assumes you are using a CIDR of 24 as this subnet will only be for the administration of Proxmox."
-echo "You can then plug the switch into one of the ports on the node(s)."
-echo "POC for this infrastructure is SPC May for any other questions."
-echo "============================================="
-echo "Press any key to continue..."
-read -rsn1
+location=''
+while [[ -z "$location" ]]; do
+    echo "============================================="
+    echo "I would like to get some information to and from you before we start."
+    echo "---------------------------------------------"
+    echo "I should be plugged into your laptop or the Proxmox node(s) that you have installed."
+    echo "Laptop                                        |                                       Proxmox Node(s)"
+    echo "-----------------------------------------------------------------------------------------------------"
+    echo "Plug into Cisco's port 1                               Plug Proxmox management NIC into Cisco port 13"
+    echo "Plug Cisco port 13 into Proxmox management NIC  May plug in laptop to Cisco port 1 but must assign IP"
+    echo "Ansible will run pointed at Proxmox node(s)                          Ansible will run pointed at self"
+    echo "-----------------------------------------------------------------------------------------------------"
+    echo "POC for this infrastructure is SPC May for any other questions."
+    echo "============================================="
+    echo "Am I running from your laptop or a Proxmox Node? (l/p)"
+    read location
 
+    clear
+    echo "============================================="
+    if [[ "$location" =~ [lL] ]]; then
+        echo "Laptop Control Node"
+    elif [[ $location =~ [pP] ]]; then
+        echo "Proxmox Control Node"
+    else
+        echo "Please specify using l or p, respectively."
+        location=''
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#All this will be commented out for now...
+: '
 clear
 echo "============================================="
 choice=n
@@ -209,14 +241,46 @@ fi
 
 clear
 echo "============================================="
-echo "We are going to add the Proxmox SSH fingerprint to our computer now so we have one less thing to worry about with Ansible."
-ssh root@$prox_ip
+echo "We are going to add the Proxmox SSH fingerprint to our computer now so we can log in without a password."
+echo "You can hit enter through creating your public key so it saves in the default location and allows for no passphrase."
+ssh-keygen -t rsa -b 2048
+ssh-copy-id root@$prox_ip
 
-clear
+ssh root@$prox_ip 'echo "Hello :)"' && clear; echo "Passwordless configuration was successful."
+
 echo "============================================="
-echo "Welcome back :)"
 echo "I am going to finalize some things and ask you a few more questions so we can start the Ansible."
+echo "----------------"
 
+echo "Where would you like to install Ansible?"
+echo "This will dictate where it runs from as it allows you to choose the control node."
+echo "----------------"
+echo "A - This Laptop"
+echo "B - Proxmox Node(s)"
+echo "============================================="
+read ansible_choice
+
+
+
+apt=$(which apt 2>/dev/null)
+dnf=$(which dnf 2>/dev/null)
+
+if [[ -n $apt ]]; then
+    echo "I see you are using a Debian based distribution of Linux..."
+    echo "Installing Ansible and its dependencies needed for this exercise..."
+    dpkg -i ./packages/ansible/debs/*.deb
+elif [[ -n $dnf ]]; then
+    echo "I see you are using a Red-Hat based distribution of Linux..."
+    echo "Installing Ansible and its dependencies needed for this exercise..."
+    rpm -i ./packages/ansible/rpms/*.rpm
+else
+    echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files I have for you."
+    echo "They are not needed to move on, if you have them you can install them and re-run me; but we are going to install ansible on the Proxmox."
+fi
+
+ssh root@$prox_ip 'mkdir debs'
+scp ./packages/ansible/debs/*.deb root@$prox_ip:
 
 echo "/////////////////////////////////////////////"
 echo "Goodbye :)"
+'
