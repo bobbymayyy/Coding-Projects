@@ -72,10 +72,10 @@ echo "Which of these currently UP interfaces is connected to the same subnet as 
 echo "The name after the number please..."
 read prox_int
 
-clear
-echo "============================================="
 choice=n
 while [[ "$choice" =~ [nN] ]]; do
+    clear
+    echo "============================================="
     ip a show $prox_int
     echo "============================================="
     echo "Is this the correct choice? (y/n)"
