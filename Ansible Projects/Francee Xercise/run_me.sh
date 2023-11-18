@@ -150,7 +150,11 @@ if [[ "${host_octets[0]}" == "${prox_octets[0]}" ]] && [[ "${host_octets[0]}" ==
     echo "You are in the same subnet as your Proxmox installation."
     echo "Testing connection..."
     ping -c 5 $prox_ip
-
+else
+    clear "============================================="
+    echo "You are not in the same subnet as your Proxmox installation."
+    echo "Attempting to correct the situation..."
+fi
 
 echo "============================================="
 echo "Goodbye :)"
