@@ -109,13 +109,13 @@ echo "============================================="
 echo "Did you assign this IP address statically or with DHCP? (s/d)"
 read ip_negotiation
 
-if [[ "$choice" =~ [sS] ]]; then
+if [[ "$ip_negotiation" =~ [sS] ]]; then
     clear
     echo "============================================="
     echo "Okay :)"
     host_ip=$(ip a show $prox_int | grep 'inet ' | awk '{print $2}' | awk -F/ '{print $1}')
     echo "One second..."
-elif [[ "$choice" =~ [dD] ]]; then
+elif [[ "$ip_negotiation" =~ [dD] ]]; then
     clear
     echo "============================================="
     echo "Okay :)"
@@ -138,6 +138,6 @@ fi
 for i in $(echo $host_ip | awk -F. '{print $0}'); do
     host_octets+=($i)
 done
-echo "{$host_octets[-1]}"
+echo "${host_octets[-1]}"
 
 echo "Goodbye :)"
