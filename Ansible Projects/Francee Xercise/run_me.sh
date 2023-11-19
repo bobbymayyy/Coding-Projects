@@ -165,7 +165,8 @@ while [[ -z "$location" ]]; do
         clear
         echo "============================================="
         echo "Is this your first time running me? (y/n)"
-        if [[ "$fuckup" =~ [yY] ]]; then
+        read fuckup
+        if [[ "$fuckup" =~ [nN] ]]; then
             echo "--------------------"
             rm -f /root/.ssh/known_hosts*
         else
