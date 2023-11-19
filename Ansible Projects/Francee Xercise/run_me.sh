@@ -70,7 +70,7 @@ while [[ -z "$location" ]]; do
         oct3=$(echo "${prox_ips[0]}" | awk -F. '{print $3}')
         ip addr flush dev $host_int
         ip addr add $oct1.$oct2.$oct3.68/24 dev $host_int
-        sleep 10
+        sleep 5
         
         for i in "${prox_ips[@]}"; do
             test=$(ping -c 1 $i | grep 'bytes from' &)
