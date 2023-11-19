@@ -173,7 +173,7 @@ while [[ -z "$location" ]]; do
         
         clear
         echo "============================================="
-        for ((i=0;i<=${#prox_ips[@]}; i++)); do
+        for ((i=1;i<=${#prox_ips[@]}; i++)); do
             ssh root@${prox_ips[$i]} "pvecm add ${prox_ips[0]}"
         done
 
