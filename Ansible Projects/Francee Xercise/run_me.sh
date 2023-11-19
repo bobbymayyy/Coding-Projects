@@ -167,6 +167,7 @@ while [[ -z "$location" ]]; do
             clear
         done
 
+        echo "============================================="
         for i in "${passwordless_check[@]}"; do
             echo "Passwordless configuration for $i was successful."
         done
@@ -184,13 +185,11 @@ while [[ -z "$location" ]]; do
         clear
         echo "============================================="
         echo "One second..."
-        ssh root@${prox_ips[0]} rm -f /root/.ssh/id_rsa
         ssh root@${prox_ips[0]} 'ssh-keygen -t rsa -b 2048 -f "/root/.ssh/id_rsa" -q -N ""'
         ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER' 
         sleep 5
 
         for ((i=1; i<=${#prox_ips[@]}; i++)); do
-            ssh root@${prox_ips[$i]} rm -f /root/.ssh/id_rsa
             ssh root@${prox_ips[0]} "sshpass -p $USERPASS ssh-copy-id root@${prox_ips[$i]}"
             ssh root@${prox_ips[$i]} 'ssh-keygen -t rsa -b 2048 -f "/root/.ssh/id_rsa" -q -N ""'
             ssh root@${prox_ips[$i]} "sshpass -p $USERPASS ssh-copy-id root@${prox_ips[0]}"
