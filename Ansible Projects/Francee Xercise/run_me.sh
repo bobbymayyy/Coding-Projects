@@ -92,7 +92,7 @@ while [[ -z "$location" ]]; do
         
         else
             echo "No default route needed since we are airgapped..."
-            return 1
+            exit
         fi
 
         sleep 5
@@ -105,7 +105,6 @@ while [[ -z "$location" ]]; do
             echo "Successful connection(s)."        
         else
             echo "Failed connection(s)."
-            return 1
         fi
 
     elif [[ $location =~ [pP] ]]; then
