@@ -174,7 +174,7 @@ while [[ -z "$location" ]]; do
         clear
         echo "============================================="
         echo "One second..."
-        ssh root@${prox_ips[0]} 'pvecm create PROX_CLUSTER'
+        ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER'
 
         for ((i=1;i<=${#prox_ips[@]}; i++)); do
             ssh root@${prox_ips[$i]} "pvecm add ${prox_ips[0]}"
