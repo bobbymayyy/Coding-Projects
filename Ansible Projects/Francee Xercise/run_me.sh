@@ -136,11 +136,11 @@ while [[ -z "$location" ]]; do
             if [[ -n $apt ]]; then
                 echo "I see you are using a Debian based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
-                dpkg -i ./packages/ansible/debs/*.deb
+                dpkg -i ./packages/debs/ansible/*.deb
             elif [[ -n $dnf ]]; then
                 echo "I see you are using a Red-Hat based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
-                rpm -i ./packages/ansible/rpms/*.rpm
+                rpm -i ./packages/rpms/ansible/*.rpm
             else
                 echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files for Ansible."
                 echo "They are needed to move on with Laptop install, or you can re-run and install on the Proxmox."
@@ -165,8 +165,8 @@ while [[ -z "$location" ]]; do
         fi
 
         for i in "${prox_ips[@]}"; do
-            ssh root@$i 'mkdir /root/debs'
-            scp -r ./packages/openvswitch/debs root@$i:/root/debs
+            ssh root@$i 'mkdir /root/openvswitch'
+            scp -r ./packages/debs/openvswitch root@$i:/root/openvswitch
             ssh root@$i 'cd /root/debs; dpkg -i *.deb'
         done
 
