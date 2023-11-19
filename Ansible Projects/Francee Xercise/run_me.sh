@@ -190,7 +190,7 @@ while [[ -z "$location" ]]; do
         sleep 5
 
         for ((i=1; i<=${#prox_ips[@]}; i++)); do
-            ssh root@${prox_ips[0]} "sshpass -p $USERPASS ssh-copy-id root@${prox_ips[$i]}"
+            ssh root@${prox_ips[0]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no root@${prox_ips[$i]}"
             ssh root@${prox_ips[$i]} 'ssh-keygen -t rsa -b 2048 -f "/root/.ssh/id_rsa" -q -N ""'
             ssh root@${prox_ips[$i]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no root@${prox_ips[0]}"
             ssh root@${prox_ips[$i]} "sshpass -p $USERPASS pvecm add ${prox_ips[0]}"
