@@ -1,5 +1,12 @@
 #!/bin/bash
 
+debugger() {
+    echo "--------------------"
+    echo "Press any key to continue..."
+    read -rsn1
+}
+
+
 clear
 echo "============================================="
 meridiem=$(date | awk '{print $5}')
@@ -155,53 +162,43 @@ while [[ -z "$location" ]]; do
             fi
         fi
 
-        rm -f /root/.ssh/id_rsa
-        ssh-keygen -t rsa -b 2048 -f "/root/.ssh/id_rsa" -q -N ""
-
         clear
         echo "============================================="
-        echo "One second..."
-        for i in "${prox_ips[@]}"; do
-            sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no root@$i
-            ssh root@$i 'echo "Hello :)"' && passwordless_check+=($i)
-            clear
-        done
+        echo "Is this your first time running me? (y/n)"
+        if [[ "$fuckup" =~ [yY] ]]; then
+            echo "--------------------"
+            rm -f /root/.ssh/known_hosts*
+        else
+            echo "--------------------"
+            echo "Okay :)"
+        fi
 
-        echo "============================================="
-        for i in "${passwordless_check[@]}"; do
-            echo "Passwordless configuration for $i was successful."
-        done
-
-        echo "============================================="
         for i in ${prox_ips[@]}; do
-            ssh root@$i 'mkdir /root/openvswitch'
-            ssh root@$i 'mkdir /root/sshpass'
-            scp -r ./packages/debs/openvswitch root@$i:/root
-            scp -r ./packages/debs/sshpass root@$i:/root
-            ssh root@$i 'cd /root/openvswitch; dpkg -i *.deb'
-            ssh root@$i 'cd /root/sshpass; dpkg -i *.deb'
+            sshpass -p $USERPASS ssh root@$i 'mkdir /root/openvswitch'
+            sshpass -p $USERPASS ssh root@$i 'mkdir /root/sshpass'
+            sshpass -p $USERPASS scp -r ./packages/debs/openvswitch root@$i:/root
+            sshpass -p $USERPASS scp -r ./packages/debs/sshpass root@$i:/root
+            sshpass -p $USERPASS ssh root@$i 'cd /root/openvswitch; dpkg -i *.deb'
+            sshpass -p $USERPASS ssh root@$i 'cd /root/sshpass; dpkg -i *.deb'
         done
         
         clear
         echo "============================================="
-        echo "One second..."
-        ssh root@${prox_ips[0]} 'ssh-keygen -t rsa -b 2048 -f "/root/.ssh/id_rsa" -q -N ""'
-        ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER' 
-        sleep 5
+        echo "Creating Proxmox cluster..."
+        sshpass -p $USERPASS ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER'
+        sshpass -p $USERPASS ssh root@${prox_ips[0]} "sshpass -p $USERPASS pvecm expected 1"
+        echo "============================================="
 
         for ((i=1; i<=${#prox_ips[@]}; i++)); do
-            ssh root@${prox_ips[0]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no root@${prox_ips[$i]}"
-            ssh root@${prox_ips[$i]} 'ssh-keygen -t rsa -b 2048 -f "/root/.ssh/id_rsa" -q -N ""'
-            ssh root@${prox_ips[$i]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no root@${prox_ips[0]}"
-            ssh root@${prox_ips[$i]} "sshpass -p $USERPASS pvecm add ${prox_ips[0]}"
+            echo "Trying to add ${prox_ips[$i]} to the cluster..."
+            sshpass -p $USERPASS ssh root@${prox_ips[0]} "pvecm add ${prox_ips[$i]} -force true"
         done
 
 #        clear
         echo "============================================="
-        ssh root@${prox_ips[0]} 'pvecm status'
+        sshpass -p $USERPASS ssh root@${prox_ips[0]} 'pvecm status'
         echo "============================================="
-        echo "Press any key to continue..."
-        read -rsn1
+        debugger
 
         inv_check=$(cat ./ansible/inventory.cfg)
         if [[ -z "$inv_check" ]]; then
