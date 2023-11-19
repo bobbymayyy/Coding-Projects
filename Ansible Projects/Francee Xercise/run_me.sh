@@ -174,8 +174,10 @@ while [[ -z "$location" ]]; do
         clear
         echo "============================================="
         echo "One second..."
+        master_prox+=(${prox_ips[0]})
         for ((i=1;i<=${#prox_ips[@]}; i++)); do
-            ssh root@${prox_ips[$i]} "pvecm add ${prox_ips[0]}" &
+            slave_prox+=(${prox_ips[$i]})
+            ssh root@${prox_ips[$i]} "pvecm add $master_prox"
         done
 
         clear
