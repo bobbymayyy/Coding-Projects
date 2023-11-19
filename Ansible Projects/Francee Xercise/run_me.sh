@@ -9,8 +9,8 @@ if [[ "$meridiem" == AM ]]; then
 else
     echo "Good Afternoon :)"
 fi
-echo "=================="
 
+echo "=================="
 echo "I am your virtual assistant to help deploy Defensive Security infrastructure."
 echo "============================================="
 echo "Press any key to continue..."
@@ -18,6 +18,7 @@ read -rsn1
 
 clear
 location=''
+
 while [[ -z "$location" ]]; do
     echo "============================================="
     echo "I would like to get some information to and from you before we start."
@@ -38,21 +39,26 @@ while [[ -z "$location" ]]; do
 
     clear
     echo "============================================="
+
     if [[ "$location" =~ [lL] ]]; then
         echo "Laptop Control Node"
         echo "--------------------"
         echo "List out IP address(es) of the Proxmox nodes, pressing enter after each one. (CTRL-D when done.)"
         echo "--------------------"
+
         while read line; do
             prox_ips=("${prox_ips[@]}" $line)
         done
+
         echo "--------------------"
         echo "Putting us on the same subnet and testing connection."
         host_int=$(ip a | grep 'state UP' | awk '{print $2}' | awk -F: '{print $1}')
         echo "============================================="
+
         for i in $host_int; do
             ip a show $i
         done
+
         echo "============================================="
         echo "Which of these currently UP interfaces is connected to the same subnet as Proxmox?"
         echo "The name after the number please..."
@@ -65,20 +71,24 @@ while [[ -z "$location" ]]; do
         ip addr flush dev $host_int
         ip addr add $oct1.$oct2.$oct3.68/24 dev $host_int
         sleep 10
+        
         for i in "${prox_ips[@]}"; do
             test=$(ping -c 1 $i | grep 'bytes from' &)
         done
+
         if [[ -n "$test" ]]; then
             echo "Successful connection(s)."        
         else
             echo "Failed connection(s)."
         fi
+
     elif [[ $location =~ [pP] ]]; then
         echo "Proxmox Control Node"
     else
         echo "Please specify using l or p, respectively."
         location=''
     fi
+
 done
 
 
