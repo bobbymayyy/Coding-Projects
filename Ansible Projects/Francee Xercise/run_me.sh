@@ -79,7 +79,7 @@ while [[ -z "$location" ]]; do
             echo "Adding default route since we are not airgapped..."
             for i in {1,2,254}; do
                 route add default gw $oct1.$oct2.$oct3.$i dev $host_int
-                ping -c 1 8.8.8.8 | grep 'bytes from' && break
+                ping -c 1 8.8.8.8 | grep 'bytes from' || route del default gw $oct1.$oct2.$oct3.$i dev $host_int && break
             done
         else
             echo "No default route needed since we are airgapped..."
