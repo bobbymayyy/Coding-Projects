@@ -11,7 +11,7 @@ else
 fi
 
 echo "=================="
-echo "I am your virtual assistant to help deploy Defensive Security infrastructure."
+echo "I am Francee Xercise, your virtual assistant to help deploy Defensive Security infrastructure."
 echo "============================================="
 echo "Press any key to continue..."
 read -rsn1
@@ -77,7 +77,7 @@ while [[ -z "$location" ]]; do
         
         if [[ "$airgap" =~ [nN] ]]; then
             echo "Adding default route since we are not airgapped..."
-            
+
             for i in {1,2,254}; do
                 route add default gw $oct1.$oct2.$oct3.$i dev $host_int
                 google_test=$(ping -c 1 8.8.8.8 | grep 'bytes from')
@@ -87,12 +87,10 @@ while [[ -z "$location" ]]; do
                 else
                     route del default gw $oct1.$oct2.$oct3.$i dev $host_int
                 fi
-
             done
         
         else
             echo "No default route needed since we are airgapped..."
-            exit
         fi
 
         sleep 5
@@ -102,10 +100,78 @@ while [[ -z "$location" ]]; do
         done
 
         if [[ -n "$test" && -n "$google_test" ]]; then
-            echo "Successful connection(s)."        
+            clear
+            echo "============================================="
+            echo "Successful connection(s)."
+            echo "============================================="
+            echo "We are going to add the Proxmox SSH fingerprint to our computer now so we can log in without a password."
+            echo "You can hit enter through creating your public key so it saves in the default location and allows for no passphrase."
+            ssh-keygen -t rsa -b 2048
+
+            clear
+            for i in "${prox_ips[@]}"; do
+                ssh-copy-id root@$i
+                ssh root@$i 'echo "Hello :)"' && passwordless_check+=($i)
+                clear
+            done
+
         else
+            clear
+            echo "============================================="
             echo "Failed connection(s)."
+            echo "============================================="
+            echo "Attempt to identify problems in DHCP or routing and re-run when ready."
+            exit
+
         fi
+
+        apt=$(which apt 2>/dev/null)
+        dnf=$(which dnf 2>/dev/null)
+
+        for i in "${passwordless_check[@]}"; do
+            echo "Passwordless configuration for $i was successful."
+        done
+
+        if [[ "$airgap" =~ [yY] ]]; then
+            if [[ -n $apt ]]; then
+                echo "I see you are using a Debian based distribution of Linux..."
+                echo "Installing Ansible and its dependencies needed for this exercise..."
+                dpkg -i ./packages/ansible/debs/*.deb
+            elif [[ -n $dnf ]]; then
+                echo "I see you are using a Red-Hat based distribution of Linux..."
+                echo "Installing Ansible and its dependencies needed for this exercise..."
+                rpm -i ./packages/ansible/rpms/*.rpm
+            else
+                echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files for Ansible."
+                echo "They are needed to move on with Laptop install, or you can re-run and install on the Proxmox."
+                exit
+            fi
+        else
+            if [[ -n $apt ]]; then
+                echo "I see you are using a Debian based distribution of Linux..."
+                echo "Installing Ansible and its dependencies needed for this exercise..."
+                apt -y update > /dev/null 2>&1
+                apt -y install ansible > /dev/null 2>&1
+            elif [[ -n $dnf ]]; then
+                echo "I see you are using a Red-Hat based distribution of Linux..."
+                echo "Installing Ansible and its dependencies needed for this exercise..."
+                dnf -y update > /dev/null 2>&1
+                dnf -y install ansible > /dev/null 2>&1
+            else
+                echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files for Ansible."
+                echo "They are needed to move on with Laptop install, or you can re-run and install on the Proxmox."
+                exit
+            fi
+        fi
+
+        for i in "${prox_ips[@]}"; do
+            ssh root@$i 'mkdir /root/debs'
+            scp -r ./packages/openvswitch/debs root@$i:/root/debs
+            ssh root@$i 'cd /root/debs; dpkg -i *.deb'
+        done
+
+        echo "/////////////////////////////////////////////"
+        echo "Goodbye :)"
 
     elif [[ $location =~ [pP] ]]; then
         echo "Proxmox Control Node"
@@ -113,7 +179,6 @@ while [[ -z "$location" ]]; do
         echo "Please specify using l or p, respectively."
         location=''
     fi
-
 done
 
 
