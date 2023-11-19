@@ -66,9 +66,13 @@ while [[ -z "$location" ]]; do
         ip addr add $oct1.$oct2.$oct3.68/24 dev $host_int
         sleep 10
         for i in "${prox_ips[@]}"; do
-            (ping -c 1 $i | grep 'bytes from' &)
+            test=$(ping -c 1 $i | grep 'bytes from' &)
         done
-
+        if [[ -n "$test" ]]; then
+            echo "Successful connection(s)."        
+        else
+            echo "Failed connection(s)."
+        fi
     elif [[ $location =~ [pP] ]]; then
         echo "Proxmox Control Node"
     else
