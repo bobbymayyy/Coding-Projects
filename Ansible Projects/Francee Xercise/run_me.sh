@@ -59,7 +59,9 @@ while [[ -z "$location" ]]; do
         read host_int
 
         echo "One second..."
-        1=$(echo "${prox_ips[0]}" | awk -F. '{print $1}'); 2=$(echo "${prox_ips[0]}" | awk -F. '{print $2}'); 3=$(echo "${prox_ips[0]}" | awk -F. '{print $3}')
+        1=$(echo "${prox_ips[0]}" | awk -F. '{print $1}')
+        2=$(echo "${prox_ips[0]}" | awk -F. '{print $2}')
+        3=$(echo "${prox_ips[0]}" | awk -F. '{print $3}')
         ip addr flush dev $host_int
         ip addr add $1.$2.$3.68/24 dev $host_int
         sleep 10
