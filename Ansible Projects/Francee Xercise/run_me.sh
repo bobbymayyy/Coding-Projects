@@ -172,14 +172,13 @@ while [[ -z "$location" ]]; do
         done
         
         inv_check=$(cat ./ansible/inventory.cfg)
-        if [[ "$inv_check" == $'[proxmox]\n' ]]; then
-            printf "%s\n" ${prox_ips[@]} >> ./ansible/inventory.cfg
+        if [[ -z "$inv_check" ]]; then
+            printf "%s\n" '[proxmox]' ${prox_ips[@]} >> ./ansible/inventory.cfg
         else
             echo '' > ./ansible/inventory.cfg
-            echo $'[proxmox]\n'
-            printf "%s\n" ${prox_ips[@]} >> ./ansible/inventory.cfg
+            printf "%s\n" '[proxmox]' ${prox_ips[@]} >> ./ansible/inventory.cfg
         fi
-        
+
         echo "/////////////////////////////////////////////"
         echo "Goodbye :)"
 
