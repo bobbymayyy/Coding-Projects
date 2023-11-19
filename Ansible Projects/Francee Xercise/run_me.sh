@@ -194,6 +194,8 @@ while [[ -z "$location" ]]; do
             ssh root@${prox_ips[$i]} 'ssh-keygen -t rsa -b 2048 -f "/root/.ssh/id_rsa" -q -N ""'
             ssh root@${prox_ips[$i]} "sshpass -p $USERPASS ssh-copy-id root@${prox_ips[0]}"
             ssh root@${prox_ips[$i]} "sshpass -p $USERPASS pvecm add ${prox_ips[0]}"
+            expect "Are you sure you want to continue connecting (yes/no)?"
+            send "yes\n"
         done
 
 #        clear
