@@ -165,12 +165,25 @@ while [[ -z "$location" ]]; do
             fi
         fi
 
-        for i in "${prox_ips[@]}"; do
+        for i in ${prox_ips[@]}; do
             ssh root@$i 'mkdir /root/openvswitch'
             scp -r ./packages/debs/openvswitch root@$i:/root
             ssh root@$i 'cd /root/openvswitch; dpkg -i *.deb'
         done
         
+        clear
+        echo "============================================="
+        for i in {1..${prox_ips[${#prox_ips[@-1]}]}}; do
+            ssh root@${prox_ips[$i]} "pvecm add ${prox_ips[0]}"
+        done
+
+        clear
+        echo "============================================="
+        ssh root@${prox_ips[0]} 'pvecm status'
+        echo "============================================="
+        echo "Press any key to continue..."
+        read -rsn1
+
         inv_check=$(cat ./ansible/inventory.cfg)
         if [[ -z "$inv_check" ]]; then
             printf "%s\n" '[proxmox]' ${prox_ips[@]} >> ./ansible/inventory.cfg
@@ -178,6 +191,12 @@ while [[ -z "$location" ]]; do
             echo '' > ./ansible/inventory.cfg
             printf "%s\n" '[proxmox]' ${prox_ips[@]} >> ./ansible/inventory.cfg
         fi
+        
+        clear
+        echo "============================================="
+        echo "We are going to start the Ansible now."
+        echo "============================================="
+
 
         echo "/////////////////////////////////////////////"
         echo "Goodbye :)"
