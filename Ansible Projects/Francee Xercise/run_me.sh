@@ -41,14 +41,30 @@ while [[ -z "$location" ]]; do
     if [[ "$location" =~ [lL] ]]; then
         echo "Laptop Control Node"
         echo "--------------------"
-        echo "List out IP address(es) of the Proxmox nodes, pressing enter after each one."
+        echo "List out IP address(es) of the Proxmox nodes, pressing enter after each one. (CTRL-D when done.)"
         echo "--------------------"
         while read line; do
             prox_ips=("${prox_ips[@]}" $line)
         done
         echo "--------------------"
-        for i in ${prox_ips[@]}; do
-            echo $i
+        echo "Putting us on the same subnet and testing connection."
+        host_int=$(ip a | grep 'state UP' | awk '{print $2}' | awk -F: '{print $1}')
+        echo "============================================="
+        for i in $host_int; do
+            ip a show $i
+        done
+        echo "============================================="
+        echo "Which of these currently UP interfaces is connected to the same subnet as Proxmox?"
+        echo "The name after the number please..."
+        read host_int
+
+        echo "One second..."
+        1=$(echo "${prox_ips[0]}" | awk -F. '{print $1}'); 2=$(echo "${prox_ips[0]}" | awk -F. '{print $2}'); 3=$(echo "${prox_ips[0]}" | awk -F. '{print $3}');
+        ip addr flush dev $host_int
+        ip addr add $1.$2.$3.68/24 dev $host_int
+        sleep 10
+        for i in "${prox_ips[@]}"; do
+            (ping -c 1 $i | grep 'bytes from' &)
         done
         
     elif [[ $location =~ [pP] ]]; then
