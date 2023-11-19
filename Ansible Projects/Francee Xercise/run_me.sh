@@ -91,6 +91,7 @@ while [[ -z "$location" ]]; do
         
         else
             echo "No default route needed since we are airgapped..."
+            google_test='1'
         fi
 
         sleep 5
@@ -198,6 +199,8 @@ done
 
 #All this will be commented out for now...
 : '
+ip r add default via <IP> dev <IF>
+
 clear
 echo "============================================="
 choice=n
