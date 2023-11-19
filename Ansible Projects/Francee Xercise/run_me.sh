@@ -64,12 +64,24 @@ while [[ -z "$location" ]]; do
         echo "The name after the number please..."
         read host_int
 
+        echo "============================================="
+        echo "Are we airgapped? (y/n)"
+        read airgap
+
         echo "One second..."
         oct1=$(echo "${prox_ips[0]}" | awk -F. '{print $1}')
         oct2=$(echo "${prox_ips[0]}" | awk -F. '{print $2}')
         oct3=$(echo "${prox_ips[0]}" | awk -F. '{print $3}')
         ip addr flush dev $host_int
         ip addr add $oct1.$oct2.$oct3.68/24 dev $host_int
+        
+        if [[ "$airgap" =~ [nN] ]]; then
+            echo "Adding default route since we are not airgapped..."
+            route add default gw $oct1.$oct2.$oct3.1 dev $host_int || route add default gw $oct1.$oct2.$oct3.2 dev $host_int || route add default gw $oct1.$oct2.$oct3.254 dev $host_int
+        else
+            echo "No default route needed since we are airgapped..."
+        fi
+
         sleep 5
         
         for i in "${prox_ips[@]}"; do
