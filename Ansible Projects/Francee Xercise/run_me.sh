@@ -141,7 +141,7 @@ while [[ -z "$location" ]]; do
             elif [[ -n $dnf ]]; then
                 echo "I see you are using a Red-Hat based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
-                rpm -i ./packages/rpms/ansible/*.rpm
+                rpm -i --nosignature ./packages/rpms/ansible/*.rpm
             else
                 echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files for Ansible."
                 echo "They are needed to move on with Laptop install, or you can re-run and install on the Proxmox."
