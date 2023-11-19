@@ -171,6 +171,9 @@ while [[ -z "$location" ]]; do
             ssh root@$i 'cd /root/openvswitch; dpkg -i *.deb'
         done
 
+        printf "%s\n" ${prox_ips[@]} >> ./ansible/inventory.cfg
+        sort -u ./ansible/inventory.cfg > tmp.cfg && mv tmp.cfg ./ansible/inventory.cfg
+        
         echo "/////////////////////////////////////////////"
         echo "Goodbye :)"
 
