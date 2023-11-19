@@ -167,7 +167,7 @@ while [[ -z "$location" ]]; do
 
         for i in "${prox_ips[@]}"; do
             ssh root@$i 'mkdir /root/openvswitch'
-            scp -r ./packages/debs/openvswitch root@$i:/root/openvswitch
+            scp -r ./packages/debs/openvswitch root@$i:/root
             ssh root@$i 'cd /root/openvswitch; dpkg -i *.deb'
         done
 
