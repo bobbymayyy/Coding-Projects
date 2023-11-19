@@ -37,6 +37,9 @@ while [[ -z "$location" ]]; do
     echo "Am I running from your laptop or a Proxmox Node? (l/p)"
     read location
 
+    echo "Please insert the password used for SSH login on Proxmox node(s):"
+    read -r USERPASS
+
     clear
     echo "============================================="
 
@@ -105,17 +108,7 @@ while [[ -z "$location" ]]; do
             echo "============================================="
             echo "Successful connection(s)."
             echo "============================================="
-            echo "We are going to add the Proxmox SSH fingerprint to our computer now so we can log in without a password."
-            echo "You can hit enter through creating your public key so it saves in the default location and allows for no passphrase."
-            ssh-keygen -t rsa -b 2048
-
-            clear
-            for i in "${prox_ips[@]}"; do
-                ssh-copy-id root@$i
-                ssh root@$i 'echo "Hello :)"' && passwordless_check+=($i)
-                clear
-            done
-
+            echo "Moving on..."
         else
             clear
             echo "============================================="
@@ -123,25 +116,20 @@ while [[ -z "$location" ]]; do
             echo "============================================="
             echo "Attempt to identify problems in DHCP or routing and re-run when ready."
             exit
-
         fi
 
         apt=$(which apt 2>/dev/null)
         dnf=$(which dnf 2>/dev/null)
 
-        for i in "${passwordless_check[@]}"; do
-            echo "Passwordless configuration for $i was successful."
-        done
-
         if [[ "$airgap" =~ [yY] ]]; then
             if [[ -n $apt ]]; then
                 echo "I see you are using a Debian based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
-                dpkg -i ./packages/debs/ansible/*.deb
+                dpkg -i ./packages/debs/*/*.deb
             elif [[ -n $dnf ]]; then
                 echo "I see you are using a Red-Hat based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
-                dnf -y install --disablerepo=* ./packages/rpms/ansible/*.rpm
+                dnf -y install --disablerepo=* ./packages/rpms/*/*.rpm
             else
                 echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files for Ansible."
                 echo "They are needed to move on with Laptop install, or you can re-run and install on the Proxmox."
@@ -153,11 +141,13 @@ while [[ -z "$location" ]]; do
                 echo "Installing Ansible and its dependencies needed for this exercise..."
                 apt -y update > /dev/null 2>&1
                 apt -y install ansible > /dev/null 2>&1
+                apt -y install sshpass > /dev/null 2>&1
             elif [[ -n $dnf ]]; then
                 echo "I see you are using a Red-Hat based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
                 dnf -y update > /dev/null 2>&1
                 dnf -y install ansible > /dev/null 2>&1
+                dnf -y install sshpass > /dev/null 2>&1
             else
                 echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files for Ansible."
                 echo "They are needed to move on with Laptop install, or you can re-run and install on the Proxmox."
@@ -165,22 +155,49 @@ while [[ -z "$location" ]]; do
             fi
         fi
 
+        rm -f /root/.ssh/id_rsa
+        ssh-keygen -t rsa -b 2048 -f "/root/.ssh/id_rsa" -q -N ""
+
+        clear
+        echo "============================================="
+        echo "One second..."
+        for i in "${prox_ips[@]}"; do
+            sshpass -p $USERPASS ssh-copy-id root@$i
+            ssh root@$i 'echo "Hello :)"' && passwordless_check+=($i)
+            clear
+        done
+
+        for i in "${passwordless_check[@]}"; do
+            echo "Passwordless configuration for $i was successful."
+        done
+
+        echo "============================================="
         for i in ${prox_ips[@]}; do
             ssh root@$i 'mkdir /root/openvswitch'
+            ssh root@$i 'mkdir /root/sshpass'
             scp -r ./packages/debs/openvswitch root@$i:/root
+            scp -r ./packages/debs/sshpass root@$i:/root
             ssh root@$i 'cd /root/openvswitch; dpkg -i *.deb'
+            ssh root@$i 'cd /root/sshpass; dpkg -i *.deb'
         done
         
         clear
         echo "============================================="
         echo "One second..."
-        ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER'
+        ssh root@${prox_ips[0]} rm -f /root/.ssh/id_rsa
+        ssh root@${prox_ips[0]} 'ssh-keygen -t rsa -b 2048 -f "/root/.ssh/id_rsa" -q -N ""'
+        ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER' 
+        sleep 5
 
-        for ((i=1;i<=${#prox_ips[@]}; i++)); do
-            ssh root@${prox_ips[$i]} "pvecm add ${prox_ips[0]}" &
+        for ((i=1; i<=${#prox_ips[@]}; i++)); do
+            ssh root@${prox_ips[0]} "sshpass -p $USERPASS ssh-copy-id root@${prox_ips[$i]}"
+            ssh root@${prox_ips[$i]} rm -f /root/.ssh/id_rsa
+            ssh root@${prox_ips[$i]} 'ssh-keygen -t rsa -b 2048 -f "/root/.ssh/id_rsa" -q -N ""'
+            ssh root@${prox_ips[$i]} "sshpass -p $USERPASS ssh-copy-id root@${prox_ips[0]}"
+            ssh root@${prox_ips[$i]} "pvecm add --force ${prox_ips[0]}"
         done
 
-        clear
+#        clear
         echo "============================================="
         ssh root@${prox_ips[0]} 'pvecm status'
         echo "============================================="
@@ -195,7 +212,7 @@ while [[ -z "$location" ]]; do
             printf "%s\n" '[proxmox]' ${prox_ips[@]} >> ./ansible/inventory.cfg
         fi
         
-        clear
+#        clear
         echo "============================================="
         echo "We are going to start the Ansible now."
         echo "============================================="
