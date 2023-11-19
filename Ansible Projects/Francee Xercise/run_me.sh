@@ -170,9 +170,15 @@ while [[ -z "$location" ]]; do
             scp -r ./packages/debs/openvswitch root@$i:/root
             ssh root@$i 'cd /root/openvswitch; dpkg -i *.deb'
         done
-
-        printf "%s\n" ${prox_ips[@]} >> ./ansible/inventory.cfg
-        sort -u ./ansible/inventory.cfg > tmp.cfg && mv tmp.cfg ./ansible/inventory.cfg
+        
+        inv_check=$(cat ./ansible/inventory.cfg)
+        if [[ "$inv_check" == $'[proxmox]\n' ]]; then
+            printf "%s\n" ${prox_ips[@]} >> ./ansible/inventory.cfg
+        else
+            echo '' > ./ansible/inventory.cfg
+            echo $'[proxmox]\n'
+            printf "%s\n" ${prox_ips[@]} >> ./ansible/inventory.cfg
+        fi
         
         echo "/////////////////////////////////////////////"
         echo "Goodbye :)"
