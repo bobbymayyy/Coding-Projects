@@ -164,28 +164,31 @@ while [[ -z "$location" ]]; do
 
         rm -rf /root/.ssh
 
-        ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""
+        ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N "" #on LAPTOP CONTROL NODE
         
         clear
         echo "============================================="
         for i in ${prox_ips[@]}; do
             sshpass -p $USERPASS ssh -o StrictHostKeyChecking=no root@$i 'rm -rf /root/.ssh'
-            sshpass -p $USERPASS ssh-copy-id -i /root/.ssh/id_rsa root@$i
+            sshpass -p $USERPASS ssh-copy-id -i /root/.ssh/id_rsa root@$i #on PROXMOX NODE(s) for LAPTOP CONTROL NODE
             echo "============================================="
-            ssh root@$i 'echo "Hello :)" 1>/dev/null' && echo "Passwordless config for $i successful"
+            ssh root@$i 'echo "Hello" 1>/dev/null' && echo "Passwordless config for $i successful"
             echo "============================================="
             echo "^ Should say Passwordless config for $i successful ^"
         done
         debugger
 
-        ssh root@${prox_ips[0]} 'ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""'
+        ssh root@${prox_ips[0]} 'ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""' #on PROXMOX MASTER
         for ((i=1; i<${#prox_ips[@]}; i++)); do
-            ssh root@${prox_ips[0]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa root@${prox_ips[$i]}"
-            ssh root@${prox_ips[0]} "ssh root@${prox_ips[$i]} 'ping -c 3 192.168.93.68'"
+            ssh root@${prox_ips[0]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa root@${prox_ips[$i]}" #on PROXMOX WORKERS for PROXMOX MASTER
+            echo "============================================="
+            ssh root@${prox_ips[0]} "ssh root@${prox_ips[$i]} 'echo "Hello" 1>/dev/null'" && echo "Passwordless config for ${prox_ips[$i]} successful"
+            echo "============================================="
+            echo "^ Should say Passwordless config for ${prox_ips[$i]} successful ^"
         done
         debugger
-        
-        USERPASS=''
+
+        #USERPASS=''
 
         for i in ${prox_ips[@]}; do
             ssh root@$i 'mkdir /root/openvswitch'
@@ -204,8 +207,26 @@ while [[ -z "$location" ]]; do
 
         for ((i=1; i<${#prox_ips[@]}; i++)); do
             echo "Trying to add ${prox_ips[$i]} to the cluster..."
-            ssh root@${prox_ips[0]} "pvecm add ${prox_ips[$i]} -force true"
+            ssh root@${prox_ips[0]} "printf '$USERPASS\nyes\n' | pvecm add ${prox_ips[$i]} -force true"
         done
+
+        rm -rf /root/.ssh
+
+        ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N "" #on LAPTOP CONTROL NODE
+        
+        clear
+        echo "============================================="
+        echo "Redo-ing passwordless configuration because pvecm breaks it..."
+        echo "============================================="
+        for i in ${prox_ips[@]}; do
+            sshpass -p $USERPASS ssh -o StrictHostKeyChecking=no root@$i 'rm -rf /root/.ssh'
+            sshpass -p $USERPASS ssh-copy-id -i /root/.ssh/id_rsa root@$i #on PROXMOX NODE(s) for LAPTOP CONTROL NODE
+            echo "============================================="
+            ssh root@$i 'echo "Hello" 1>/dev/null' && echo "Passwordless config for $i successful"
+            echo "============================================="
+            echo "^ Should say Passwordless config for $i successful ^"
+        done
+        debugger
 
 #        clear
         echo "============================================="
