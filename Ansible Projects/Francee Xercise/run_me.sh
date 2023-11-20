@@ -179,13 +179,13 @@ while [[ -z "$location" ]]; do
 
         passwordless
 
-        ssh root@${prox_ips[0]} 'ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""' #on PROXMOX MASTER
         for ((i=1; i<${#prox_ips[@]}; i++)); do
-            ssh root@${prox_ips[0]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa root@${prox_ips[$i]}" #on PROXMOX WORKERS for PROXMOX MASTER
+            ssh root@${prox_ips[$i]} 'ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""'
+            ssh root@${prox_ips[$i]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa root@${prox_ips[0]}"
             echo "============================================="
-            ssh root@${prox_ips[0]} "ssh root@${prox_ips[$i]} 'echo "Hello" 1>/dev/null'" && echo "Passwordless config for ${prox_ips[$i]} successful"
+            ssh root@${prox_ips[$i]} "ssh root@${prox_ips[0]} 'echo "Hello" 1>/dev/null'" && echo "Passwordless config for ${prox_ips[$i]} to PROXMOX MASTER successful"
             echo "============================================="
-            echo "^ Should say Passwordless config for ${prox_ips[$i]} successful ^"
+            echo "^ Should say Passwordless config for ${prox_ips[$i]} to PROXMOX MASTER successful ^"
         done
 
         for i in ${prox_ips[@]}; do
@@ -203,13 +203,15 @@ while [[ -z "$location" ]]; do
         echo "============================================="
         ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER'
 
-        for ((i=1; i<${#prox_ips[@]}; i++)); do
+        for ((i=1; i<"${#prox_ips[@]}"; i++)); do
             clear
             echo "============================================="
             echo "Trying to add ${prox_ips[$i]} to the cluster..."
             echo "============================================="
-            ssh root@${prox_ips[0]} "printf '$USERPASS\nyes\n' | pvecm add ${prox_ips[$i]} -force true"
-            passwordless
+#still saying that they are there? is it possible ive got it backwards?
+            ssh root@${prox_ips[$i]} "printf '$USERPASS\nyes\n' | pvecm add ${prox_ips[0]} -force true" #backwards issue FIXED
+            debugger
+            #passwordless - seems to introduce some arithmetic error.. looks like somehow the ip is called for loop instead of number for ip array
         done
 
 #        clear
