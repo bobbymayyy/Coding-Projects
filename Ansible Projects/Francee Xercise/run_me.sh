@@ -5,7 +5,22 @@ debugger() {
     echo "Press any key to continue..."
     read -rsn1
 }
-
+passwordless() {
+    clear
+    echo "============================================="
+    echo "Configuring LAPTOP CONTROL NODE to PROXMOX NODE(s) passwordless authentication..."
+    echo "============================================="
+    rm -rf /root/.ssh
+    ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N "" #on LAPTOP CONTROL NODE
+    for i in ${prox_ips[@]}; do
+        sshpass -p $USERPASS ssh -o StrictHostKeyChecking=no root@$i 'rm -rf /root/.ssh'
+        sshpass -p $USERPASS ssh-copy-id -i /root/.ssh/id_rsa root@$i #on PROXMOX NODE(s) for LAPTOP CONTROL NODE
+        echo "============================================="
+        ssh root@$i 'echo "Hello" 1>/dev/null' && echo "Passwordless config for $i successful"
+        echo "============================================="
+        echo "^ Should say Passwordless config for $i successful ^"
+    done
+}
 
 clear
 echo "============================================="
@@ -162,21 +177,7 @@ while [[ -z "$location" ]]; do
             fi
         fi
 
-        rm -rf /root/.ssh
-
-        ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N "" #on LAPTOP CONTROL NODE
-        
-        clear
-        echo "============================================="
-        for i in ${prox_ips[@]}; do
-            sshpass -p $USERPASS ssh -o StrictHostKeyChecking=no root@$i 'rm -rf /root/.ssh'
-            sshpass -p $USERPASS ssh-copy-id -i /root/.ssh/id_rsa root@$i #on PROXMOX NODE(s) for LAPTOP CONTROL NODE
-            echo "============================================="
-            ssh root@$i 'echo "Hello" 1>/dev/null' && echo "Passwordless config for $i successful"
-            echo "============================================="
-            echo "^ Should say Passwordless config for $i successful ^"
-        done
-        debugger
+        passwordless
 
         ssh root@${prox_ips[0]} 'ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""' #on PROXMOX MASTER
         for ((i=1; i<${#prox_ips[@]}; i++)); do
@@ -186,9 +187,6 @@ while [[ -z "$location" ]]; do
             echo "============================================="
             echo "^ Should say Passwordless config for ${prox_ips[$i]} successful ^"
         done
-        debugger
-
-        #USERPASS=''
 
         for i in ${prox_ips[@]}; do
             ssh root@$i 'mkdir /root/openvswitch'
@@ -202,37 +200,25 @@ while [[ -z "$location" ]]; do
         clear
         echo "============================================="
         echo "Creating Proxmox cluster..."
-        ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER'
         echo "============================================="
+        ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER'
 
         for ((i=1; i<${#prox_ips[@]}; i++)); do
+            clear
+            echo "============================================="
             echo "Trying to add ${prox_ips[$i]} to the cluster..."
+            echo "============================================="
             ssh root@${prox_ips[0]} "printf '$USERPASS\nyes\n' | pvecm add ${prox_ips[$i]} -force true"
+            passwordless
         done
-
-        rm -rf /root/.ssh
-
-        ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N "" #on LAPTOP CONTROL NODE
-        
-        clear
-        echo "============================================="
-        echo "Redo-ing passwordless configuration because pvecm breaks it..."
-        echo "============================================="
-        for i in ${prox_ips[@]}; do
-            sshpass -p $USERPASS ssh -o StrictHostKeyChecking=no root@$i 'rm -rf /root/.ssh'
-            sshpass -p $USERPASS ssh-copy-id -i /root/.ssh/id_rsa root@$i #on PROXMOX NODE(s) for LAPTOP CONTROL NODE
-            echo "============================================="
-            ssh root@$i 'echo "Hello" 1>/dev/null' && echo "Passwordless config for $i successful"
-            echo "============================================="
-            echo "^ Should say Passwordless config for $i successful ^"
-        done
-        debugger
 
 #        clear
         echo "============================================="
         ssh root@${prox_ips[0]} 'pvecm status'
         echo "============================================="
         debugger
+
+        USERPASS=''
 
         inv_check=$(cat ./ansible/inventory.cfg)
         if [[ -z "$inv_check" ]]; then
