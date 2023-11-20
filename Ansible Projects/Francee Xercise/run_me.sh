@@ -162,42 +162,54 @@ while [[ -z "$location" ]]; do
             fi
         fi
 
+        rm -rf /root/.ssh
+
+        ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""
+        
         clear
         echo "============================================="
-        echo "Is this your first time running me? (y/n)"
-        read fuckup
-        if [[ "$fuckup" =~ [nN] ]]; then
-            echo "--------------------"
-            rm -f /root/.ssh/known_hosts*
-        else
-            echo "--------------------"
-            echo "Okay :)"
-        fi
+        for i in ${prox_ips[@]}; do
+            sshpass -p $USERPASS ssh -o StrictHostKeyChecking=no root@$i 'rm -rf /root/.ssh'
+            sshpass -p $USERPASS ssh-copy-id -i /root/.ssh/id_rsa root@$i
+            echo "============================================="
+            ssh root@$i 'echo "Hello :)" 1>/dev/null' && echo "Passwordless config for $i successful"
+            echo "============================================="
+            echo "^ Should say Passwordless config for $i successful ^"
+        done
+        debugger
+
+        ssh root@${prox_ips[0]} 'ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""'
+        for ((i=1; i<${#prox_ips[@]}; i++)); do
+            ssh root@${prox_ips[0]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa root@${prox_ips[$i]}"
+            ssh root@${prox_ips[0]} "ssh root@${prox_ips[$i]} 'ping -c 3 192.168.93.68'"
+        done
+        debugger
+        
+        USERPASS=''
 
         for i in ${prox_ips[@]}; do
-            sshpass -p $USERPASS ssh root@$i 'mkdir /root/openvswitch'
-            sshpass -p $USERPASS ssh root@$i 'mkdir /root/sshpass'
-            sshpass -p $USERPASS scp -r ./packages/debs/openvswitch root@$i:/root
-            sshpass -p $USERPASS scp -r ./packages/debs/sshpass root@$i:/root
-            sshpass -p $USERPASS ssh root@$i 'cd /root/openvswitch; dpkg -i *.deb'
-            sshpass -p $USERPASS ssh root@$i 'cd /root/sshpass; dpkg -i *.deb'
+            ssh root@$i 'mkdir /root/openvswitch'
+            ssh root@$i 'mkdir /root/sshpass'
+            scp -r ./packages/debs/openvswitch root@$i:/root
+            scp -r ./packages/debs/sshpass root@$i:/root
+            ssh root@$i 'cd /root/openvswitch; dpkg -i *.deb'
+            ssh root@$i 'cd /root/sshpass; dpkg -i *.deb'
         done
         
         clear
         echo "============================================="
         echo "Creating Proxmox cluster..."
-        sshpass -p $USERPASS ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER'
-        sshpass -p $USERPASS ssh root@${prox_ips[0]} "sshpass -p $USERPASS pvecm expected 1"
+        ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER'
         echo "============================================="
 
-        for ((i=1; i<=${#prox_ips[@]}; i++)); do
+        for ((i=1; i<${#prox_ips[@]}; i++)); do
             echo "Trying to add ${prox_ips[$i]} to the cluster..."
-            sshpass -p $USERPASS ssh root@${prox_ips[0]} "pvecm add ${prox_ips[$i]} -force true"
+            ssh root@${prox_ips[0]} "pvecm add ${prox_ips[$i]} -force true"
         done
 
 #        clear
         echo "============================================="
-        sshpass -p $USERPASS ssh root@${prox_ips[0]} 'pvecm status'
+        ssh root@${prox_ips[0]} 'pvecm status'
         echo "============================================="
         debugger
 
