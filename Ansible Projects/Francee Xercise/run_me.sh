@@ -284,7 +284,7 @@ while [[ -z "$location" ]]; do
         fi
 
         cd ./ansible
-        ansible-playbook -kK $ansible_check playbooks/01_configure_proxmox.yml
+        printf "$USERPASS\n\n" | ansible-playbook -kK $ansible_check playbooks/01_configure_proxmox.yml
 
         echo "/////////////////////////////////////////////"
         echo "Goodbye :)"
