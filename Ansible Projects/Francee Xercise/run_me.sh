@@ -219,8 +219,8 @@ while [[ -z "$location" ]]; do
             ssh root@$i 'dpkg --force-depends -i ./openvswitch/*.deb' #dpkg -i *.deb
             ssh root@$i 'dpkg --force-depends -i ./sshpass/*.deb'
             ssh root@$i 'dpkg --force-depends -i ./pip/*.deb'
-            ssh root@$i 'pip install --no-index --find-links=packages/debs/pip/proxmoxer/ proxmoxer'
-            ssh root@$i 'pip install --no-index --find-links=packages/debs/pip/proxmoxer/ proxmoxer'
+            ssh root@$i 'pip install --no-index --find-links=pip/proxmoxer/ proxmoxer'
+            ssh root@$i 'pip install --no-index --find-links=pip/requests/ requests'
         done
         
         if [[ "${#prox_ips[@]}" -gt 1 ]]; then
