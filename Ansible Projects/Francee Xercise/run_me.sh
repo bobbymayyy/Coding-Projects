@@ -167,9 +167,11 @@ while [[ -z "$location" ]]; do
             if [[ -n $apt ]]; then
                 echo "I see you are using a Debian based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
-                apt install --no-download ./packages/debs/*/*.deb #dpkg -i ./packages/debs/*/*.deb
-                pip install --no-index --find-links ./packages/debs/pip/proxmoxer/*.whl
-                pip install --no-index --find-links ./packages/debs/pip/requests/*.whl
+                dpkg --force-depends -i ./packages/debs/ansible/*.deb #dpkg -i ./packages/debs/*/*.deb
+                dpkg --force-depends -i ./packages/debs/sshpass/*.deb
+                dpkg --force-depends -i ./packages/debs/pip/*.deb
+                pip install --no-index --find-links=packages/debs/pip/proxmoxer/ proxmoxer
+                pip install --no-index --find-links=packages/debs/pip/requests/ requests
             elif [[ -n $dnf ]]; then
                 echo "I see you are using a Red-Hat based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
@@ -212,9 +214,9 @@ while [[ -z "$location" ]]; do
             scp -r ./packages/debs/openvswitch root@$i:/root
             scp -r ./packages/debs/sshpass root@$i:/root
             scp -r ./packages/debs/pip root@$i:/root
-            ssh root@$i 'cd /root/openvswitch; apt install --no-download *.deb' #dpkg -i *.deb
-            ssh root@$i 'cd /root/sshpass; apt install --no-download *.deb'
-            ssh root@$i 'cd /root/pip; apt install --no-download *.deb'
+            ssh root@$i 'dpkg --force-depends -i ./openvswitch/*.deb' #dpkg -i *.deb
+            ssh root@$i 'dpkg --force-depends -i ./sshpass/*.deb'
+            ssh root@$i 'dpkg --force-depends -i ./pip/*.deb'
             pip install --no-index --find-links ./packages/debs/pip/proxmoxer/*.whl
             pip install --no-index --find-links ./packages/debs/pip/requests/*.whl
         done
@@ -256,10 +258,10 @@ while [[ -z "$location" ]]; do
 
         inv_check=$(cat ./ansible/inventory.cfg)
         if [[ -z "$inv_check" ]]; then
-            printf "%s\n" '[proxmox]' ${prox_ips[@]} '[prox_master]' ${prox_ips[0]} '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
+            printf "%s\n" '[all:vars]' 'ansible_connection=ssh' 'ansible_user=root' 'ansible_password='$USERPASS  '[proxmox]' ${prox_ips[@]}  '[prox_master]' ${prox_ips[0]}  '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
         else
             echo '' > ./ansible/inventory.cfg
-            printf "%s\n" '[proxmox]' ${prox_ips[@]} '[prox_master]' ${prox_ips[0]} '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
+            printf "%s\n" '[all:vars]' 'ansible_connection=ssh' 'ansible_user=root' 'ansible_password='$USERPASS  '[proxmox]' ${prox_ips[@]}  '[prox_master]' ${prox_ips[0]}  '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
         fi
 
         clear
