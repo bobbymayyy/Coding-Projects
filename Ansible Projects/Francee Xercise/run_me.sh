@@ -24,9 +24,9 @@ passwordless_laptoplap2prox() {
 passwordless_laptopproxW2proxM() {
     clear
     echo "============================================="
-    echo "Configuring PROXMOX WORKER ${prox_ips[$i]} to PROXMOX MASTER passwordless authentication..."
+    echo "Configuring PROXMOX WORKER(s) to PROXMOX MASTER passwordless authentication..."
     echo "============================================="
-    for ((i=1; i<${#prox_ips[@]}; i++)); do
+    for ((i=1; i<"${#prox_ips[@]}"; i++)); do
         ssh root@${prox_ips[$i]} 'ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""'
         ssh root@${prox_ips[$i]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa root@${prox_ips[0]}"
         echo "============================================="
@@ -74,7 +74,9 @@ while [[ -z "$location" ]]; do
     echo "--------------------"
     read location
 
+    echo "============================================="
     echo "Please insert the password used for SSH login on Proxmox node(s):"
+    echo "--------------------"
     read -r USERPASS
 
     clear
@@ -84,7 +86,7 @@ while [[ -z "$location" ]]; do
         echo "Laptop Control Node"
         echo "--------------------"
         echo "List out IP address(es) of the Proxmox nodes, pressing enter after each one. (CTRL-D when done.)"
-        echo "--------------------"
+        echo "============================================="
 
         while read line; do
             prox_ips=("${prox_ips[@]}" $line)
@@ -109,6 +111,7 @@ while [[ -z "$location" ]]; do
         echo "Are we airgapped? (y/n)"
         echo "--------------------"
         read airgap
+        echo "============================================="
 
         echo "One second..."
         oct1=$(echo "${prox_ips[0]}" | awk -F. '{print $1}')
@@ -196,8 +199,6 @@ while [[ -z "$location" ]]; do
 
         passwordless_laptoplap2prox
 
-        passwordless_laptopproxW2proxM
-
         #USERPASS=''
 
         for i in ${prox_ips[@]}; do
@@ -210,6 +211,7 @@ while [[ -z "$location" ]]; do
         done
         
         if [[ "${#prox_ips[@]}" -gt 1 ]]; then
+            passwordless_laptopproxW2proxM
             clear
             echo "============================================="
             echo "Creating Proxmox cluster..."
