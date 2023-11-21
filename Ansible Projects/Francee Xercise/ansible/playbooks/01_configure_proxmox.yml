@@ -1,5 +1,5 @@
 ---
-- name: Bash deployment for Proxmox
+- name: General Proxmox configuration
   hosts: prox_master
   vars:
     chosen_pass: "{{ lookup('env', 'USERPASS') }}"

@@ -125,7 +125,7 @@ while [[ -z "$location" ]]; do
 
             for i in {1,2,254}; do
                 route add default gw $oct1.$oct2.$oct3.$i dev $host_int
-                google_test=$(ping -c 1 8.8.8.8 | grep 'bytes from')
+                google_test=$(ping -c 1 8.8.8.8 | grep 'bytes from' &)
                 
                 if [[ -n "$google_test" ]]; then
                     break
@@ -167,7 +167,9 @@ while [[ -z "$location" ]]; do
             if [[ -n $apt ]]; then
                 echo "I see you are using a Debian based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
-                dpkg -i ./packages/debs/*/*.deb
+                apt install --no-download ./packages/debs/*/*.deb #dpkg -i ./packages/debs/*/*.deb
+                pip install --no-index --find-links ./packages/debs/pip/proxmoxer/*.whl
+                pip install --no-index --find-links ./packages/debs/pip/requests/*.whl
             elif [[ -n $dnf ]]; then
                 echo "I see you are using a Red-Hat based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
@@ -184,12 +186,14 @@ while [[ -z "$location" ]]; do
                 apt -y update > /dev/null 2>&1
                 apt -y install ansible > /dev/null 2>&1
                 apt -y install sshpass > /dev/null 2>&1
+                apt -y install pip > /dev/null 2>&1
             elif [[ -n $dnf ]]; then
                 echo "I see you are using a Red-Hat based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
                 dnf -y update > /dev/null 2>&1
                 dnf -y install ansible > /dev/null 2>&1
                 dnf -y install sshpass > /dev/null 2>&1
+                dnf -y install pip > /dev/null 2>&1
             else
                 echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files for Ansible."
                 echo "They are needed to move on with Laptop install, or you can re-run and install on the Proxmox."
@@ -204,10 +208,15 @@ while [[ -z "$location" ]]; do
         for i in ${prox_ips[@]}; do
             ssh root@$i 'mkdir /root/openvswitch'
             ssh root@$i 'mkdir /root/sshpass'
+            ssh root@$i 'mkdir /root/pip'
             scp -r ./packages/debs/openvswitch root@$i:/root
             scp -r ./packages/debs/sshpass root@$i:/root
-            ssh root@$i 'cd /root/openvswitch; dpkg -i *.deb'
-            ssh root@$i 'cd /root/sshpass; dpkg -i *.deb'
+            scp -r ./packages/debs/pip root@$i:/root
+            ssh root@$i 'cd /root/openvswitch; apt install --no-download *.deb' #dpkg -i *.deb
+            ssh root@$i 'cd /root/sshpass; apt install --no-download *.deb'
+            ssh root@$i 'cd /root/pip; apt install --no-download *.deb'
+            pip install --no-index --find-links ./packages/debs/pip/proxmoxer/*.whl
+            pip install --no-index --find-links ./packages/debs/pip/requests/*.whl
         done
         
         if [[ "${#prox_ips[@]}" -gt 1 ]]; then
@@ -217,7 +226,11 @@ while [[ -z "$location" ]]; do
             echo "Creating Proxmox cluster..."
             echo "============================================="
             ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER'
+            echo "============================================="
+            echo "Waiting for cluster to fully initialize..."
+            sleep 60
 
+            clear
             for ((i=1; i<"${#prox_ips[@]}"; i++)); do
                 echo "============================================="
                 echo "Trying to add ${prox_ips[$i]} to the cluster..."
@@ -243,19 +256,20 @@ while [[ -z "$location" ]]; do
 
         inv_check=$(cat ./ansible/inventory.cfg)
         if [[ -z "$inv_check" ]]; then
-            printf "%s\n" '[proxmox]' ${prox_ips[@]} '[prox_master]' ${prox_ips[0]} '[prox_workers]' ${prox_ips[1-]} >> ./ansible/inventory.cfg
+            printf "%s\n" '[proxmox]' ${prox_ips[@]} '[prox_master]' ${prox_ips[0]} '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
         else
             echo '' > ./ansible/inventory.cfg
-            printf "%s\n" '[proxmox]' ${prox_ips[@]} '[prox_master]' ${prox_ips[0]} '[prox_workers]' ${prox_ips[1-]} >> ./ansible/inventory.cfg
+            printf "%s\n" '[proxmox]' ${prox_ips[@]} '[prox_master]' ${prox_ips[0]} '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
         fi
-        
+
         clear
+        echo "============================================="
+        echo "Is this a test? (y/n)"
+        echo "--------------------"
+        read testing
         echo "============================================="
         echo "Waiting 30 seconds to let Proxmox settle itself..."
         echo "============================================="
-        echo "Is this a test?"
-        echo "--------------------"
-        read testing
         sleep 30
 
         clear
@@ -269,6 +283,7 @@ while [[ -z "$location" ]]; do
             ansible_check=''
         fi
 
+        cd ./ansible
         ansible-playbook -kK $ansible_check playbooks/01_configure_proxmox.yml
 
         echo "/////////////////////////////////////////////"
