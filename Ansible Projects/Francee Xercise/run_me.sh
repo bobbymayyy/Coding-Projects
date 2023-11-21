@@ -169,15 +169,11 @@ while [[ -z "$location" ]]; do
                 echo "Installing Ansible and its dependencies needed for this exercise..."
                 dpkg --force-depends -i ./packages/debs/ansible/*.deb #dpkg -i ./packages/debs/*/*.deb
                 dpkg --force-depends -i ./packages/debs/sshpass/*.deb
-                dpkg --force-depends -i ./packages/debs/pip/*.deb
-                pip install --no-index --find-links=packages/debs/pip/proxmoxer/ proxmoxer
-                pip install --no-index --find-links=packages/debs/pip/requests/ requests
+                dpkg --force-depends -i ./packages/debs/proxmoxer/*.deb
             elif [[ -n $dnf ]]; then
                 echo "I see you are using a Red-Hat based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
                 dnf -y install --disablerepo=* ./packages/rpms/*/*.rpm
-                pip install --no-index --find-links=packages/debs/pip/proxmoxer/ proxmoxer
-                pip install --no-index --find-links=packages/debs/pip/requests/ requests
             else
                 echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files for Ansible."
                 echo "They are needed to move on with Laptop install, or you can re-run and install on the Proxmox."
@@ -216,15 +212,13 @@ while [[ -z "$location" ]]; do
         for i in ${prox_ips[@]}; do
             ssh root@$i 'mkdir /root/openvswitch'
             ssh root@$i 'mkdir /root/sshpass'
-            ssh root@$i 'mkdir /root/pip'
+            ssh root@$i 'mkdir /root/proxmoxer'
             scp -r ./packages/debs/openvswitch root@$i:/root
             scp -r ./packages/debs/sshpass root@$i:/root
-            scp -r ./packages/debs/pip root@$i:/root
+            scp -r ./packages/debs/proxmoxer root@$i:/root
             ssh root@$i 'dpkg --force-depends -i ./openvswitch/*.deb' #dpkg -i *.deb
             ssh root@$i 'dpkg --force-depends -i ./sshpass/*.deb'
-            ssh root@$i 'dpkg --force-depends -i ./pip/*.deb'
-            ssh root@$i 'pip install --no-index --find-links=pip/proxmoxer/ proxmoxer'
-            ssh root@$i 'pip install --no-index --find-links=pip/requests/ requests'
+            ssh root@$i 'dpkg --force-depends -i ./proxmoxer/*.deb'
         done
         
         if [[ "${#prox_ips[@]}" -gt 1 ]]; then
