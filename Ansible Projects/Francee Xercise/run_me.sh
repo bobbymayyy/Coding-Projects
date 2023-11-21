@@ -235,7 +235,6 @@ while [[ -z "$location" ]]; do
                 echo "============================================="
                 ssh root@${prox_ips[$i]} "printf '$USERPASS\nyes\n' | pvecm add ${prox_ips[0]} -force true" #backwards issue FIXED
             done
-            debugger
 
             clear
             echo "============================================="
@@ -254,10 +253,10 @@ while [[ -z "$location" ]]; do
 
         inv_check=$(cat ./ansible/inventory.cfg)
         if [[ -z "$inv_check" ]]; then
-            printf "%s\n" '[all:vars]' 'ansible_connection=ssh' 'ansible_user=root' 'ansible_password='$USERPASS  '[proxmox]' ${prox_ips[@]}  '[prox_master]' ${prox_ips[0]}  '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
+            printf "%s\n" '[all:vars]' 'ansible_user=root' 'ansible_password='$USERPASS  '[proxmox]' ${prox_ips[@]}  '[prox_master]' ${prox_ips[0]}  '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
         else
             echo '' > ./ansible/inventory.cfg
-            printf "%s\n" '[all:vars]' 'ansible_connection=ssh' 'ansible_user=root' 'ansible_password='$USERPASS  '[proxmox]' ${prox_ips[@]}  '[prox_master]' ${prox_ips[0]}  '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
+            printf "%s\n" '[all:vars]' 'ansible_user=root' 'ansible_password='$USERPASS  '[proxmox]' ${prox_ips[@]}  '[prox_master]' ${prox_ips[0]}  '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
         fi
 
         clear
@@ -282,7 +281,7 @@ while [[ -z "$location" ]]; do
         fi
 
         cd ./ansible
-        printf "$USERPASS\n\n" | ansible-playbook -kK $ansible_check playbooks/01_configure_proxmox.yml
+        ansible-playbook $ansible_check playbooks/01_configure_proxmox.yml
 
         echo "/////////////////////////////////////////////"
         echo "Goodbye :)"
