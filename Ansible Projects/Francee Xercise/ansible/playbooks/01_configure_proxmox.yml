@@ -1,0 +1,29 @@
+---
+- name: Bash deployment for Proxmox
+  hosts: prox_master
+  vars:
+    chosen_pass: "{{ lookup('env', 'USERPASS') }}"
+  tasks:
+    - name: Create a new container
+      community.general.proxmox:
+        api_host: "{{ ansible_host }}"
+        api_user: root@pam
+        api_password: "{{ chosen_pass }}"
+        node: pve
+        password: "{{ chosen_pass }}"
+        hostname: ansible.nerd.cpb.mil
+        ostemplate: local:vztmpl/fedora-38-default_20230607_amd64.tar.xz
+        storage: ansible
+        cores: 1
+        cpus: 1
+        memory: 512
+        swap: 512
+        netif: '{"net0":"name=eth0,bridge=vmbr0,gw=172.16.30.1,ip=dhcp,firewall=1"}'
+        features:
+          - nesting=1
+        unprivileged: true
+        description: CREATED WITH ANSIBLE
+      changed_when: true
+      register: newcontainer
+    - name: Print information returned about the new container
+      ansible.builtin.debug: msg="{{ newcontainer.msg | regex_search('VM \d*') | regex_search('\d*') }}"

@@ -5,7 +5,7 @@ debugger() {
     echo "Press any key to continue..."
     read -rsn1
 }
-passwordless() {
+passwordless_laptoplap2prox() {
     clear
     echo "============================================="
     echo "Configuring LAPTOP CONTROL NODE to PROXMOX NODE(s) passwordless authentication..."
@@ -19,6 +19,20 @@ passwordless() {
         ssh root@$i 'echo "Hello" 1>/dev/null' && echo "Passwordless config for $i successful"
         echo "============================================="
         echo "^ Should say Passwordless config for $i successful ^"
+    done
+}
+passwordless_laptopproxW2proxM() {
+    clear
+    echo "============================================="
+    echo "Configuring PROXMOX WORKER ${prox_ips[$i]} to PROXMOX MASTER passwordless authentication..."
+    echo "============================================="
+    for ((i=1; i<${#prox_ips[@]}; i++)); do
+        ssh root@${prox_ips[$i]} 'ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""'
+        ssh root@${prox_ips[$i]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa root@${prox_ips[0]}"
+        echo "============================================="
+        ssh root@${prox_ips[$i]} "ssh root@${prox_ips[0]} 'echo "Hello" 1>/dev/null'" && echo "Passwordless config for ${prox_ips[$i]} to PROXMOX MASTER successful"
+        echo "============================================="
+        echo "^ Should say Passwordless config for ${prox_ips[$i]} to PROXMOX MASTER successful ^"
     done
 }
 
@@ -57,6 +71,7 @@ while [[ -z "$location" ]]; do
     echo "POC for this infrastructure is SPC May for any other questions."
     echo "============================================="
     echo "Am I running from your laptop or a Proxmox Node? (l/p)"
+    echo "--------------------"
     read location
 
     echo "Please insert the password used for SSH login on Proxmox node(s):"
@@ -87,10 +102,12 @@ while [[ -z "$location" ]]; do
         echo "============================================="
         echo "Which of these currently UP interfaces is connected to the same subnet as Proxmox?"
         echo "The name after the number please..."
+        echo "--------------------"
         read host_int
 
         echo "============================================="
         echo "Are we airgapped? (y/n)"
+        echo "--------------------"
         read airgap
 
         echo "One second..."
@@ -177,16 +194,11 @@ while [[ -z "$location" ]]; do
             fi
         fi
 
-        passwordless
+        passwordless_laptoplap2prox
 
-        for ((i=1; i<${#prox_ips[@]}; i++)); do
-            ssh root@${prox_ips[$i]} 'ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""'
-            ssh root@${prox_ips[$i]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa root@${prox_ips[0]}"
-            echo "============================================="
-            ssh root@${prox_ips[$i]} "ssh root@${prox_ips[0]} 'echo "Hello" 1>/dev/null'" && echo "Passwordless config for ${prox_ips[$i]} to PROXMOX MASTER successful"
-            echo "============================================="
-            echo "^ Should say Passwordless config for ${prox_ips[$i]} to PROXMOX MASTER successful ^"
-        done
+        passwordless_laptopproxW2proxM
+
+        #USERPASS=''
 
         for i in ${prox_ips[@]}; do
             ssh root@$i 'mkdir /root/openvswitch'
@@ -197,44 +209,64 @@ while [[ -z "$location" ]]; do
             ssh root@$i 'cd /root/sshpass; dpkg -i *.deb'
         done
         
-        clear
-        echo "============================================="
-        echo "Creating Proxmox cluster..."
-        echo "============================================="
-        ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER'
-
-        for ((i=1; i<"${#prox_ips[@]}"; i++)); do
+        if [[ "${#prox_ips[@]}" -gt 1 ]]; then
             clear
             echo "============================================="
-            echo "Trying to add ${prox_ips[$i]} to the cluster..."
+            echo "Creating Proxmox cluster..."
             echo "============================================="
-#still saying that they are there? is it possible ive got it backwards?
-            ssh root@${prox_ips[$i]} "printf '$USERPASS\nyes\n' | pvecm add ${prox_ips[0]} -force true" #backwards issue FIXED
+            ssh root@${prox_ips[0]} 'pvecm create PROXCLUSTER'
+
+            for ((i=1; i<"${#prox_ips[@]}"; i++)); do
+                echo "============================================="
+                echo "Trying to add ${prox_ips[$i]} to the cluster..."
+                echo "============================================="
+                ssh root@${prox_ips[$i]} "printf '$USERPASS\nyes\n' | pvecm add ${prox_ips[0]} -force true" #backwards issue FIXED
+            done
             debugger
-            #passwordless - seems to introduce some arithmetic error.. looks like somehow the ip is called for loop instead of number for ip array
-        done
 
-#        clear
-        echo "============================================="
-        ssh root@${prox_ips[0]} 'pvecm status'
-        echo "============================================="
-        debugger
+            clear
+            echo "============================================="
+            echo "You have created a Proxmox cluster..."
+            ssh root@${prox_ips[0]} 'pvecm status'
+            echo "============================================="
+            debugger
+        else
+            clear
+            echo "============================================="
+            echo "No Proxmox cluster needed, you only have one node."
+            echo "============================================="
 
-        USERPASS=''
+        #USERPASS=''
 
         inv_check=$(cat ./ansible/inventory.cfg)
         if [[ -z "$inv_check" ]]; then
-            printf "%s\n" '[proxmox]' ${prox_ips[@]} >> ./ansible/inventory.cfg
+            printf "%s\n" '[proxmox]' ${prox_ips[@]} '[prox_master]' ${prox_ips[0]} '[prox_workers]' ${prox_ips[1-]} >> ./ansible/inventory.cfg
         else
             echo '' > ./ansible/inventory.cfg
-            printf "%s\n" '[proxmox]' ${prox_ips[@]} >> ./ansible/inventory.cfg
+            printf "%s\n" '[proxmox]' ${prox_ips[@]} '[prox_master]' ${prox_ips[0]} '[prox_workers]' ${prox_ips[1-]} >> ./ansible/inventory.cfg
         fi
         
-#        clear
+        clear
+        echo "============================================="
+        echo "Waiting 30 seconds to let Proxmox settle itself..."
+        echo "============================================="
+        echo "Is this a test?"
+        echo "--------------------"
+        read testing
+        sleep 30
+
+        clear
         echo "============================================="
         echo "We are going to start the Ansible now."
         echo "============================================="
 
+        if [[ "$testing" =~ [yY] ]]; then
+            ansible_check='--check'
+        else
+            ansible_check=''
+        fi
+
+        ansible-playbook -kK $ansible_check playbooks/01_configure_proxmox.yml
 
         echo "/////////////////////////////////////////////"
         echo "Goodbye :)"
