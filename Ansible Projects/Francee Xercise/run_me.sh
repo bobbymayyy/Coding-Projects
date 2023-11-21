@@ -235,6 +235,7 @@ while [[ -z "$location" ]]; do
             echo "============================================="
             echo "No Proxmox cluster needed, you only have one node."
             echo "============================================="
+        fi
 
         #USERPASS=''
 
@@ -271,7 +272,7 @@ while [[ -z "$location" ]]; do
         echo "/////////////////////////////////////////////"
         echo "Goodbye :)"
 
-    elif [[ $location =~ [pP] ]]; then
+    elif [[ "$location" =~ [pP] ]]; then
         echo "Proxmox Control Node"
     else
         echo "Please specify using l or p, respectively."
