@@ -170,14 +170,14 @@ while [[ -z "$location" ]]; do
                 dpkg --force-depends -i ./packages/debs/ansible/*.deb #dpkg -i ./packages/debs/*/*.deb
                 dpkg --force-depends -i ./packages/debs/sshpass/*.deb
                 dpkg --force-depends -i ./packages/debs/pip/*.deb
-                pip install --no-index --find-links=packages/debs/pip/proxmoxer/ proxmoxer
-                pip install --no-index --find-links=packages/debs/pip/requests/ requests
+                pip install proxmoxer
+                pip install requests
             elif [[ -n $dnf ]]; then
                 echo "I see you are using a Red-Hat based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
                 dnf -y install --disablerepo=* ./packages/rpms/*/*.rpm
-                pip install --no-index --find-links=packages/debs/pip/proxmoxer/ proxmoxer
-                pip install --no-index --find-links=packages/debs/pip/requests/ requests
+                pip install proxmoxer
+                pip install requests
             else
                 echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files for Ansible."
                 echo "They are needed to move on with Laptop install, or you can re-run and install on the Proxmox."
