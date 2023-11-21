@@ -186,18 +186,14 @@ while [[ -z "$location" ]]; do
                 apt -y update > /dev/null 2>&1
                 apt -y install ansible > /dev/null 2>&1
                 apt -y install sshpass > /dev/null 2>&1
-                apt -y install pip > /dev/null 2>&1
-                pip install proxmoxer
-                pip install requests
+                apt -y install python3-proxmoxer > /dev/null 2>&1
             elif [[ -n $dnf ]]; then
                 echo "I see you are using a Red-Hat based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
                 dnf -y update > /dev/null 2>&1
                 dnf -y install ansible > /dev/null 2>&1
                 dnf -y install sshpass > /dev/null 2>&1
-                dnf -y install pip > /dev/null 2>&1
-                pip install proxmoxer
-                pip install requests
+                dnf -y install python3-proxmoxer > /dev/null 2>&1
             else
                 echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files for Ansible."
                 echo "They are needed to move on with Laptop install, or you can re-run and install on the Proxmox."
