@@ -75,7 +75,7 @@ while [[ -z "$location" ]]; do
     read location
 
     echo "============================================="
-    echo "Please insert the password used for SSH login on Proxmox node(s):"
+    echo "Please insert the password used for root login on Proxmox node(s):"
     echo "--------------------"
     read -r USERPASS
 
@@ -282,6 +282,20 @@ while [[ -z "$location" ]]; do
 
         cd ./ansible
         ansible-playbook $ansible_check playbooks/01_configure_proxmox.yml
+
+        ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
+
+        ansible-playbook $ansible_check playbooks/12_deploy_c2.yml
+
+        ansible-playbook $ansible_check playbooks/13_deploy_securityonion.yml
+
+: '
+        ansible-playbook $ansible_check playbooks/91_destroy_securityonion.yml
+
+        ansible-playbook $ansible_check playbooks/92_destroy_c2.yml
+
+        ansible-playbook $ansible_check playbooks/93_destroy_opnsense.yml
+'
 
         echo "/////////////////////////////////////////////"
         echo "Goodbye :)"
