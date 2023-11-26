@@ -284,9 +284,9 @@ while [[ -z "$location" ]]; do
         ansible-playbook $ansible_check playbooks/01_configure_proxmox.yml
 
         ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
-: '
-        ansible-playbook $ansible_check playbooks/12_deploy_c2.yml
 
+        ansible-playbook $ansible_check playbooks/12_deploy_c2.yml
+: '
         if [[ "$cluster_platform" =~ [pP] ]]; then
             ansible-playbook $ansible_check playbooks/13_deploy_securityonion.yml
         elif [[ "$cluster_platform" =~ [aA] ]]; then
