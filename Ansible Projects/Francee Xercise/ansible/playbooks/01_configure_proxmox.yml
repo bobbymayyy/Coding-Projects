@@ -1,27 +1,33 @@
 ---
-- name: General Proxmox configuration
-  hosts: prox_master
+- name: General Proxmox cluster configuration
+  hosts: proxmox
   tasks:
-    - name: Create a new container
-      community.general.proxmox:
-        api_host: "{{ ansible_host }}"
-        api_user: root@pam
-        api_password: "{{ ansible_password }}"
-        node: pve
-        password: "{{ ansible_password }}"
-        hostname: ansible.nerd.cpb.mil
-        ostemplate: local:vztmpl/fedora-38-default_20230607_amd64.tar.xz
-        storage: ansible
-        cores: 1
-        cpus: 1
-        memory: 512
-        swap: 512
-        netif: '{"net0":"name=eth0,bridge=vmbr0,gw=172.16.30.1,ip=dhcp,firewall=1"}'
-        features:
-          - nesting=1
-        unprivileged: true
-        description: CREATED WITH ANSIBLE
-      changed_when: true
-      register: newcontainer
-    - name: Print information returned about the new container
-      ansible.builtin.debug: msg="{{ newcontainer.msg | regex_search('VM \d*') | regex_search('\d*') }}"
+    - name: Copy over opnSense ISO
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../isos/OPNsense-23.7-dvd-amd64.iso"
+        dest: /var/lib/vz/template/iso/
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Copy over Security Onion ISO
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../isos/securityonion-2.4.30-20231113.iso"
+        dest: /var/lib/vz/template/iso/
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Copy over Turnkey Containers for C2
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../containers/"
+        dest: /var/lib/vz/template/cache/
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Copy over Templates for opnSense and Security Onion in the form of backups
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../templates/"
+        dest: /var/lib/vz/dump/
+        owner: root
+        group: root
+        mode: '0644'
+    

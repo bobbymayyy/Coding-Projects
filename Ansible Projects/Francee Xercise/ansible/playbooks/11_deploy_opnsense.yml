@@ -1,0 +1,235 @@
+---
+- name: General Proxmox cluster configuration
+  hosts: prox_master
+  tasks:
+    - name: Get hostname for later use
+      ansible.builtin.command: hostname
+      register: proxHostname
+    - name: Restore opnSense VM from backup template
+      ansible.builtin.command: qmrestore /var/lib/vz/dump/vzdump-qemu-100-2023_11_25-02_21_26.vma.zst 100
+      register: opnTemprestore
+      ignore_errors: True
+    - name: Print opnTemprestore
+      ansible.builtin.debug: msg="{{ opnTemprestore.stdout_lines }}"
+    - name: Pause for 30 seconds to wait for restore
+      ansible.builtin.pause:
+        seconds: 30
+    - name: Start opnSense VM
+      community.general.proxmox_kvm:
+        api_host: "{{ ansible_host }}"
+        api_user: root@pam
+        api_password: "{{ ansible_password }}"
+        name: opnSense
+        node: "{{ proxHostname.stdout }}"
+        state: started
+      changed_when: true
+    - name: Pause for 90 seconds to wait for boot
+      ansible.builtin.pause:
+        seconds: 90
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key i
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key n
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key s
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key t
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key a
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key l
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key l
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key e
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key r
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key o
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key p
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key n
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key s
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key e
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key n
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key s
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key e
+    - name: Login to install
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Choose keymap - default US
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Choose storage - default UFS
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Choose where to install - hard disk made by backup template
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key down
+    - name: Choose where to install - hard disk made by backup template
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Setup swap partition - default 8 GB
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Confirm disk destruction
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key tab
+    - name: Confirm disk destruction
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Pause for 150 seconds to install
+      ansible.builtin.pause:
+        seconds: 150
+    - name: Exit install and reboot
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key down
+    - name: Exit install and reboot
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Pause for 90 seconds to install
+      ansible.builtin.pause:
+        seconds: 90
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key r
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key o
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key o
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key t
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key o
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key p
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key n
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key s
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key e
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key n
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key s
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key e
+    - name: Login to configure
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Enter IP address assignment
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 2
+    - name: Enter IP address assignment
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Configure opnSense LAN address with DHCP - choosing no
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key n
+    - name: Configure opnSense LAN address with DHCP - choosing no
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 1
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 0
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key dot
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 1
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 0
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key dot
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 1
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 0
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key dot
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 2
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 5
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 4
+    - name: Enter IP address of opnSense
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Enter CIDR of LAN opnSense is on
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 2
+    - name: Enter CIDR of LAN opnSense is on
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 4
+    - name: Enter CIDR of LAN opnSense is on
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Enter upstream gateway for WAN - choosing none
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret #this may need to be changed depending on what upstream gateway is
+    - name: Configure opnSense IPv6 address via DHCP6 - choosing no
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key n
+    - name: Configure opnSense IPv6 address via DHCP6 - choosing no
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Enter IPv6 address of opnSense - choosing none
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Enable DHCP server on LAN
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key y
+    - name: Enable DHCP server on LAN
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 1
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 0
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key dot
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 1
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 0
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key dot
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 1
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 0
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key dot
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 2
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 0
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 0
+    - name: Enter DHCP pool start address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 1
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 0
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key dot
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 1
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 0
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key dot
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 1
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 0
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key dot
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 2
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 5
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key 0
+    - name: Enter DHCP pool end address
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Revert from HTTPS to HTTP for webgui - choosing no
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key n
+    - name: Revert from HTTPS to HTTP for webgui - choosing no
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Generate a new self-signed certificate - choosing yes
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key y
+    - name: Generate a new self-signed certificate - choosing yes
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    - name: Restore webgui access defaults - choosing yes
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key y
+    - name: Restore webgui access defaults - choosing yes
+      ansible.builtin.command: pvesh set /nodes/"{{ proxHostname.stdout }}"/qemu/100/sendkey --key ret
+    
