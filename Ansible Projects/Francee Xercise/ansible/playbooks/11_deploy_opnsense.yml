@@ -1,5 +1,5 @@
 ---
-- name: General Proxmox cluster configuration
+- name: Deployment of opnSense router by template backup
   hosts: prox_master
   tasks:
     - name: Get hostname for later use
