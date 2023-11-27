@@ -11,7 +11,7 @@
         mode: '0644'
     - name: Copy over Security Onion ISO
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../../isos/securityonion-2.4.30-20231113.iso"
+        src: "{{ playbook_dir }}/../../isos/securityonion-2.4.30-20231121.iso"
         dest: /var/lib/vz/template/iso/
         owner: root
         group: root
