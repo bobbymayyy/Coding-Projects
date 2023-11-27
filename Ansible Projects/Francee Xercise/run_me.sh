@@ -73,6 +73,10 @@ while [[ -z "$location" ]]; do
     echo "Am I running from your laptop or a Proxmox Node? (l/p)"
     echo "--------------------"
     read location
+    echo "============================================="
+    echo "What platform/plan are we deploying? (p/a/c)"
+    echo "--------------------"
+    read cluster_platform
 
     echo "============================================="
     echo "Please insert the password used for root login on Proxmox node(s):"
@@ -286,15 +290,19 @@ while [[ -z "$location" ]]; do
         ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
 
         ansible-playbook $ansible_check playbooks/12_deploy_c2.yml
-: '
+
         if [[ "$cluster_platform" =~ [pP] ]]; then
             ansible-playbook $ansible_check playbooks/13_deploy_securityonion.yml
         elif [[ "$cluster_platform" =~ [aA] ]]; then
-            ansible-playbook $ansible_check playbooks/23_deploy_securityonion.yml
+            ansible-playbook $ansible_check playbooks/132_deploy_securityonion.yml
+        elif [[ "$cluster_platform" =~ [cC] ]]; then
+            ansible-playbook $ansible_check playbooks/133_deploy_securityonion.yml
         else
-            ansible-playbook $ansible_check playbooks/33_deploy_securityonion.yml
+            echo "============================================="
+            echo "I have not deployed Security Onion as I do not know what kind of cluster platform we are working with."
+            echo "============================================="
         fi
-'
+
 : '
         ansible-playbook $ansible_check playbooks/91_destroy_securityonion.yml
 
