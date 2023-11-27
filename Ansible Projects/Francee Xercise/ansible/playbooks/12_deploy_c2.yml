@@ -19,7 +19,7 @@
         cpus: 1
         memory: 4096
         swap: 1024
-        netif: '{"net0":"name=eth0,bridge=vmbr0,gw=10.10.10.254,ip=10.10.10.101"}'
+        netif: '{"net0":"name=eth0,bridge=vmbr0,gw=10.10.10.254,ip=10.10.10.101/24"}'
         features:
           - nesting=1
         unprivileged: true
@@ -40,7 +40,7 @@
         cpus: 1
         memory: 4096
         swap: 1024
-        netif: '{"net0":"name=eth0,bridge=vmbr0,gw=10.10.10.254,ip=10.10.10.102"}'
+        netif: '{"net0":"name=eth0,bridge=vmbr0,gw=10.10.10.254,ip=10.10.10.102/24"}'
         features:
           - nesting=1
         unprivileged: true
@@ -61,7 +61,7 @@
         cpus: 1
         memory: 4096
         swap: 1024
-        netif: '{"net0":"name=eth0,bridge=vmbr0,gw=10.10.10.254,ip=10.10.10.103"}'
+        netif: '{"net0":"name=eth0,bridge=vmbr0,gw=10.10.10.254,ip=10.10.10.103/24"}'
         features:
           - nesting=1
         unprivileged: true
