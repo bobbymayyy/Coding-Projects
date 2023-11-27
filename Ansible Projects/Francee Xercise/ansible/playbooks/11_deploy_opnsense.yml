@@ -18,7 +18,7 @@
       ansible.builtin.command: hostname
       register: proxHostname
     - name: Restore opnSense VM from backup template
-      ansible.builtin.command: qmrestore /var/lib/vz/dump/vzdump-qemu-100-2023_11_26-14_17_42.vma.zst 100
+      ansible.builtin.command: qmrestore --unique true /var/lib/vz/dump/vzdump-qemu-100-2023_11_27-12_28_33.vma.zst 100
       register: opnTemprestore
       ignore_errors: True
     - name: Print opnTemprestore

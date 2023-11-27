@@ -6,19 +6,19 @@
       ansible.builtin.command: hostname
       register: proxHostname
     - name: Restore SecO VM from backup template for Manager
-      ansible.builtin.command: qmrestore /var/lib/vz/dump/vzdump-qemu-100-2023_11_27-05_56_29.vma.zst 110
+      ansible.builtin.command: qmrestore --unique true /var/lib/vz/dump/vzdump-qemu-100-2023_11_27-12_16_57.vma.zst 110
       register: secOmanagerTemprestore
       ignore_errors: True
     - name: Print secOmanagerTemprestore
       ansible.builtin.debug: msg="{{ secOmanagerTemprestore.stdout_lines }}"
     - name: Restore SecO VM from backup template for Search
-      ansible.builtin.command: qmrestore /var/lib/vz/dump/vzdump-qemu-100-2023_11_27-06_00_34.vma.zst 111
+      ansible.builtin.command: qmrestore --unique true /var/lib/vz/dump/vzdump-qemu-100-2023_11_27-12_20_23.vma.zst 111
       register: secOsearchTemprestore
       ignore_errors: True
     - name: Print secOsearchTemprestore
       ansible.builtin.debug: msg="{{ secOsearchTemprestore.stdout_lines }}"
     - name: Restore SecO VM from backup template for Forward
-      ansible.builtin.command: qmrestore /var/lib/vz/dump/vzdump-qemu-100-2023_11_27-06_11_33.vma.zst 112
+      ansible.builtin.command: qmrestore --unique true /var/lib/vz/dump/vzdump-qemu-100-2023_11_27-12_23_12.vma.zst 112
       register: secOforwardTemprestore
       ignore_errors: True
     - name: Print secOforwardTemprestore

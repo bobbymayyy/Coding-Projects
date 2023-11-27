@@ -172,8 +172,7 @@ while [[ -z "$location" ]]; do
                 echo "I see you are using a Debian based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
                 dpkg --force-depends -i ./packages/debs/ansible/*.deb #dpkg -i ./packages/debs/*/*.deb
-                dpkg --force-depends -i ./packages/debs/sshpass/*.deb
-                dpkg --force-depends -i ./packages/debs/proxmoxer/*.deb
+                dpkg --force-depends -i ./packages/debs/openvswitch-proxmoxer-sshpass/*.deb
             elif [[ -n $dnf ]]; then
                 echo "I see you are using a Red-Hat based distribution of Linux..."
                 echo "Installing Ansible and its dependencies needed for this exercise..."
@@ -210,15 +209,12 @@ while [[ -z "$location" ]]; do
         #USERPASS=''
 
         for i in ${prox_ips[@]}; do
-            ssh root@$i 'mkdir /root/openvswitch'
-            ssh root@$i 'mkdir /root/sshpass'
-            ssh root@$i 'mkdir /root/proxmoxer'
-            scp -r ./packages/debs/openvswitch root@$i:/root
-            scp -r ./packages/debs/sshpass root@$i:/root
-            scp -r ./packages/debs/proxmoxer root@$i:/root
-            ssh root@$i 'dpkg --force-depends -i ./openvswitch/*.deb' #dpkg -i *.deb
-            ssh root@$i 'dpkg --force-depends -i ./sshpass/*.deb'
-            ssh root@$i 'dpkg --force-depends -i ./proxmoxer/*.deb'
+            ssh root@$i 'mkdir /root/ansible'
+            ssh root@$i 'mkdir /root/openvswitch-proxmoxer-sshpass'
+            scp -r ./packages/debs/ansible root@$i:/root
+            scp -r ./packages/debs/openvswitch-proxmoxer-sshpass root@$i:/root
+            ssh root@$i 'dpkg --force-depends -i ./ansible/*.deb'
+            ssh root@$i 'dpkg --force-depends -i ./openvswitch-proxmoxer-sshpass/*.deb' #dpkg -i *.deb
         done
         
         if [[ "${#prox_ips[@]}" -gt 1 ]]; then
