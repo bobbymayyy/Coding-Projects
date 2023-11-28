@@ -74,7 +74,7 @@ while [[ -z "$location" ]]; do
     echo "--------------------"
     read location
     echo "============================================="
-    echo "What platform/plan are we deploying? (p/a/c)"
+    echo "What platform/plan are we deploying? (p/a/c or n)"
     echo "--------------------"
     read cluster_platform
 
