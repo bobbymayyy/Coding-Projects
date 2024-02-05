@@ -79,7 +79,11 @@ infra_menu() {
   #Handle menu progression
   case $return_value in
     $DIALOG_OK)
-      echo "Result: `cat $tmp_file`";;
+      PROX_PASS=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
+          --title "Proxmox Password" \
+          --insecure  "$@" \
+          --passwordbox "Please enter the password you gave Proxmox:" 9 62 2>&1 > /dev/tty`
+      ;;
     $DIALOG_CANCEL)
       echo "Cancel pressed.";;
     $DIALOG_HELP)
