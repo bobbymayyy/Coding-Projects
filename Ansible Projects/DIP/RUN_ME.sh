@@ -79,6 +79,7 @@ infra_menu() {
   #Handle menu progression
   case $return_value in
     $DIALOG_OK)
+      PROX_SUCCESS=FALSE
       while [ $PROX_SUCCESS == FALSE ]; do
         PROX_PASS1=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
             --title "Proxmox Password" \
@@ -90,6 +91,7 @@ infra_menu() {
             --passwordbox "Please confirm the password:" 9 62 2>&1 > /dev/tty`
         if [ $PROX_PASS1 == $PROX_PASS2 ]; then
           PROX_SUCCESS=TRUE
+          debugger
         else
           PROX_SUCCESS=FALSE
           echo "PASSWORD DOES NOT MATCH! Press enter to continue..."
