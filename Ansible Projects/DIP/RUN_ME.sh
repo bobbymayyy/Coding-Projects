@@ -79,10 +79,25 @@ infra_menu() {
   #Handle menu progression
   case $return_value in
     $DIALOG_OK)
-      PROX_PASS=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
-          --title "Proxmox Password" \
-          --insecure  "$@" \
-          --passwordbox "Please enter the password you gave Proxmox:" 9 62 2>&1 > /dev/tty`
+      while [ $PROX_SUCCESS == FALSE ]; do
+        PROX_PASS1=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
+            --title "Proxmox Password" \
+            --insecure  "$@" \
+            --passwordbox "Please enter the password you gave root on Proxmox:" 9 62 2>&1 > /dev/tty`
+        PROX_PASS2=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
+            --title "Proxmox Password" \
+            --insecure  "$@" \
+            --passwordbox "Please confirm the password:" 9 62 2>&1 > /dev/tty`
+        if [ $PROX_PASS1 == $PROX_PASS2 ]; then
+          PROX_SUCCESS=TRUE
+        else
+          PROX_SUCCESS=FALSE
+          echo "PASSWORD DOES NOT MATCH! Press enter to continue..."
+          unset $PROX_PASS1
+          unset $PROX_PASS2
+          read
+        fi
+      done
       ;;
     $DIALOG_CANCEL)
       echo "Cancel pressed.";;
@@ -175,5 +190,7 @@ done
 
 
 
-
+unset $VAULT_PASS
+unset $PROX_PASS1
+unset $PROX_PASS2
 echo "Goodbye :)"
