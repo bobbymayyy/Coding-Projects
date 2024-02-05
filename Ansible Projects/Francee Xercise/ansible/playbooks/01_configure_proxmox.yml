@@ -9,6 +9,7 @@
         owner: root
         group: root
         mode: '0644'
+        force: false
     - name: Copy over Security Onion ISO
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../../isos/securityonion-2.4.30-20231121.iso"
@@ -16,6 +17,7 @@
         owner: root
         group: root
         mode: '0644'
+        force: false
     - name: Copy over Turnkey Containers for C2
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../../containers/"
@@ -23,6 +25,7 @@
         owner: root
         group: root
         mode: '0644'
+        force: false
     - name: Copy over Templates for opnSense and Security Onion in the form of backups
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../../templates/"
@@ -30,3 +33,4 @@
         owner: root
         group: root
         mode: '0644'
+        force: false

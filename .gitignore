@@ -396,3 +396,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+Ansible Projects/Francee Xercise/isos
+Ansible Projects/Francee Xercise/packages
+Ansible Projects/Francee Xercise/containers
+Ansible Projects/Francee Xercise/templates

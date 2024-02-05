@@ -16,9 +16,27 @@ passwordless_laptoplap2prox() {
         sshpass -p $USERPASS ssh -o StrictHostKeyChecking=no root@$i 'rm -rf /root/.ssh'
         sshpass -p $USERPASS ssh-copy-id -i /root/.ssh/id_rsa root@$i #on PROXMOX NODE(s) for LAPTOP CONTROL NODE
         echo "============================================="
-        ssh root@$i 'echo "Hello" 1>/dev/null' && echo "Passwordless config for $i successful"
+        ssh root@$i 'echo "Hello" 1>/dev/null' && echo "Passwordless config for $i from LAPTOP CONTROL NODE successful"
         echo "============================================="
-        echo "^ Should say Passwordless config for $i successful ^"
+        echo "^ Should say Passwordless config for $i from LAPTOP CONTROL NODE successful ^"
+    done
+}
+passwordless_proxlap2prox() {
+    clear
+    echo "============================================="
+    echo "Configuring PROXMOX CONTROL NODE to PROXMOX WORKER(s) passwordless authentication..."
+    echo "============================================="
+    rm -rf /root/.ssh
+    ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N "" #on PROXMOX CONTROL NODE
+    touch /root/.ssh/known_hosts
+    cat /root/.ssh/id_rsa > /root/.ssh/known_hosts
+    for i in ${prox_ips[@]}; do
+        sshpass -p $USERPASS ssh -o StrictHostKeyChecking=no root@$i 'rm -rf /root/.ssh'
+        sshpass -p $USERPASS ssh-copy-id -i /root/.ssh/id_rsa root@$i #on PROXMOX WORKERS(s) for PROXMOX CONTROL NODE
+        echo "============================================="
+        ssh root@$i 'echo "Hello" 1>/dev/null' && echo "Passwordless config for $i from PROXMOX CONTROL NODE successful"
+        echo "============================================="
+        echo "^ Should say Passwordless config for $i from PROXMOX CONTROL NODE successful ^"
     done
 }
 passwordless_laptopproxW2proxM() {
@@ -33,6 +51,20 @@ passwordless_laptopproxW2proxM() {
         ssh root@${prox_ips[$i]} "ssh root@${prox_ips[0]} 'echo "Hello" 1>/dev/null'" && echo "Passwordless config for ${prox_ips[$i]} to PROXMOX MASTER successful"
         echo "============================================="
         echo "^ Should say Passwordless config for ${prox_ips[$i]} to PROXMOX MASTER successful ^"
+    done
+}
+passwordless_proxproxW2proxM() {
+    clear
+    echo "============================================="
+    echo "Configuring PROXMOX WORKER(s) to PROXMOX CONTROL NODE passwordless authentication..."
+    echo "============================================="
+    for ((i=0; i<"${#prox_ips[@]}"; i++)); do
+        ssh root@${prox_ips[$i]} 'ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""'
+        ssh root@${prox_ips[$i]} "sshpass -p $USERPASS ssh-copy-id -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa root@$prox_control"
+        echo "============================================="
+        ssh root@${prox_ips[$i]} "ssh root@$prox_control 'echo "Hello" 1>/dev/null'" && echo "Passwordless config for ${prox_ips[$i]} to PROXMOX CONTROL NODE successful"
+        echo "============================================="
+        echo "^ Should say Passwordless config for ${prox_ips[$i]} to PROXMOX CONTROL NODE successful ^"
     done
 }
 
@@ -74,7 +106,9 @@ while [[ -z "$location" ]]; do
     echo "--------------------"
     read location
     echo "============================================="
-    echo "What platform/plan are we deploying? (p/a/c or n)"
+    echo "What platform/plan are we deploying? NICs must be non-SFP."
+    echo "--------------------"
+    echo "r830 w/6 NICs (p), r630 w/2 NICs (a), a cluster with the worker having 2 NICs (c), or unknown? (n)"
     echo "--------------------"
     read cluster_platform
 
@@ -204,8 +238,6 @@ while [[ -z "$location" ]]; do
 
         passwordless_laptoplap2prox
 
-        #USERPASS=''
-
         for i in ${prox_ips[@]}; do
             ssh root@$i 'mkdir /root/ansible'
             ssh root@$i 'mkdir /root/openvswitch-proxmoxer-sshpass'
@@ -239,24 +271,32 @@ while [[ -z "$location" ]]; do
             echo "You have created a Proxmox cluster..."
             ssh root@${prox_ips[0]} 'pvecm status'
             echo "============================================="
-            debugger
+            IFS=$'\n';c_ints=($(ssh root@${prox_ips[1]} 'ip a | grep -v "master vmbr0" | grep "state"' | awk '{print $2}' | awk -F: '{print $1}' | grep -v 'lo' | grep -v 'vmbr' | grep -v 'ovs-system' | grep -v 'tap' | grep -v 'fw'));IFS=' '
         else
             clear
             echo "============================================="
             echo "No Proxmox cluster needed, you only have one node."
             echo "============================================="
+            IFS=$'\n';ints=($(ssh root@${prox_ips[0]} 'ip a | grep -v "master vmbr0" | grep "state"' | awk '{print $2}' | awk -F: '{print $1}' | grep -v 'lo' | grep -v 'vmbr' | grep -v 'ovs-system' | grep -v 'tap' | grep -v 'fw'));IFS=' '
         fi
 
-        #USERPASS=''
+        eth_ints=()
+        for i in "${ints[@]}"; do
+            non_fibre=$(ssh root@${prox_ips[0]} "ethtool $i | grep 'Supported ports:'" | awk '{print $4}')
+            if [[ "$non_fibre" =~ "TP" ]]; then
+                eth_ints=("${eth_ints[@]}" $i)
+            fi
+        done
 
         inv_check=$(cat ./ansible/inventory.cfg)
         if [[ -z "$inv_check" ]]; then
-            printf "%s\n" '[all:vars]' 'ansible_user=root' 'ansible_password='$USERPASS  '[proxmox]' ${prox_ips[@]}  '[prox_master]' ${prox_ips[0]}  '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
+            printf "%s\n" '[all:vars]' 'ansible_user=root' 'ansible_password='$USERPASS 'p_vmbr_ints='"${eth_ints[*]}" 'a_vmbr1_int='${eth_ints[0]} 'c_vmbr1_int='${c_ints[0]}  '[proxmox]' ${prox_ips[@]}  '[prox_master]' ${prox_ips[0]}  '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
         else
             echo '' > ./ansible/inventory.cfg
-            printf "%s\n" '[all:vars]' 'ansible_user=root' 'ansible_password='$USERPASS  '[proxmox]' ${prox_ips[@]}  '[prox_master]' ${prox_ips[0]}  '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
+            printf "%s\n" '[all:vars]' 'ansible_user=root' 'ansible_password='$USERPASS 'p_vmbr_ints='"${eth_ints[*]}" 'a_vmbr1_int='${eth_ints[0]} 'c_vmbr1_int='${c_ints[0]}  '[proxmox]' ${prox_ips[@]}  '[prox_master]' ${prox_ips[0]}  '[prox_workers]' ${prox_ips[@]:1} >> ./ansible/inventory.cfg
         fi
-
+        
+        USERPASS=''
         clear
         echo "============================================="
         echo "Is this a test? (y/n)"
@@ -265,7 +305,22 @@ while [[ -z "$location" ]]; do
         echo "============================================="
         echo "Waiting 30 seconds to let Proxmox settle itself..."
         echo "============================================="
-        sleep 30
+        echo "Check your hardware NICs to find what port(s) ingestion will be setup on, blinking for 30 seconds..."
+        echo "============================================="
+        if [[ "$cluster_platform" =~ [pP] ]]; then
+            for i in ${eth_ints[@]}; do
+                ssh root@${prox_ips[0]} "ethtool -p $i 5"
+            done
+        elif [[ "$cluster_platform" =~ [aA] ]]; then
+            ssh root@${prox_ips[0]} "ethtool -p ${eth_ints[0]} 30"
+        elif [[ "$cluster_platform" =~ [cC] ]]; then
+            ssh root@${prox_ips[1]} "ethtool -p ${c_ints[0]} 30"
+        else
+            echo "============================================="
+            echo "Cannot blink, not able to extrapolate ingestion..."
+            echo "============================================="
+        fi
+        
 
         clear
         echo "============================================="
@@ -304,256 +359,270 @@ while [[ -z "$location" ]]; do
 
         ansible-playbook $ansible_check playbooks/93_destroy_opnsense.yml
 '
-
+        cd ..
+        echo '' > ./ansible/inventory.cfg
         echo "/////////////////////////////////////////////"
         echo "Goodbye :)"
 
     elif [[ "$location" =~ [pP] ]]; then
         echo "Proxmox Control Node"
+        echo "--------------------"
+        echo "List out IP address(es) of other Proxmox node(s), pressing enter after each one. (CTRL-D when done.)"
+        echo "============================================="
+
+        while read line; do
+            prox_ips=("${prox_ips[@]}" $line)
+        done
+        
+        prox_control=$(ip a | grep vmbr0 | grep inet | awk '{print $2}' | awk -F/ '{print $1}')
+        if [[ -n "${prox_ips[@]}" ]]; then
+            clear
+            echo "============================================="
+            echo "Putting us on the same subnet and testing connection."
+            host_int=$(ip a | grep 'state UP' | awk '{print $2}' | awk -F: '{print $1}')
+            echo "============================================="
+
+            for i in $host_int; do
+                ip a show $i
+            done
+
+            echo "============================================="
+            echo "Which of these currently UP interfaces is connected to the same subnet as other Proxmox node(s)?"
+            echo "The name after the number please..."
+            echo "--------------------"
+            read host_int
+
+            echo "============================================="
+            echo "Are we airgapped? (y/n)"
+            echo "--------------------"
+            read airgap
+            echo "============================================="
+
+            echo "One second..."
+
+            oct1=$(echo "${prox_ips[0]}" | awk -F. '{print $1}')
+            oct2=$(echo "${prox_ips[0]}" | awk -F. '{print $2}')
+            oct3=$(echo "${prox_ips[0]}" | awk -F. '{print $3}')
+            ip addr flush dev $host_int
+            ip addr add $oct1.$oct2.$oct3.68/24 dev $host_int
+
+            if [[ "$airgap" =~ [nN] ]]; then
+                echo "Adding default route since we are not airgapped..."
+
+                for i in {1,2,254}; do
+                    route add default gw $oct1.$oct2.$oct3.$i dev $host_int
+                    google_test=$(ping -c 1 8.8.8.8 | grep 'bytes from' &)
+
+                    if [[ -n "$google_test" ]]; then
+                        break
+                    else
+                        route del default gw $oct1.$oct2.$oct3.$i dev $host_int
+                    fi
+                done
+
+            else
+                echo "No default route needed since we are airgapped..."
+                google_test='1'
+            fi
+
+            sleep 5
+
+            for i in "${prox_ips[@]}"; do
+                test=$(ping -c 1 $i | grep 'bytes from' &)
+            done
+
+            if [[ -n "$test" && -n "$google_test" ]]; then
+                clear
+                echo "============================================="
+                echo "Successful connection(s)."
+                echo "============================================="
+                echo "Moving on..."
+            else
+                clear
+                echo "============================================="
+                echo "Failed connection(s)."
+                echo "============================================="
+                echo "Attempt to identify problems in DHCP or routing and re-run when ready."
+                exit
+            fi
+        else
+            echo "Are we airgapped? (y/n)"
+            echo "--------------------"
+            read airgap
+            echo "============================================="
+            echo "One second..."
+
+            if [[ "$airgap" =~ [nN] ]]; then
+                echo "Testing connection to Google"
+                google_test=$(ping -c 3 8.8.8.8 | grep 'bytes from' &)
+            else
+                echo "No default route needed since we are airgapped..."
+                google_test='1'
+            fi
+
+            sleep 5
+
+            test='1'
+
+            if [[ -n "$test" && -n "$google_test" ]]; then
+                clear
+                echo "============================================="
+                echo "Successful connection(s)."
+                echo "============================================="
+                echo "Moving on..."
+            else
+                clear
+                echo "============================================="
+                echo "Failed connection(s)."
+                echo "============================================="
+                echo "Attempt to identify problems in DHCP or routing and re-run when ready."
+                exit
+            fi
+        fi
+
+        if [[ "$airgap" =~ [yY] ]]; then
+            echo "Installing Ansible and its dependencies needed for this exercise..."
+            dpkg --force-depends -i ./packages/debs/ansible/*.deb #dpkg -i ./packages/debs/*/*.deb
+            dpkg --force-depends -i ./packages/debs/openvswitch-proxmoxer-sshpass/*.deb
+        else
+            echo "Installing Ansible and its dependencies needed for this exercise..."
+            apt -y update > /dev/null 2>&1
+            apt -y install ansible > /dev/null 2>&1
+            apt -y install sshpass > /dev/null 2>&1
+        fi
+
+        if [[ -n "${prox_ips[@]}" ]]; then
+            passwordless_proxlap2prox
+
+            for i in ${prox_ips[@]}; do
+                ssh root@$i 'mkdir /root/ansible'
+                ssh root@$i 'mkdir /root/openvswitch-proxmoxer-sshpass'
+                scp -r ./packages/debs/ansible root@$i:/root
+                scp -r ./packages/debs/openvswitch-proxmoxer-sshpass root@$i:/root
+                ssh root@$i 'dpkg --force-depends -i ./ansible/*.deb'
+                ssh root@$i 'dpkg --force-depends -i ./openvswitch-proxmoxer-sshpass/*.deb' #dpkg -i *.deb
+            done
+            passwordless_proxproxW2proxM
+            clear
+            echo "============================================="
+            echo "Creating Proxmox cluster..."
+            echo "============================================="
+            pvecm create PROXCLUSTER
+            echo "============================================="
+            echo "Waiting for cluster to fully initialize..."
+            sleep 60
+
+            clear
+            for ((i=0; i<"${#prox_ips[@]}"; i++)); do
+                echo "============================================="
+                echo "Trying to add ${prox_ips[$i]} to the cluster..."
+                echo "============================================="
+                ssh root@${prox_ips[$i]} "printf '$USERPASS\nyes\n' | pvecm add $prox_control -force true" #backwards issue FIXED
+            done
+
+            clear
+            echo "============================================="
+            echo "You have created a Proxmox cluster..."
+            pvecm status
+            echo "============================================="
+            IFS=$'\n';c_ints=($(ssh root@${prox_ips[0]} 'ip a | grep -v "master vmbr0" | grep "state"' | awk '{print $2}' | awk -F: '{print $1}' | grep -v 'lo' | grep -v 'vmbr' | grep -v 'ovs-system' | grep -v 'tap' | grep -v 'fw'));IFS=' '
+        else
+            clear
+            echo "============================================="
+            echo "No Proxmox cluster needed, you only have one node."
+            echo "============================================="
+            rm -rf /root/.ssh
+            ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N "" #on PROXMOX CONTROL NODE
+            touch /root/.ssh/known_hosts
+            cat /root/.ssh/id_rsa > /root/.ssh/known_hosts
+            IFS=$'\n';ints=($(ip a | grep -v 'master vmbr0' | grep 'state' | awk '{print $2}' | awk -F: '{print $1}' | grep -v 'lo' | grep -v 'vmbr' | grep -v 'ovs-system' | grep -v 'tap' | grep -v 'fw'));IFS=' '
+        fi
+
+        eth_ints=()
+        for i in "${ints[@]}"; do
+            non_fibre=$(ethtool $i | grep 'Supported ports:' | awk '{print $4}')
+            if [[ "$non_fibre" =~ "TP" ]]; then
+                eth_ints=("${eth_ints[@]}" $i)
+            fi
+        done
+
+        inv_check=$(cat ./ansible/inventory.cfg)
+        if [[ -z "$inv_check" ]]; then
+            printf "%s\n" '[all:vars]' 'ansible_user=root' 'ansible_password='$USERPASS 'p_vmbr_ints='"${eth_ints[*]}" 'a_vmbr1_int='${eth_ints[0]} 'c_vmbr1_int='${c_ints[0]}  '[proxmox]' $HOSTNAME ${prox_ips[@]} '[prox_master]' $HOSTNAME  '[prox_workers]' ${prox_ips[@]} >> ./ansible/inventory.cfg
+        else
+            echo '' > ./ansible/inventory.cfg
+            printf "%s\n" '[all:vars]' 'ansible_user=root' 'ansible_password='$USERPASS 'p_vmbr_ints='"${eth_ints[*]}" 'a_vmbr1_int='${eth_ints[0]} 'c_vmbr1_int='${c_ints[0]}  '[proxmox]' $HOSTNAME ${prox_ips[@]} '[prox_master]' $HOSTNAME  '[prox_workers]' ${prox_ips[@]} >> ./ansible/inventory.cfg
+        fi
+        
+        USERPASS=''
+        clear
+        echo "============================================="
+        echo "Is this a test? (y/n)"
+        echo "--------------------"
+        read testing
+        echo "============================================="
+        echo "Waiting 30 seconds to let Proxmox settle itself..."
+        echo "============================================="
+        echo "Check your hardware NICs to find what port(s) ingestion will be setup on, blinking for 30 seconds..."
+        echo "============================================="
+        if [[ "$cluster_platform" =~ [pP] ]]; then
+            for i in ${eth_ints[@]}; do
+                ethtool -p $i 5
+            done
+        elif [[ "$cluster_platform" =~ [aA] ]]; then
+            ethtool -p ${eth_ints[0]} 30
+        elif [[ "$cluster_platform" =~ [cC] ]]; then
+            ssh root@${prox_ips[0]} "ethtool -p ${c_ints[0]} 30"
+        else
+            echo "============================================="
+            echo "Cannot blink, not able to extrapolate ingestion..."
+            echo "============================================="
+        fi
+        
+        clear
+        echo "============================================="
+        echo "We are going to start the Ansible now."
+        echo "============================================="
+
+        if [[ "$testing" =~ [yY] ]]; then
+            ansible_check='--check'
+        else
+            ansible_check=''
+        fi
+
+        cd ./ansible
+        ansible-playbook $ansible_check playbooks/01_configure_proxmox.yml
+
+        ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
+
+        ansible-playbook $ansible_check playbooks/12_deploy_c2.yml
+
+        if [[ "$cluster_platform" =~ [pP] ]]; then
+            ansible-playbook $ansible_check playbooks/13_deploy_securityonion.yml
+        elif [[ "$cluster_platform" =~ [aA] ]]; then
+            ansible-playbook $ansible_check playbooks/132_deploy_securityonion.yml
+        elif [[ "$cluster_platform" =~ [cC] ]]; then
+            ansible-playbook $ansible_check playbooks/133_deploy_securityonion.yml
+        else
+            echo "============================================="
+            echo "I have not deployed Security Onion as I do not know what kind of cluster platform we are working with."
+            echo "============================================="
+        fi
+
+: '
+        ansible-playbook $ansible_check playbooks/91_destroy_securityonion.yml
+
+        ansible-playbook $ansible_check playbooks/92_destroy_c2.yml
+
+        ansible-playbook $ansible_check playbooks/93_destroy_opnsense.yml
+'
+        cd ..
+        echo '' > ./ansible/inventory.cfg
+        echo "/////////////////////////////////////////////"
+        echo "Goodbye :)"
     else
         echo "Please specify using l or p, respectively."
         location=''
     fi
 done
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#All this will be commented out for now...
-: '
-ip r add default via <IP> dev <IF>
-
-clear
-echo "============================================="
-choice=n
-info_choice=n
-while [[ "$choice" =~ [nN] ]]; do
-    echo "I have quite a bit of resources on the USB I am running from..."
-    echo "---------------------------------------------"
-    ls -la .
-    echo "============================================="
-    echo "Have you already installed Proxmox baremetal on the node(s) you would like to use? (y/n)"
-    read choice
-    if [[ "$choice" =~ [nN] ]]; then
-        clear
-        echo "============================================="
-        echo "Would you like a walkthrough of the graphical install for Proxmox?"
-        read info_choice
-        if [[ "$info_choice" =~ [nN] ]]; then
-            clear
-            echo "============================================="
-            echo "No problem, go ahead and do that now.. then come back and run me again."
-        elif [[ "$info_choice" =~ [yY] ]]; then
-            clear
-            echo "============================================="
-            echo "Sure :)"
-            echo "Agree to terms and conditions >"
-            echo "---------"
-            echo "Choose your storage that you made with BIOS or PERC (No need for changing options) >"
-            echo "---------"
-            echo "Put a country and timezone >"
-            echo "---------"
-            echo "Provide a root password for CLI and GUI login (Email can be defender@cpb.mil) >"
-            echo "---------"
-            echo "Choose your PROXMOX management interface (you need to be able to connect to this NIC from the computer you are on)"
-            echo "Hostname can be set to <ANYTHING>.cpb.mil (may or may not need gateway but can be added after install)"
-            echo "DNS server should be something like 8.8.8.8 if you have access to the internet through PROXMOX management interface and not using DHCP >"
-            echo "---------"
-            echo "Finish install >"
-            echo "============================================="
-        else
-            clear
-            echo echo "============================================="
-            echo "Thats not a choice :("
-            info_choice=n
-        fi
-    elif [[ "$choice" =~ [yY] ]]; then
-        clear
-        echo "============================================="
-        echo "Okay :)"
-    else
-        clear
-        echo "============================================="
-        echo "Thats not a choice :("
-        choice=n
-    fi
-done
-
-echo "=================="
-echo "What IP address did you assign to the Proxmox management interface when you installed?"
-read prox_ip
-echo "============================================="
-echo "One second..."
-
-host_int=$(ip a | grep 'state UP' | awk '{print $2}' | awk -NF: '{print $1}')
-clear
-echo "============================================="
-for i in $host_int; do
-    ip a show $i
-done
-echo "============================================="
-echo "Which of these currently UP interfaces is connected to the same subnet as Proxmox?"
-echo "The name after the number please..."
-read prox_int
-
-choice=n
-while [[ "$choice" =~ [nN] ]]; do
-    clear
-    echo "============================================="
-    ip a show $prox_int
-    echo "============================================="
-    echo "Is this the correct choice? (y/n)"
-    read choice
-    if [[ "$choice" =~ [nN] ]]; then
-        clear
-        echo "============================================="
-        for i in $host_int; do
-            ip a show $i
-        done
-        echo "============================================="
-        echo "Which of these currently UP interfaces is connected to the same subnet as Proxmox?"
-        echo "The name after the number please..."
-        read prox_int
-    elif [[ "$choice" =~ [yY] ]]; then
-        clear
-        echo "============================================="
-        echo "Okay :)"
-    else
-        clear
-        echo "============================================="
-        echo "Thats not a choice :("
-        choice=n
-    fi
-done
-
-echo "=================="
-ip a show $prox_int
-echo "============================================="
-echo "Did you assign this IP address statically or with DHCP? (s/d)"
-read ip_negotiation
-
-if [[ "$ip_negotiation" =~ [sS] ]]; then
-    clear
-    echo "============================================="
-    echo "Okay :)"
-    host_ip=$(ip a show $prox_int | grep 'inet ' | awk '{print $2}' | awk -F/ '{print $1}')
-    echo "One second..."
-elif [[ "$ip_negotiation" =~ [dD] ]]; then
-    clear
-    echo "============================================="
-    echo "Okay :)"
-    echo "Running DHClient..."
-    dhclient -v
-    host_ip=$(ip a show $prox_int | grep 'inet ' | awk '{print $2}' | awk -F/ '{print $1}')
-    if [[ $host_ip =~ [169.254.*] ]]; then
-        echo "APIPA will not work for this..."
-        echo "Something is wrong and the networking needs to be looked at to see why you are not getting a DHCP address."
-        echo "This could also be the case if you did not set up DHCP on your own for the same subnet as Proxmox management."
-    else
-        echo "One second..."
-    fi
-else
-    clear
-    echo "============================================="
-    echo "Thats not a choice :("
-fi
-
-host_octets+=($(echo $host_ip | awk -F. '{print $1}'))
-host_octets+=($(echo $host_ip | awk -F. '{print $2}'))
-host_octets+=($(echo $host_ip | awk -F. '{print $3}'))
-host_octets+=($(echo $host_ip | awk -F. '{print $4}'))
-prox_octets+=($(echo $prox_ip | awk -F. '{print $1}'))
-prox_octets+=($(echo $prox_ip | awk -F. '{print $2}'))
-prox_octets+=($(echo $prox_ip | awk -F. '{print $3}'))
-prox_octets+=($(echo $prox_ip | awk -F. '{print $4}'))
-
-if [[ $(echo "${host_octets[0]}") == $(echo "${prox_octets[0]}") ]] && [[ $(echo "${host_octets[1]}") == $(echo "${prox_octets[1]}") ]] && [[ $(echo "${host_octets[2]}") == $(echo "${prox_octets[2]}") ]]; then
-    clear
-    echo "============================================="
-    echo "You are in the same subnet as your Proxmox installation."
-    echo "Testing connection..."
-    echo "----------------"
-    test=$(ping -c 3 $prox_ip | grep 'bytes from')
-    if [[ -z $test ]]; then
-        echo "Connection test failed."
-        echo "Attempting to correct the situation..."
-    else
-        echo "Connection test successful."
-        echo "Moving on..."
-    fi
-else
-    clear 
-    echo "============================================="
-    echo "You are not in the same subnet as your Proxmox installation."
-    echo "Attempting to correct the situation..."
-    ip addr del $host_ip/24 dev $host_int
-    ip addr add $(echo "${prox_octets[0]}").$(echo "${prox_octets[1]}").$(echo "${prox_octets[2]}").69/24 dev $host_int
-    echo "Testing connection..."
-    echo "----------------"
-    test=$(ping -c 3 $prox_ip | grep 'bytes from')
-    if [[ -z $test ]]; then
-        echo "Connection test failed."
-        echo "Attempting to correct the situation..."
-    else
-        echo "Connection test successful."
-        echo "Moving on..."
-    fi
-fi
-
-clear
-echo "============================================="
-echo "We are going to add the Proxmox SSH fingerprint to our computer now so we can log in without a password."
-echo "You can hit enter through creating your public key so it saves in the default location and allows for no passphrase."
-ssh-keygen -t rsa -b 2048
-ssh-copy-id root@$prox_ip
-
-ssh root@$prox_ip 'echo "Hello :)"' && clear; echo "Passwordless configuration was successful."
-
-echo "============================================="
-echo "I am going to finalize some things and ask you a few more questions so we can start the Ansible."
-echo "----------------"
-
-echo "Where would you like to install Ansible?"
-echo "This will dictate where it runs from as it allows you to choose the control node."
-echo "----------------"
-echo "A - This Laptop"
-echo "B - Proxmox Node(s)"
-echo "============================================="
-read ansible_choice
-
-
-
-apt=$(which apt 2>/dev/null)
-dnf=$(which dnf 2>/dev/null)
-
-if [[ -n $apt ]]; then
-    echo "I see you are using a Debian based distribution of Linux..."
-    echo "Installing Ansible and its dependencies needed for this exercise..."
-    dpkg -i ./packages/ansible/debs/*.deb
-elif [[ -n $dnf ]]; then
-    echo "I see you are using a Red-Hat based distribution of Linux..."
-    echo "Installing Ansible and its dependencies needed for this exercise..."
-    rpm -i ./packages/ansible/rpms/*.rpm
-else
-    echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files I have for you."
-    echo "They are not needed to move on, if you have them you can install them and re-run me; but we are going to install ansible on the Proxmox."
-fi
-
-ssh root@$prox_ip 'mkdir debs'
-scp ./packages/ansible/debs/*.deb root@$prox_ip:
-
-echo "/////////////////////////////////////////////"
-echo "Goodbye :)"
-'
