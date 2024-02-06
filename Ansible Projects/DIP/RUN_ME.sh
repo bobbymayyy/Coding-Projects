@@ -92,6 +92,7 @@ infra_menu() {
         if [ $PROX_PASS1 == $PROX_PASS2 ]; then
           PROX_SUCCESS=TRUE
           debugger
+          #...
         else
           PROX_SUCCESS=FALSE
           echo "PASSWORD DOES NOT MATCH! Press enter to continue..."
