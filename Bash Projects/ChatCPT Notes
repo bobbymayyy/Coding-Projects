@@ -1,3 +1,5 @@
+for i in $(sudo docker ps -a | awk '{print $1}' | grep -v CONTAINER); do sudo docker stop $i; done # <--- Will stop all containers.
+
 for i in $(sudo docker ps -a | awk '{print $1}' | grep -v CONTAINER); do sudo docker rm $i; done # <--- Will remove all containers stopped or not.
 
 for i in $(sudo docker images | awk '{print $3}' | grep -v IMAGE); do sudo docker rmi $i; done # <--- Will remove all images if not used by any containers.
