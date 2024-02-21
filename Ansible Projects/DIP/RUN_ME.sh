@@ -32,8 +32,8 @@ done
 
 #Checks some things as prerequisites for deploying DIP
 status_check() {
-  internet=$(ping 8.8.8.8 | grep "bytes from") & #Tests connection to 8.8.8.8
-  dns=$(ping google.com | grep "bytes from") & #Tests connection to google.com
+  internet=$(ping -c 1 8.8.8.8 2>/dev/null | grep 'bytes from') & #Tests connection to 8.8.8.8
+  dns=$(ping -c 1 google.com 2>/dev/null | grep 'bytes from') & #Tests connection to google.com
   nic=$(ip a | grep "master vmbr0") #Grabs NIC of script host
   ipaddr=$(ip a | grep "global vmbr0" | awk '{print $2}') #Grabs IP of script host
   pvedaemon=$(ps -x | awk '{print $5}' | egrep ^pvedaemon) #Determines if script host is Proxmox
@@ -78,14 +78,19 @@ infra_menu() {
   #See status check function
   status_check
 
+  echo $pvedaemon
+  echo $internet
+  echo $dns
+  debugger
+
   dialog --colors \
           --backtitle "DIP (Deployable Infrastructure Platform)" \
           --title "Infrastructure Menu" "$@" \
           --checklist "Deploy some Infrastructure! \n\
   Select the infrastructure you would like to deploy. \n\n\
   PVE$(if [ -n "$pvedaemon" ]; then echo -e "\t- \Z2YES\Zn"; else echo -e "\t- \Z1NO\Zn"; fi) \n\
-  INTERNET$(if [ -n $internet ]; then echo -e "\t- \Z2SUCCESS\Zn"; else echo -e "\t- \Z1FAILURE\Zn"; fi) \n\
-  DNS$(if [ -n $dns ]; then echo -e "\t- \Z2SUCCESS\Zn"; else echo -e "\t- \Z1FAILURE\Zn"; fi) \n\
+  INTERNET$(if [ -n "$internet" ]; then echo -e "\t- \Z2SUCCESS\Zn"; else echo -e "\t- \Z1FAILURE\Zn"; fi) \n\
+  DNS$(if [ -n "$dns" ]; then echo -e "\t- \Z2SUCCESS\Zn"; else echo -e "\t- \Z1FAILURE\Zn"; fi) \n\
   $(echo $ipaddr) \n\n\
   Which of the following would you like to setup?" 21 62 5 \
           "Networking" "Router and vSwitches." on \
