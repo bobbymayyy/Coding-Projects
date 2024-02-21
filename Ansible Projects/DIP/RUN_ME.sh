@@ -1,5 +1,5 @@
 #!/bin/bash
-#THIS IS THE DIP (DEPLOYABLE INFRASTRUCTURE PLATFORM); IF YOU HAVE ANY QUESTIONS DEFER TO SPC MAY WITH THE CPB NERD.
+#THIS IS THE DIP (DEPLOYABLE INFRASTRUCTURE PLATFORM); IF YOU HAVE ANY QUESTIONS DEFER TO...
 
 #Puts a wait in the script
 debugger() {
@@ -7,6 +7,28 @@ debugger() {
     echo "Press any key to continue..."
     read -rsn1
 }
+
+#Check for Dialog
+while [[ -z $(which dialog 2>/dev/null) ]] || [[ -z $(which ansible-vault 2>/dev/null) ]]; do
+  clear
+  echo "--------------------"
+  echo "Installing Dialog and Ansible..."
+  apt=$(which apt 2>/dev/null)
+  dnf=$(which dnf 2>/dev/null)
+  if [[ -n $apt ]]; then
+    dpkg --force-depends -i ./packages/debs/dialog/*.deb #dpkg -i ./packages/debs/*/*.deb
+    dpkg --force-depends -i ./packages/debs/ansible/*.deb
+  elif [[ -n $dnf ]]; then
+    dnf -y install --disablerepo=* ./packages/rpms/dialog/*.rpm
+    dnf -y install --disablerepo=* ./packages/rpms/ansible/*.rpm
+  else
+    clear
+    echo "--------------------"
+    echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files for Dialog and Ansible."
+    echo "They are needed to move on with a remote install, or you can re-run and install on the Proxmox."
+    exit
+  fi
+done
 
 #Checks some things as prerequisites for deploying DIP
 status_check() {
