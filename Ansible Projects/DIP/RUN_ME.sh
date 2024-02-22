@@ -32,8 +32,8 @@ done
 
 #Checks some things as prerequisites for deploying DIP
 status_check() {
-  internet=$(ping -c 1 8.8.8.8 2>/dev/null | grep 'bytes from') & #Tests connection to 8.8.8.8
-  dns=$(ping -c 1 google.com 2>/dev/null | grep 'bytes from') & #Tests connection to google.com
+  internet=$(ping -c 1 8.8.8.8 2>/dev/null | grep 'bytes from' &) #Tests connection to 8.8.8.8
+  dns=$(ping -c 1 google.com 2>/dev/null | grep 'bytes from' &) #Tests connection to google.com
   nic=$(ip a | grep "master vmbr0") #Grabs NIC of script host
   ipaddr=$(ip a | grep "global vmbr0" | awk '{print $2}') #Grabs IP of script host
   pvedaemon=$(ps -x | awk '{print $5}' | egrep ^pvedaemon) #Determines if script host is Proxmox
@@ -53,14 +53,20 @@ trap "rm -f $tmp_file" 0 1 2 5 15
 
 #Test to see that it is the correct password and push back to unseal function if not
 validate_vault() {
-  echo "${VAULT_PASS}" | ansible-vault view ./docs/passwords.yml --vault-pass-file=/bin/cat 2>&1 > /dev/null
-  if [ $? -eq 1 ]; then
-    VAULT_SUCCESS=FALSE
-    echo "PASSWORD INVALID! Press enter to continue..."
+  if [[ -n $VAULT_PASS ]]; then
+    echo "${VAULT_PASS}" | ansible-vault view ./docs/passwords.yml --vault-pass-file=/bin/cat 2>&1 > /dev/null
+    if [[ $? -eq 1 ]]; then
+      VAULT_SUCCESS=FALSE
+      echo "PASSWORD INVALID! Press enter to continue..."
+      unset $VAULT_PASS
+      read
+    else
+      VAULT_SUCCESS=TRUE
+    fi
+  else
+    echo "Enter a password! Press enter to continue..."
     unset $VAULT_PASS
     read
-  else
-    VAULT_SUCCESS=TRUE
   fi
 }
 
@@ -77,11 +83,6 @@ unseal_vault() {
 infra_menu() {
   #See status check function
   status_check
-
-  echo $pvedaemon
-  echo $internet
-  echo $dns
-  debugger
 
   dialog --colors \
           --backtitle "DIP (Deployable Infrastructure Platform)" \
@@ -107,7 +108,7 @@ infra_menu() {
   case $return_value in
     $DIALOG_OK)
       PROX_SUCCESS=FALSE
-      while [ $PROX_SUCCESS == FALSE ]; do
+      while [[ $PROX_SUCCESS == FALSE ]]; do
         PROX_PASS1=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
             --title "Proxmox Password" \
             --insecure  "$@" \
@@ -116,7 +117,7 @@ infra_menu() {
             --title "Proxmox Password" \
             --insecure  "$@" \
             --passwordbox "Please confirm the password:" 9 62 2>&1 > /dev/tty`
-        if [ $PROX_PASS1 == $PROX_PASS2 ]; then
+        if [[ $PROX_PASS1 == $PROX_PASS2 ]]; then
           PROX_SUCCESS=TRUE
           debugger
           #...
@@ -156,13 +157,13 @@ infra_menu() {
 
 #Set vault success for default; loop vault is unsealed with correct password
 VAULT_SUCCESS=FALSE
-while [ $VAULT_SUCCESS == FALSE ]; do
+while [[ $VAULT_SUCCESS == FALSE ]]; do
 unseal_vault
 done
 
 #Main menu for DIP
 MAIN_MENU=TRUE
-while [ $MAIN_MENU == TRUE ]; do
+while [[ $MAIN_MENU == TRUE ]]; do
   dialog --colors \
           --backtitle "DIP (Deployable Infrastructure Platform)" \
           --title "Main Menu" "$@" \
