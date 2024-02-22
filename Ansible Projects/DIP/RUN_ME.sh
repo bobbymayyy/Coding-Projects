@@ -8,6 +8,10 @@ debugger() {
     read -rsn1
 }
 
+#=============================================================================================================================
+#Menu functions
+#-----------------------------------------------
+
 #Check for Dialog
 while [[ -z $(which dialog 2>/dev/null) ]] || [[ -z $(which ansible-vault 2>/dev/null) ]]; do
   clear
@@ -80,7 +84,70 @@ unseal_vault() {
 }
 
 #=============================================================================================================================
+#Main functions
+#-----------------------------------------------
+infrastructure_action() {
+  PROX_SUCCESS=FALSE
+  while [[ $PROX_SUCCESS == FALSE ]]; do
+    PROX_PASS1=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
+        --title "Proxmox Password" \
+        --insecure  "$@" \
+        --passwordbox "Please enter the password you gave root on Proxmox:" 9 62 2>&1 > /dev/tty`
+    
+
+    #Set return_value variable to previous commands return code
+    return_value=$?
+    clear
+    #Handle menu progression
+    case $return_value in
+      $DIALOG_OK)
+        if [[ -n $PROX_PASS1 ]]; then
+          PROX_PASS2=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
+              --title "Proxmox Password" \
+              --insecure  "$@" \
+              --passwordbox "Please confirm the password:" 9 62 2>&1 > /dev/tty`
+          if [[ $PROX_PASS1 == $PROX_PASS2 ]]; then
+            PROX_SUCCESS=TRUE
+            debugger
+            #.................................................
+          else
+            PROX_SUCCESS=FALSE
+            echo "PASSWORD DOES NOT MATCH! Press enter to continue..."
+            unset $PROX_PASS1
+            unset $PROX_PASS2
+            read
+          fi
+        else
+          echo "Enter a password properly! Press enter to continue..."
+          unset $PROX_PASS1
+          unset $PROX_PASS2
+          read
+        fi;;
+      $DIALOG_CANCEL)
+        echo "Cancel pressed."
+        break;;
+      $DIALOG_HELP)
+        echo "Help pressed.";;
+      $DIALOG_EXTRA)
+        echo "Extra button pressed.";;
+      $DIALOG_ITEM_HELP)
+        echo "Item-help button pressed.";;
+      $DIALOG_ESC)
+        if test -s $tmp_file ; then
+          cat $tmp_file
+        else
+          echo "ESC pressed."
+        fi
+        ;;
+    esac
+  done
+}
+
 #=============================================================================================================================
+#=============================================================================================================================
+#=============================================================================================================================
+#Menus
+#-----------------------------------------------
 
 #Infrastructure menu for DIP
 infra_menu() {
@@ -110,29 +177,7 @@ infra_menu() {
   #Handle menu progression
   case $return_value in
     $DIALOG_OK)
-      PROX_SUCCESS=FALSE
-      while [[ $PROX_SUCCESS == FALSE ]]; do
-        PROX_PASS1=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
-            --title "Proxmox Password" \
-            --insecure  "$@" \
-            --passwordbox "Please enter the password you gave root on Proxmox:" 9 62 2>&1 > /dev/tty`
-        PROX_PASS2=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
-            --title "Proxmox Password" \
-            --insecure  "$@" \
-            --passwordbox "Please confirm the password:" 9 62 2>&1 > /dev/tty`
-        if [[ $PROX_PASS1 == $PROX_PASS2 ]]; then
-          PROX_SUCCESS=TRUE
-          debugger
-          #...
-        else
-          PROX_SUCCESS=FALSE
-          echo "PASSWORD DOES NOT MATCH! Press enter to continue..."
-          unset $PROX_PASS1
-          unset $PROX_PASS2
-          read
-        fi
-      done
-      ;;
+      infrastructure_action;;
     $DIALOG_CANCEL)
       echo "Cancel pressed.";;
     $DIALOG_HELP)
@@ -170,7 +215,8 @@ infra_menu() {
 #======================================================================================================================================
 
 #======================================================================================================================================
-
+#Main flow
+#-----------------------------------------------
 
 #Set vault success for default; loop vault is unsealed with correct password
 VAULT_SUCCESS=FALSE
