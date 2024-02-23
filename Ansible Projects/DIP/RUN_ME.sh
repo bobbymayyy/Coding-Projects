@@ -80,7 +80,33 @@ unseal_vault() {
           --title "Unseal Vault" \
           --insecure  "$@" \
           --passwordbox "Please enter the password to the Ansible Vault:" 9 62 2>&1 > /dev/tty`
-  validate_vault
+  
+  #Set return_value variable to previous commands return code
+  return_value=$?
+  clear
+  #Handle menu progression
+  case $return_value in
+    $DIALOG_OK)
+      validate_vault;;
+    $DIALOG_CANCEL)
+      echo "Cancel pressed."
+      echo "Goodbye :)"
+      exit;;
+    $DIALOG_HELP)
+      echo "Help pressed.";;
+    $DIALOG_EXTRA)
+      echo "Extra button pressed.";;
+    $DIALOG_ITEM_HELP)
+      echo "Item-help button pressed.";;
+    $DIALOG_ESC)
+      if test -s $tmp_file ; then
+        cat $tmp_file
+      else
+        echo "ESC pressed."
+      fi
+      echo "Goodbye :)"
+      exit;;
+  esac
 }
 
 #=============================================================================================================================
@@ -138,7 +164,7 @@ infrastructure_action() {
         else
           echo "ESC pressed."
         fi
-        ;;
+        break;;
     esac
   done
 }
