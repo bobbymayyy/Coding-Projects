@@ -94,7 +94,7 @@ class App:
         GLineEdit_343["font"] = ft
         GLineEdit_343["fg"] = "#333333"
         GLineEdit_343["justify"] = "center"
-        GLineEdit_343["text"] = "Password"
+        GLineEdit_343["text"] = "firewall_password"
         GLineEdit_343.place(x=40,y=150,width=520,height=25)
         GLineEdit_343["show"] = "*"
 
