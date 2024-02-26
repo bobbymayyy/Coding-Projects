@@ -4,7 +4,7 @@ import tkinter.font as tkFont
 class App:
     def __init__(self, root):
         #setting title
-        root.title("undefined")
+        root.title("AutoVPN")
         #setting window size
         width=600
         height=400
