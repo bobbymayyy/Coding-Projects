@@ -9,6 +9,7 @@ import tkinter.font as tkFont
 #Function Definitions
 #----------------
 
+
 def wait_for_prompt(channel, prompt=">"):
     while True:
         output = channel.recv(4096).decode()
@@ -118,7 +119,6 @@ def configure_firewall(firewall_address, firewall_username, firewall_password, t
 
 class App:
     def __init__(self, root):
-
         firewall_address=tk.StringVar()
         firewall_username=tk.StringVar()
         firewall_password=tk.StringVar()
@@ -140,7 +140,7 @@ class App:
         root.geometry(alignstr)
         root.resizable(width=False, height=False)
 
-        GLineEdit_358=tk.Entry(root, textvariable=int_number)
+        GLineEdit_358=tk.Entry(root)
         GLineEdit_358["borderwidth"] = "1px"
         ft = tkFont.Font(family='Times',size=10)
         GLineEdit_358["font"] = ft
@@ -148,8 +148,9 @@ class App:
         GLineEdit_358["justify"] = "center"
         GLineEdit_358["text"] = "int_number"
         GLineEdit_358.place(x=20,y=250,width=260,height=25)
+        GLineEdit_358["textvariable"] = int_number
 
-        GLineEdit_746=tk.Entry(root, textvariable=team_number)
+        GLineEdit_746=tk.Entry(root)
         GLineEdit_746["borderwidth"] = "1px"
         ft = tkFont.Font(family='Times',size=10)
         GLineEdit_746["font"] = ft
@@ -157,8 +158,9 @@ class App:
         GLineEdit_746["justify"] = "center"
         GLineEdit_746["text"] = "team_number"
         GLineEdit_746.place(x=20,y=200,width=260,height=25)
+        GLineEdit_746["textvariable"] = team_number
 
-        GLineEdit_265=tk.Entry(root, textvariable=peer_address)
+        GLineEdit_265=tk.Entry(root)
         GLineEdit_265["borderwidth"] = "1px"
         ft = tkFont.Font(family='Times',size=10)
         GLineEdit_265["font"] = ft
@@ -166,8 +168,9 @@ class App:
         GLineEdit_265["justify"] = "center"
         GLineEdit_265["text"] = "peer_address"
         GLineEdit_265.place(x=20,y=300,width=260,height=25)
+        GLineEdit_265["textvariable"] = peer_address
 
-        GLineEdit_624=tk.Entry(root, textvariable=pre_shared_key)
+        GLineEdit_624=tk.Entry(root)
         GLineEdit_624["borderwidth"] = "1px"
         ft = tkFont.Font(family='Times',size=10)
         GLineEdit_624["font"] = ft
@@ -175,8 +178,9 @@ class App:
         GLineEdit_624["justify"] = "center"
         GLineEdit_624["text"] = "pre_shared_key"
         GLineEdit_624.place(x=320,y=300,width=260,height=25)
+        GLineEdit_624["textvariable"] = pre_shared_key
 
-        GLineEdit_331=tk.Entry(root, textvariable=wan_address)
+        GLineEdit_331=tk.Entry(root)
         GLineEdit_331["borderwidth"] = "1px"
         ft = tkFont.Font(family='Times',size=10)
         GLineEdit_331["font"] = ft
@@ -184,8 +188,9 @@ class App:
         GLineEdit_331["justify"] = "center"
         GLineEdit_331["text"] = "wan_address"
         GLineEdit_331.place(x=320,y=250,width=260,height=25)
+        GLineEdit_331["textvariable"] = wan_address
 
-        GLineEdit_881=tk.Entry(root, textvariable=kit_number)
+        GLineEdit_881=tk.Entry(root)
         GLineEdit_881["borderwidth"] = "1px"
         ft = tkFont.Font(family='Times',size=10)
         GLineEdit_881["font"] = ft
@@ -193,6 +198,7 @@ class App:
         GLineEdit_881["justify"] = "center"
         GLineEdit_881["text"] = "kit_number"
         GLineEdit_881.place(x=320,y=200,width=260,height=25)
+        GLineEdit_881["textvariable"] = kit_number
 
         GButton_76=tk.Button(root)
         GButton_76["bg"] = "#e9e9ed"
@@ -214,7 +220,7 @@ class App:
         GButton_872.place(x=410,y=350,width=70,height=25)
         GButton_872["command"] = self.GButton_872_command
 
-        GLineEdit_343=tk.Entry(root, textvariable=firewall_password)
+        GLineEdit_343=tk.Entry(root)
         GLineEdit_343["borderwidth"] = "1px"
         ft = tkFont.Font(family='Times',size=10)
         GLineEdit_343["font"] = ft
@@ -223,6 +229,7 @@ class App:
         GLineEdit_343["text"] = "firewall_password"
         GLineEdit_343.place(x=40,y=150,width=520,height=25)
         GLineEdit_343["show"] = "*"
+        GLineEdit_343["textvariable"] = firewall_password
 
         GLabel_513=tk.Label(root)
         ft = tkFont.Font(family='Times',size=15)
@@ -288,7 +295,7 @@ class App:
         GLabel_511["text"] = "Pre-Shared Key"
         GLabel_511.place(x=350,y=275,width=200,height=25)
 
-        GLineEdit_551=tk.Entry(root, textvariable=firewall_address)
+        GLineEdit_551=tk.Entry(root)
         GLineEdit_551["borderwidth"] = "1px"
         ft = tkFont.Font(family='Times',size=10)
         GLineEdit_551["font"] = ft
@@ -296,8 +303,9 @@ class App:
         GLineEdit_551["justify"] = "center"
         GLineEdit_551["text"] = "firewall_address"
         GLineEdit_551.place(x=20,y=100,width=260,height=25)
+        GLineEdit_551["textvariable"] = firewall_address
 
-        GLineEdit_26=tk.Entry(root, textvariable=firewall_username)
+        GLineEdit_26=tk.Entry(root)
         GLineEdit_26["borderwidth"] = "1px"
         ft = tkFont.Font(family='Times',size=10)
         GLineEdit_26["font"] = ft
@@ -305,6 +313,7 @@ class App:
         GLineEdit_26["justify"] = "center"
         GLineEdit_26["text"] = "firewall_username"
         GLineEdit_26.place(x=320,y=100,width=260,height=25)
+        GLineEdit_26["textvariable"] = firewall_username
 
         GLabel_774=tk.Label(root)
         ft = tkFont.Font(family='Times',size=10)
@@ -322,9 +331,8 @@ class App:
         GLabel_694["text"] = "Firewall Username"
         GLabel_694.place(x=350,y=75,width=200,height=25)
 
-
-
     def GButton_76_command(self):
+
         fw_addr=firewall_address.get()
         fw_user=firewall_username.get()
         fw_pass=firewall_password.get()
@@ -361,4 +369,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)
     root.mainloop()
-
