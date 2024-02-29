@@ -439,8 +439,8 @@ class App:
         #setting title
         LoadingScreenWindow.title("AutoVPN")
         #setting window size
-        width=600
-        height=400
+        width=295
+        height=140
         LoadingScreenWindow.configure(background='#393d49')
         screenwidth = LoadingScreenWindow.winfo_screenwidth()
         screenheight = LoadingScreenWindow.winfo_screenheight()
@@ -449,13 +449,13 @@ class App:
         LoadingScreenWindow.resizable(width=False, height=False)
 
         LoadingLabel=tk.Label(LoadingScreenWindow)
-        ft = tkFont.Font(family='Verdana',size=40)
+        ft = tkFont.Font(family='Verdana',size=30)
         LoadingLabel["font"] = ft
         LoadingLabel["bg"] = "#393d49"
         LoadingLabel["fg"] = "#ffffff"
         LoadingLabel["justify"] = "center"
         LoadingLabel["text"] = "Processing..."
-        LoadingLabel.place(x=20,y=10,width=570,height=340)
+        LoadingLabel.place(x=10,y=10,width=270,height=80)
 
         LoadingCancelButton=tk.Button(LoadingScreenWindow)
         LoadingCancelButton["bg"] = "#e9e9ed"
@@ -465,7 +465,7 @@ class App:
         LoadingCancelButton["fg"] = "#ffffff"
         LoadingCancelButton["justify"] = "center"
         LoadingCancelButton["text"] = "Cancel"
-        LoadingCancelButton.place(x=270,y=350,width=70,height=25)
+        LoadingCancelButton.place(x=110,y=90,width=70,height=25)
         LoadingCancelButton["command"] = self.LoadingCancelButtonAction
 
         fw_addr=self.firewall_address.get()
@@ -489,8 +489,8 @@ class App:
         #setting title
         LoadingScreenWindow.title("AutoVPN")
         #setting window size
-        width=600
-        height=400
+        width=295
+        height=140
         LoadingScreenWindow.configure(background='#393d49')
         screenwidth = LoadingScreenWindow.winfo_screenwidth()
         screenheight = LoadingScreenWindow.winfo_screenheight()
@@ -499,13 +499,13 @@ class App:
         LoadingScreenWindow.resizable(width=False, height=False)
 
         LoadingLabel=tk.Label(LoadingScreenWindow)
-        ft = tkFont.Font(family='Verdana',size=40)
+        ft = tkFont.Font(family='Verdana',size=30)
         LoadingLabel["font"] = ft
         LoadingLabel["bg"] = "#393d49"
         LoadingLabel["fg"] = "#ffffff"
         LoadingLabel["justify"] = "center"
         LoadingLabel["text"] = "Processing..."
-        LoadingLabel.place(x=20,y=10,width=570,height=340)
+        LoadingLabel.place(x=10,y=10,width=270,height=80)
 
         LoadingCancelButton=tk.Button(LoadingScreenWindow)
         LoadingCancelButton["bg"] = "#e9e9ed"
@@ -515,7 +515,7 @@ class App:
         LoadingCancelButton["fg"] = "#ffffff"
         LoadingCancelButton["justify"] = "center"
         LoadingCancelButton["text"] = "Cancel"
-        LoadingCancelButton.place(x=270,y=350,width=70,height=25)
+        LoadingCancelButton.place(x=110,y=90,width=70,height=25)
         LoadingCancelButton["command"] = self.LoadingCancelButtonAction
 
         fw_addr=self.firewall_address.get()
