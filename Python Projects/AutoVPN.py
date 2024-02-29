@@ -1,19 +1,13 @@
 import sys
 import tkinter as tk
-from tkinter import ttk
 import tkinter.font as tkFont
 #import paramiko
-#from getpass import getpass
-#import time
+from getpass import getpass
+import time
 
 #==========================================================================================================================================================================================
 #Function Definitions
 #----------------
-
-from tkinter import ttk
-
-def show_page(page_num):
-    notebook.select(page_num)
 
 def wait_for_prompt(channel, prompt=">"):
     while True:
@@ -361,11 +355,45 @@ class App:
         CANCEL_Button["bg"] = "#5a6074"
         CANCEL_Button["fg"] = "#ffffff"
         CANCEL_Button["justify"] = "center"
-        CANCEL_Button["text"] = "Cancel"
+        CANCEL_Button["text"] = "Exit"
         CANCEL_Button.place(x=410,y=350,width=70,height=25)
         CANCEL_Button["command"] = self.CANCEL_ButtonAction
 
     def OK_ButtonAction(self):
+        LoadingScreenWindow=tk.Toplevel(root)
+        
+        #setting title
+        LoadingScreenWindow.title("AutoVPN")
+        #setting window size
+        width=600
+        height=400
+        LoadingScreenWindow.configure(background='#393d49')
+        screenwidth = LoadingScreenWindow.winfo_screenwidth()
+        screenheight = LoadingScreenWindow.winfo_screenheight()
+        alignstr = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
+        LoadingScreenWindow.geometry(alignstr)
+        LoadingScreenWindow.resizable(width=False, height=False)
+
+        LoadingLabel=tk.Label(LoadingScreenWindow)
+        ft = tkFont.Font(family='Verdana',size=40)
+        LoadingLabel["font"] = ft
+        LoadingLabel["bg"] = "#393d49"
+        LoadingLabel["fg"] = "#ffffff"
+        LoadingLabel["justify"] = "center"
+        LoadingLabel["text"] = "Loading..."
+        LoadingLabel.place(x=20,y=10,width=570,height=340)
+
+        LoadingCancelButton=tk.Button(LoadingScreenWindow)
+        LoadingCancelButton["bg"] = "#e9e9ed"
+        ft = tkFont.Font(family='Verdana',size=10)
+        LoadingCancelButton["font"] = ft
+        LoadingCancelButton["bg"] = "#5a6074"
+        LoadingCancelButton["fg"] = "#ffffff"
+        LoadingCancelButton["justify"] = "center"
+        LoadingCancelButton["text"] = "Cancel"
+        LoadingCancelButton.place(x=270,y=350,width=70,height=25)
+        LoadingCancelButton["command"] = self.LoadingCancelButtonAction
+
         fw_addr=self.firewall_address.get()
         fw_user=self.firewall_username.get()
         fw_pass=self.firewall_password.get()
@@ -377,6 +405,9 @@ class App:
         psk_key=self.pre_shared_key.get()
 
         #configure_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
+
+    def LoadingCancelButtonAction(LoadingScreenWindow):
+        sys.exit()
 
     def CANCEL_ButtonAction(self):
         sys.exit()
