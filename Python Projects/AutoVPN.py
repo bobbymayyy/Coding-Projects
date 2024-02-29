@@ -450,8 +450,8 @@ class App:
         LoadingLabel["bg"] = "#393d49"
         LoadingLabel["fg"] = "#ffffff"
         LoadingLabel["justify"] = "center"
-        LoadingLabel["text"] = "Processing..."
-        LoadingLabel.place(x=10,y=10,width=270,height=80)
+        LoadingLabel["text"] = "Done."
+        LoadingLabel.place(x=15,y=10,width=270,height=80)
 
         LoadingCancelButton=tk.Button(LoadingScreenWindow)
         LoadingCancelButton["bg"] = "#e9e9ed"
@@ -460,7 +460,7 @@ class App:
         LoadingCancelButton["bg"] = "#5a6074"
         LoadingCancelButton["fg"] = "#ffffff"
         LoadingCancelButton["justify"] = "center"
-        LoadingCancelButton["text"] = "Cancel"
+        LoadingCancelButton["text"] = "Exit"
         LoadingCancelButton.place(x=110,y=90,width=70,height=25)
         LoadingCancelButton["command"] = self.LoadingCancelButtonAction
 
@@ -474,6 +474,7 @@ class App:
         peer_addr=self.peer_address.get()
         psk_key=self.pre_shared_key.get()
 
+        time.sleep(5)
 #------>deploy_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
 
     def DESTROY_ButtonAction(self):
@@ -521,6 +522,7 @@ class App:
         peer_addr=self.peer_address.get()
         psk_key=self.pre_shared_key.get()
 
+        time.sleep(5)
 #------>destroy_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
 
 #==========================================================================================================================================================================================
