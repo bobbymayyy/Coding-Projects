@@ -1,9 +1,9 @@
 import sys
-#import pexpect
+import pexpect
 import re
 import tkinter as tk
 import tkinter.font as tkFont
-#import paramiko
+import paramiko
 from getpass import getpass
 import time
 
@@ -426,6 +426,9 @@ class App:
         DESTROY_Button.place(x=410,y=350,width=70,height=25)
         DESTROY_Button["command"] = self.DESTROY_ButtonAction
 
+    def LoadingCancelButtonAction(LoadingScreenWindow):
+        sys.exit()
+
     def DEPLOY_ButtonAction(self):
         LoadingScreenWindow=tk.Toplevel(root)
         
@@ -472,9 +475,6 @@ class App:
         psk_key=self.pre_shared_key.get()
 
 #------>deploy_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
-
-    def LoadingCancelButtonAction(LoadingScreenWindow):
-        sys.exit()
 
     def DESTROY_ButtonAction(self):
         LoadingScreenWindow=tk.Toplevel(root)
