@@ -497,8 +497,8 @@ class App:
         LoadingLabel["bg"] = "#393d49"
         LoadingLabel["fg"] = "#ffffff"
         LoadingLabel["justify"] = "center"
-        LoadingLabel["text"] = "Processing..."
-        LoadingLabel.place(x=10,y=10,width=270,height=80)
+        LoadingLabel["text"] = "Done."
+        LoadingLabel.place(x=15,y=10,width=270,height=80)
 
         LoadingCancelButton=tk.Button(LoadingScreenWindow)
         LoadingCancelButton["bg"] = "#e9e9ed"
@@ -507,7 +507,7 @@ class App:
         LoadingCancelButton["bg"] = "#5a6074"
         LoadingCancelButton["fg"] = "#ffffff"
         LoadingCancelButton["justify"] = "center"
-        LoadingCancelButton["text"] = "Cancel"
+        LoadingCancelButton["text"] = "Exit"
         LoadingCancelButton.place(x=110,y=90,width=70,height=25)
         LoadingCancelButton["command"] = self.LoadingCancelButtonAction
 
