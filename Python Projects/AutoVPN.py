@@ -11,13 +11,6 @@ import time
 #Function Definitions
 #----------------
 
-def wait_for_prompt(channel, prompt=">"):
-    while True:
-        output = channel.recv(4096).decode()
-        print(output)
-        if re.search(f"{prompt}\\s*$", output):
-            break
-
 def deploy_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr):
     try:
         # Create SSH connection
