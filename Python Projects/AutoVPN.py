@@ -474,7 +474,6 @@ class App:
         peer_addr=self.peer_address.get()
         psk_key=self.pre_shared_key.get()
 
-        time.sleep(5)
 #------>deploy_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
 
     def DESTROY_ButtonAction(self):
@@ -522,7 +521,6 @@ class App:
         peer_addr=self.peer_address.get()
         psk_key=self.pre_shared_key.get()
 
-        time.sleep(5)
 #------>destroy_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
 
 #==========================================================================================================================================================================================
