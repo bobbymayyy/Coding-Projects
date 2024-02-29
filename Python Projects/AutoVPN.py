@@ -1,4 +1,6 @@
 import sys
+#import pexpect
+import re
 import tkinter as tk
 import tkinter.font as tkFont
 #import paramiko
@@ -17,25 +19,28 @@ def wait_for_prompt(channel, prompt=">"):
             break
 
 def configure_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr):
-    # Create an SSH client with threading disabled
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
     try:
-        # Connect to the firewall
-        ssh.connect(fw_addr, username=fw_user, password=fw_pass, look_for_keys=False, allow_agent=False, timeout=5)
+        # Create SSH connection
+        ssh_newkey = 'Are you sure you want to continue connecting'
+        ssh_cmd = f'ssh {fw_user}@{fw_addr}'
+        ssh_conn = pexpect.spawn(ssh_cmd)
 
-        # Get the SSH transport
-        transport = ssh.get_transport()
+        # Handle SSH key verification
+        i = ssh_conn.expect([ssh_newkey, 'password:', pexpect.EOF, pexpect.TIMEOUT])
+        if i == 0:
+            ssh_conn.sendline('yes')
+            i = ssh_conn.expect([ssh_newkey, 'password:', pexpect.EOF, pexpect.TIMEOUT])
+        
+        # Enter password
+        if i == 1:
+            ssh_conn.sendline(fw_pass)
+        elif i == 2 or i == 3:
+            raise Exception('SSH connection failed')
 
-        # Wait for 30 seconds before executing the "configure" command
-        print("Logging in...")
-        time.sleep(20)
-
-        # Open an interactive shell
-        shell = ssh.invoke_shell()
-
-        # Send each command one by one
+        # Wait for prompt
+        ssh_conn.expect_exact(prompt)
+        
+        # Send commands
         commands = [
             "configure",
             f"set network interface tunnel units tunnel.{team_num} ip 192.168.{team_num}.2/24",
@@ -84,31 +89,17 @@ def configure_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, pe
             "exit",
             "exit"
         ]
-
         for command in commands:
-            print(f"Executing command: {command}")
-            shell.send(command + "\n")
-            time.sleep(3)  # Add a delay to allow the command to be processed
+            ssh_conn.sendline(command)
+            ssh_conn.expect_exact(prompt)
 
-        # Wait for the command to finish (with a timeout)
-        timeout = 30  # Set your desired timeout (in seconds)
-        start_time = time.time()
-        while not shell.recv_ready():
-            time.sleep(1)  # Adjust sleep time if needed
-            if time.time() - start_time > timeout:
-                print("Timeout reached. Assuming command execution is complete.")
-                break
+        ssh_conn.close()
+        print("Configuration completed successfully.")
 
-        output = shell.recv(4096).decode()
-        print(output)
-
-    except paramiko.AuthenticationException:
-        print("Authentication failed. Please check your credentials.")
     except Exception as e:
         print(f"Error: {e}")
-    finally:
-        # Close the SSH connection
-        ssh.close()
+        if ssh_conn:
+            ssh_conn.close()
 
 #==========================================================================================================================================================================================
 #Main Menu
@@ -380,7 +371,7 @@ class App:
         LoadingLabel["bg"] = "#393d49"
         LoadingLabel["fg"] = "#ffffff"
         LoadingLabel["justify"] = "center"
-        LoadingLabel["text"] = "Loading..."
+        LoadingLabel["text"] = "Processing..."
         LoadingLabel.place(x=20,y=10,width=570,height=340)
 
         LoadingCancelButton=tk.Button(LoadingScreenWindow)
@@ -404,7 +395,7 @@ class App:
         peer_addr=self.peer_address.get()
         psk_key=self.pre_shared_key.get()
 
-        #configure_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
+#------>configure_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
 
     def LoadingCancelButtonAction(LoadingScreenWindow):
         sys.exit()
