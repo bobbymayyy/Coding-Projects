@@ -108,7 +108,7 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
             ssh_conn.expect_exact('>')
 
         ssh_conn.close()
-        print("Configuration completed successfully.")
+        self.show_loading_screen()
 
     except Exception as e:
         print(f"Error: {e}")
@@ -198,14 +198,11 @@ class FirewallManager:
 
         if team_num >= 255:
             octet = remove_zeros(team_num)
-            print("Number is over or equal to 255")
-            #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
-            print("Number is: ", octet)
+            configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+
         else:
             octet = team_num
-            print("Number is under 255")
-            #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
-            print("Number is: ", octet)
+            configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
 
         self.show_loading_screen()
 
@@ -225,16 +222,13 @@ class FirewallManager:
 
         if team_num >= 255:
             octet = remove_zeros(team_num)
-            print("Number is over or equal to 255")
-            #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
-            print("Number is: ", octet)
+            configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+
         else:
             octet = team_num
-            print("Number is under 255")
-            #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
-            print("Number is: ", octet)
+            configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
 
-        self.show_loading_screen()
+        
 
     def show_loading_screen(self):
         loading_window = tk.Toplevel(self.root)
