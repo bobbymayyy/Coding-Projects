@@ -5,7 +5,34 @@ import tkinter.font as tkFont
 from functools import partial
 import pexpect
 
-def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr):
+def remove_zeros(team_num):
+    # Convert number to string to handle zeroes
+    team_num = str(team_num)
+
+    # Remove leading zero
+    team_num = team_num.lstrip('0')
+
+    # Remove trailing zero
+    if team_num.endswith('0'):
+        team_num = team_num[:-1]
+
+    # Convert back to number for logic
+    team_num = int(team_num)
+    
+    # If already mitigated then return otherwise remove all zeroes
+    if team_num >= 255:
+        team_num = str(team_num)
+        team_num = team_num.replace('0', '')
+        team_num = int(team_num)
+        if team_num >= 255:
+            team_num = 88
+            return int(team_num)
+        else:
+            return int(team_num)
+    else:
+        return int(team_num)
+
+def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet):
     try:
         # Create SSH connection
         ssh_newkey = 'Are you sure you want to continue connecting'
@@ -30,7 +57,7 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         # Send commands
         commands = [
             "configure",
-            f"{config}set network interface tunnel units tunnel.{team_num} ip 192.168.{team_num}.2/24",
+            f"{config}set network interface tunnel units tunnel.{team_num} ip 192.168.{octet}.2/24",
             f"{config}set network interface tunnel units tunnel.{team_num} mtu 1350",
             f"{config}set network virtual-router default interface tunnel.{team_num}",
             f"{config}set zone VPN network layer3 tunnel.{team_num}",
@@ -54,24 +81,24 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
             f"{config}set network tunnel ipsec CPT{team_num} anti-replay yes",
             f"{config}set network tunnel ipsec CPT{team_num} copy-tos yes",
             f"{config}set network tunnel ipsec CPT{team_num} disabled no",
-            f"{config}set network tunnel ipsec CPT{team_num} tunnel-monitor destination-ip 192.168.{team_num}.1 enable yes tunnel-monitor-profile default",
+            f"{config}set network tunnel ipsec CPT{team_num} tunnel-monitor destination-ip 192.168.{octet}.1 enable yes tunnel-monitor-profile default",
             f"{config}set network virtual-router default protocol ospf enable yes",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{team_num} interface tunnel.{team_num} enable yes",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{team_num} interface tunnel.{team_num} passive no",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{team_num} interface tunnel.{team_num} gr-delay 10",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{team_num} interface tunnel.{team_num} metric 10",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{team_num} interface tunnel.{team_num} priority 1",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{team_num} interface tunnel.{team_num} hello-interval 10",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{team_num} interface tunnel.{team_num} dead-counts 4",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{team_num} interface tunnel.{team_num} retransmit-interval 5",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{team_num} interface tunnel.{team_num} transit-delay 1",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{team_num} interface tunnel.{team_num} link-type p2p",
+            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} enable yes",
+            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} passive no",
+            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} gr-delay 10",
+            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} metric 10",
+            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} priority 1",
+            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} hello-interval 10",
+            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} dead-counts 4",
+            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} retransmit-interval 5",
+            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} transit-delay 1",
+            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} link-type p2p",
             f"{config}set network virtual-router default protocol ospf router-id {wan_addr}",
             f"{config}set network virtual-router default protocol redist-profile Kit{kit_num} action redist",
             f"{config}set network virtual-router default protocol redist-profile Kit{kit_num} priority 1",
             f"{config}set network virtual-router default protocol redist-profile Kit{kit_num} filter type connect destination 10.{kit_num}.0.0/16",
             f"{config}set network virtual-router default protocol ospf export-rules Kit{kit_num} new-path-type ext-2",
-            f"{config}set network virtual-router default protocol ospf enable yes area 0.0.0.{team_num} type normal",
+            f"{config}set network virtual-router default protocol ospf enable yes area 0.0.0.{octet} type normal",
             "commit",
             "exit",
             "exit"
@@ -95,7 +122,7 @@ class FirewallManager:
         self.create_gui()
 
     def create_gui(self):
-        self.root.title("AutoVPN")
+        self.root.title("Menu")
         self.root.geometry("600x400")
         self.root.resizable(False, False)
         self.root.configure(background='#393d49')
@@ -167,7 +194,19 @@ class FirewallManager:
         wan_addr = self.entries[5].get()
         peer_addr = self.entries[6].get()
         psk_key = self.psk_entry.get()
-        #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
+        team_num = int(team_num)
+
+        if team_num >= 255:
+            team_num = remove_zeros(team_num)
+            print("Number is over or equal to 255")
+            #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
+            print("Number is: ", team_num)
+        
+        else:
+            print("Number is under 255")
+            #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
+            print("Number is: ", team_num)
+
         self.show_loading_screen()
 
     def destroy_button_action(self):
@@ -182,12 +221,24 @@ class FirewallManager:
         wan_addr = self.entries[5].get()
         peer_addr = self.entries[6].get()
         psk_key = self.psk_entry.get()
-        #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
+        team_num = int(team_num)
+
+        if team_num >= 255:
+            octet = remove_zeros(team_num)
+            print("Number is over or equal to 255")
+            #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+            print("Number is: ", octet)
+        else:
+            octet = team_num
+            print("Number is under 255")
+            #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+            print("Number is: ", octet)
+
         self.show_loading_screen()
 
     def show_loading_screen(self):
         loading_window = tk.Toplevel(self.root)
-        loading_window.title("AutoVPN")
+        loading_window.title("Progress")
         loading_window.geometry("250x140")
         loading_window.resizable(False, False)
         loading_window.configure(background='#393d49')
