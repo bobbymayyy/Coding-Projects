@@ -204,8 +204,6 @@ class FirewallManager:
             octet = team_num
             configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
 
-        self.show_loading_screen()
-
     def destroy_button_action(self):
         # Get input values from entries and perform deployment
         config="no "
@@ -227,8 +225,6 @@ class FirewallManager:
         else:
             octet = team_num
             configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
-
-        
 
     def show_loading_screen(self):
         loading_window = tk.Toplevel(self.root)
