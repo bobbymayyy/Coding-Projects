@@ -197,15 +197,15 @@ class FirewallManager:
         team_num = int(team_num)
 
         if team_num >= 255:
-            team_num = remove_zeros(team_num)
+            octet = remove_zeros(team_num)
             print("Number is over or equal to 255")
-            #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
-            print("Number is: ", team_num)
-        
+            #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+            print("Number is: ", octet)
         else:
+            octet = team_num
             print("Number is under 255")
-            #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
-            print("Number is: ", team_num)
+            #configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+            print("Number is: ", octet)
 
         self.show_loading_screen()
 
