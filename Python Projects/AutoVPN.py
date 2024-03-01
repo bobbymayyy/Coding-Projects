@@ -182,8 +182,102 @@ def destroy_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer
 #----------------
 
 class App:
-    def __init__(self, root):
+    def DoneEXIT_ButtonAction(DoneScreenWindow):
+        sys.exit()
 
+    def DEPLOY_ButtonAction(self):
+        DoneScreenWindow=tk.Toplevel(root)
+
+        #setting title
+        DoneScreenWindow.title("AutoVPN")
+        #setting window size
+        width=295
+        height=140
+        DoneScreenWindow.configure(background='#393d49')
+        screenwidth = DoneScreenWindow.winfo_screenwidth()
+        screenheight = DoneScreenWindow.winfo_screenheight()
+        alignstr = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
+        DoneScreenWindow.geometry(alignstr)
+        DoneScreenWindow.resizable(width=False, height=False)
+        DoneLabel=tk.Label(DoneScreenWindow)
+        ft = tkFont.Font(family='Verdana',size=30)
+        DoneLabel["font"] = ft
+        DoneLabel["bg"] = "#393d49"
+        DoneLabel["fg"] = "#ffffff"
+        DoneLabel["justify"] = "center"
+        DoneLabel["text"] = "Done."
+        DoneLabel.place(x=15,y=10,width=270,height=80)
+
+        DoneExitButton=tk.Button(DoneScreenWindow)
+        DoneExitButton["bg"] = "#e9e9ed"
+        ft = tkFont.Font(family='Verdana',size=10)
+        DoneExitButton["font"] = ft
+        DoneExitButton["bg"] = "#5a6074"
+        DoneExitButton["fg"] = "#ffffff"
+        DoneExitButton["justify"] = "center"
+        DoneExitButton["text"] = "Exit"
+        DoneExitButton.place(x=110,y=90,width=70,height=25)
+        DoneExitButton["command"] = self.DoneEXIT_ButtonAction
+
+        fw_addr=self.firewall_address.get()
+        fw_user=self.firewall_username.get()
+        fw_pass=self.firewall_password.get()
+        team_num=self.team_number.get()
+        kit_num=self.kit_number.get()
+        int_num=self.int_number.get()
+        wan_addr=self.wan_address.get()
+        peer_addr=self.peer_address.get()
+        psk_key=self.pre_shared_key.get()
+
+#------>deploy_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
+
+    def DESTROY_ButtonAction(self):
+        DoneScreenWindow=tk.Toplevel(root)
+
+        #setting title
+        DoneScreenWindow.title("AutoVPN")
+        #setting window size
+        width=295
+        height=140
+        DoneScreenWindow.configure(background='#393d49')
+        screenwidth = DoneScreenWindow.winfo_screenwidth()
+        screenheight = DoneScreenWindow.winfo_screenheight()
+        alignstr = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
+        DoneScreenWindow.geometry(alignstr)
+        DoneScreenWindow.resizable(width=False, height=False)
+        DoneLabel=tk.Label(DoneScreenWindow)
+        ft = tkFont.Font(family='Verdana',size=30)
+        DoneLabel["font"] = ft
+        DoneLabel["bg"] = "#393d49"
+        DoneLabel["fg"] = "#ffffff"
+        DoneLabel["justify"] = "center"
+        DoneLabel["text"] = "Done."
+        DoneLabel.place(x=15,y=10,width=270,height=80)
+
+        DoneExitButton=tk.Button(DoneScreenWindow)
+        DoneExitButton["bg"] = "#e9e9ed"
+        ft = tkFont.Font(family='Verdana',size=10)
+        DoneExitButton["font"] = ft
+        DoneExitButton["bg"] = "#5a6074"
+        DoneExitButton["fg"] = "#ffffff"
+        DoneExitButton["justify"] = "center"
+        DoneExitButton["text"] = "Exit"
+        DoneExitButton.place(x=110,y=90,width=70,height=25)
+        DoneExitButton["command"] = self.DoneEXIT_ButtonAction
+
+        fw_addr=self.firewall_address.get()
+        fw_user=self.firewall_username.get()
+        fw_pass=self.firewall_password.get()
+        team_num=self.team_number.get()
+        kit_num=self.kit_number.get()
+        int_num=self.int_number.get()
+        wan_addr=self.wan_address.get()
+        peer_addr=self.peer_address.get()
+        psk_key=self.pre_shared_key.get()
+
+#------>destroy_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
+
+    def __init__(self, root):
 #==========================================================================================================================================================================================
 #GUI Canvas
 #----------------
@@ -425,103 +519,6 @@ class App:
         DESTROY_Button["text"] = "Destroy"
         DESTROY_Button.place(x=410,y=350,width=70,height=25)
         DESTROY_Button["command"] = self.DESTROY_ButtonAction
-
-    def LoadingCancelButtonAction(LoadingScreenWindow):
-        sys.exit()
-
-    def DEPLOY_ButtonAction(self):
-        LoadingScreenWindow=tk.Toplevel(root)
-        
-        #setting title
-        LoadingScreenWindow.title("AutoVPN")
-        #setting window size
-        width=295
-        height=140
-        LoadingScreenWindow.configure(background='#393d49')
-        screenwidth = LoadingScreenWindow.winfo_screenwidth()
-        screenheight = LoadingScreenWindow.winfo_screenheight()
-        alignstr = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
-        LoadingScreenWindow.geometry(alignstr)
-        LoadingScreenWindow.resizable(width=False, height=False)
-
-        LoadingLabel=tk.Label(LoadingScreenWindow)
-        ft = tkFont.Font(family='Verdana',size=30)
-        LoadingLabel["font"] = ft
-        LoadingLabel["bg"] = "#393d49"
-        LoadingLabel["fg"] = "#ffffff"
-        LoadingLabel["justify"] = "center"
-        LoadingLabel["text"] = "Done."
-        LoadingLabel.place(x=15,y=10,width=270,height=80)
-
-        LoadingCancelButton=tk.Button(LoadingScreenWindow)
-        LoadingCancelButton["bg"] = "#e9e9ed"
-        ft = tkFont.Font(family='Verdana',size=10)
-        LoadingCancelButton["font"] = ft
-        LoadingCancelButton["bg"] = "#5a6074"
-        LoadingCancelButton["fg"] = "#ffffff"
-        LoadingCancelButton["justify"] = "center"
-        LoadingCancelButton["text"] = "Exit"
-        LoadingCancelButton.place(x=110,y=90,width=70,height=25)
-        LoadingCancelButton["command"] = self.LoadingCancelButtonAction
-
-        fw_addr=self.firewall_address.get()
-        fw_user=self.firewall_username.get()
-        fw_pass=self.firewall_password.get()
-        team_num=self.team_number.get()
-        kit_num=self.kit_number.get()
-        int_num=self.int_number.get()
-        wan_addr=self.wan_address.get()
-        peer_addr=self.peer_address.get()
-        psk_key=self.pre_shared_key.get()
-
-#------>deploy_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
-
-    def DESTROY_ButtonAction(self):
-        LoadingScreenWindow=tk.Toplevel(root)
-        
-        #setting title
-        LoadingScreenWindow.title("AutoVPN")
-        #setting window size
-        width=295
-        height=140
-        LoadingScreenWindow.configure(background='#393d49')
-        screenwidth = LoadingScreenWindow.winfo_screenwidth()
-        screenheight = LoadingScreenWindow.winfo_screenheight()
-        alignstr = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
-        LoadingScreenWindow.geometry(alignstr)
-        LoadingScreenWindow.resizable(width=False, height=False)
-
-        LoadingLabel=tk.Label(LoadingScreenWindow)
-        ft = tkFont.Font(family='Verdana',size=30)
-        LoadingLabel["font"] = ft
-        LoadingLabel["bg"] = "#393d49"
-        LoadingLabel["fg"] = "#ffffff"
-        LoadingLabel["justify"] = "center"
-        LoadingLabel["text"] = "Done."
-        LoadingLabel.place(x=15,y=10,width=270,height=80)
-
-        LoadingCancelButton=tk.Button(LoadingScreenWindow)
-        LoadingCancelButton["bg"] = "#e9e9ed"
-        ft = tkFont.Font(family='Verdana',size=10)
-        LoadingCancelButton["font"] = ft
-        LoadingCancelButton["bg"] = "#5a6074"
-        LoadingCancelButton["fg"] = "#ffffff"
-        LoadingCancelButton["justify"] = "center"
-        LoadingCancelButton["text"] = "Exit"
-        LoadingCancelButton.place(x=110,y=90,width=70,height=25)
-        LoadingCancelButton["command"] = self.LoadingCancelButtonAction
-
-        fw_addr=self.firewall_address.get()
-        fw_user=self.firewall_username.get()
-        fw_pass=self.firewall_password.get()
-        team_num=self.team_number.get()
-        kit_num=self.kit_number.get()
-        int_num=self.int_number.get()
-        wan_addr=self.wan_address.get()
-        peer_addr=self.peer_address.get()
-        psk_key=self.pre_shared_key.get()
-
-#------>destroy_firewall(fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr)
 
 #==========================================================================================================================================================================================
 #==========================================================================================================================================================================================
