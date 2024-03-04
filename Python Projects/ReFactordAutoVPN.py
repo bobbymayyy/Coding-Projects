@@ -8,17 +8,13 @@ import pexpect
 def remove_zeros(team_num):
     # Convert number to string to handle zeroes
     team_num = str(team_num)
-
     # Remove leading zero
     team_num = team_num.lstrip('0')
-
     # Remove trailing zero
     if team_num.endswith('0'):
         team_num = team_num[:-1]
-
     # Convert back to number for logic
     team_num = int(team_num)
-    
     # If already mitigated then return otherwise remove all zeroes
     if team_num >= 255:
         team_num = str(team_num)
@@ -38,22 +34,18 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         ssh_newkey = 'Are you sure you want to continue connecting'
         ssh_cmd = f'ssh {fw_user}@{fw_addr}'
         ssh_conn = pexpect.spawn(ssh_cmd)
-
         # Handle SSH key verification
         i = ssh_conn.expect([ssh_newkey, 'password:', pexpect.EOF, pexpect.TIMEOUT])
         if i == 0:
             ssh_conn.sendline('yes')
             i = ssh_conn.expect([ssh_newkey, 'password:', pexpect.EOF, pexpect.TIMEOUT])
-        
         # Enter password
         if i == 1:
             ssh_conn.sendline(fw_pass)
         elif i == 2 or i == 3:
             raise Exception('SSH connection failed')
-
         # Wait for prompt
         ssh_conn.expect_exact('>')
-        
         # Send commands
         commands = [
             "configure",
@@ -106,10 +98,8 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         for command in commands:
             ssh_conn.sendline(command)
             ssh_conn.expect_exact('>')
-
         ssh_conn.close()
         self.show_loading_screen()
-
     except Exception as e:
         print(f"Error: {e}")
         if ssh_conn:
@@ -118,7 +108,6 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
 #===================================================================================================================================
 # Firewall Manager App
 #===================================================================================================================================
-            
 class FirewallManager:
     def __init__(self, root):
         self.root = root
@@ -129,7 +118,6 @@ class FirewallManager:
         self.root.geometry("600x400")
         self.root.resizable(False, False)
         self.root.configure(background='#393d49')
-
         self.create_labels()
         self.create_entries()
         self.create_buttons()
@@ -147,7 +135,6 @@ class FirewallManager:
             ("Firewall IP Address", self.entries[0]),
             ("Firewall Username", self.entries[1])
         ]
-
         for label_text, entry in default_labels:
             if not entry.get():
                 label = [widget for widget in self.root.children.values() if isinstance(widget, tk.Label) and widget.cget('text') == label_text]
@@ -170,10 +157,8 @@ class FirewallManager:
             ("Firewall IP Address", 20, 75, 260, 25),
             ("Firewall Username", 320, 75, 260, 25)
         ]
-
         welcome_label = tk.Label(self.root, text="Welcome to AutoVPN.", font=tkFont.Font(family='Verdana', size=30), bg="#393d49", fg="#ffffff", justify="center")
         welcome_label.place(x=20,y=10,width=560,height=70)
-
         for text, x, y, width, height in labels_info:
             label = tk.Label(self.root, text=text, font=tkFont.Font(family='Verdana', size=10), bg="#393d49", fg="#ffffff", justify="center")
             label.place(x=x, y=y, width=width, height=height)
@@ -181,10 +166,8 @@ class FirewallManager:
     def create_entries(self):
         self.password_entry=tk.Entry(root, font=tkFont.Font(family='Verdana',size=10), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", show="*")
         self.password_entry.place(x=40,y=150,width=520,height=25)
-
         self.psk_entry=tk.Entry(root, font=tkFont.Font(family='Verdana',size=10), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", show="*")
         self.psk_entry.place(x=320,y=300,width=260,height=25)
-
         entries_info = [
             (20, 100, 260, 25),
             (320, 100, 260, 25),
@@ -194,7 +177,6 @@ class FirewallManager:
             (320, 250, 260, 25),
             (20, 300, 260, 25),
         ]
-
         self.entries = [tk.Entry(root, font=tkFont.Font(family='Verdana',size=10), bg="#5a6074", fg="#ffffff", justify="center", relief="flat") for _ in range(len(entries_info))]
         for entry, (x, y, width, height) in zip(self.entries, entries_info):
             entry.place(x=x, y=y, width=width, height=height)
@@ -204,7 +186,6 @@ class FirewallManager:
             ("Deploy", self.deploy_button_action, 120, 345),
             ("Destroy", self.destroy_button_action, 400, 345)
         ]
-
         for text, command, x, y in buttons_info:
             button = tk.Button(self.root, text=text, font=tkFont.Font(family='Verdana',size=12), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", command=command)
             button.place(x=x, y=y, width=85, height=30)
@@ -221,19 +202,17 @@ class FirewallManager:
         wan_addr = self.entries[5].get()
         peer_addr = self.entries[6].get()
         psk_key = self.psk_entry.get()
-
         # Check if any input value is empty
         if any(value == "" for value in [fw_addr, fw_user, fw_pass, team_num, kit_num, int_num, wan_addr, peer_addr, psk_key]):
             print("Please fill in all fields.")
             self.reset_app()
             return
         else:
-            self.create_labels()
+            self.reset_app()
             team_num = int(team_num)
             if team_num >= 255:
                 octet = remove_zeros(team_num)
                 configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
-
             else:
                 octet = team_num
                 configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
@@ -250,19 +229,17 @@ class FirewallManager:
         wan_addr = self.entries[5].get()
         peer_addr = self.entries[6].get()
         psk_key = self.psk_entry.get()
-
         # Check if any input value is empty
         if any(value == "" for value in [fw_addr, fw_user, fw_pass, team_num, kit_num, int_num, wan_addr, peer_addr, psk_key]):
             print("Please fill in all fields.")
             self.reset_app()
             return
         else:
-            self.create_labels()
+            self.reset_app()
             team_num = int(team_num)
             if team_num >= 255:
                 octet = remove_zeros(team_num)
                 configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
-
             else:
                 octet = team_num
                 configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
@@ -273,14 +250,14 @@ class FirewallManager:
         loading_window.geometry("250x140")
         loading_window.resizable(False, False)
         loading_window.configure(background='#393d49')
-
         label = tk.Label(loading_window, text="Done.", font=tkFont.Font(family='Verdana', size=30), bg="#393d49", fg="#ffffff", justify="center")
         label.place(x=5, y=5, width=250, height=80)
-
         cancel_button = tk.Button(loading_window, text="Menu", font=tkFont.Font(family='Verdana',size=12), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", command=loading_window.destroy)
         cancel_button.place(x=85, y=85, width=85, height=30)
 
-
+#===================================================================================================================================
+# Main Flow
+#===================================================================================================================================
 if __name__ == "__main__":
     root = tk.Tk()
     app = FirewallManager(root)
