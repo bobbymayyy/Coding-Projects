@@ -115,7 +115,10 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         if ssh_conn:
             ssh_conn.close()
 
-
+#===================================================================================================================================
+# Firewall Manager App
+#===================================================================================================================================
+            
 class FirewallManager:
     def __init__(self, root):
         self.root = root
@@ -130,6 +133,30 @@ class FirewallManager:
         self.create_labels()
         self.create_entries()
         self.create_buttons()
+
+    def reset_app(self):
+        # Reset labels with no user input to red font color
+        default_labels = [
+            ("Team Number", self.entries[2]),
+            ("Kit Number", self.entries[3]),
+            ("WAN Interface Number eg- 1/'X'", self.entries[4]),
+            ("Peer IP Address", self.entries[6]),
+            ("WAN IP Address", self.entries[5]),
+            ("Pre-Shared Key", self.psk_entry),
+            ("Please enter your password below:", self.password_entry),
+            ("Firewall IP Address", self.entries[0]),
+            ("Firewall Username", self.entries[1])
+        ]
+
+        for label_text, entry in default_labels:
+            if not entry.get():
+                label = [widget for widget in self.root.children.values() if isinstance(widget, tk.Label) and widget.cget('text') == label_text]
+                if label:
+                    label[0].config(fg="red")
+            else:
+                label = [widget for widget in self.root.children.values() if isinstance(widget, tk.Label) and widget.cget('text') == label_text]
+                if label:
+                    label[0].config(fg="#ffffff")
 
     def create_labels(self):
         labels_info = [
@@ -194,15 +221,22 @@ class FirewallManager:
         wan_addr = self.entries[5].get()
         peer_addr = self.entries[6].get()
         psk_key = self.psk_entry.get()
-        team_num = int(team_num)
 
-        if team_num >= 255:
-            octet = remove_zeros(team_num)
-            configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
-
+        # Check if any input value is empty
+        if any(value == "" for value in [fw_addr, fw_user, fw_pass, team_num, kit_num, int_num, wan_addr, peer_addr, psk_key]):
+            print("Please fill in all fields.")
+            self.reset_app()
+            return
         else:
-            octet = team_num
-            configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+            self.create_labels()
+            team_num = int(team_num)
+            if team_num >= 255:
+                octet = remove_zeros(team_num)
+                configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+
+            else:
+                octet = team_num
+                configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
 
     def destroy_button_action(self):
         # Get input values from entries and perform deployment
@@ -216,15 +250,22 @@ class FirewallManager:
         wan_addr = self.entries[5].get()
         peer_addr = self.entries[6].get()
         psk_key = self.psk_entry.get()
-        team_num = int(team_num)
 
-        if team_num >= 255:
-            octet = remove_zeros(team_num)
-            configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
-
+        # Check if any input value is empty
+        if any(value == "" for value in [fw_addr, fw_user, fw_pass, team_num, kit_num, int_num, wan_addr, peer_addr, psk_key]):
+            print("Please fill in all fields.")
+            self.reset_app()
+            return
         else:
-            octet = team_num
-            configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+            self.create_labels()
+            team_num = int(team_num)
+            if team_num >= 255:
+                octet = remove_zeros(team_num)
+                configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+
+            else:
+                octet = team_num
+                configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
 
     def show_loading_screen(self):
         loading_window = tk.Toplevel(self.root)
