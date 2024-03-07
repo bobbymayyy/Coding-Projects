@@ -35,10 +35,10 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         ssh_cmd = f'ssh {fw_user}@{fw_addr}'
         ssh_conn = pexpect.spawn(ssh_cmd)
         # Handle SSH key verification
-        i = ssh_conn.expect([ssh_newkey, 'password:', pexpect.EOF, pexpect.TIMEOUT])
+        i = ssh_conn.expect([ssh_newkey, 'Password:', pexpect.EOF, pexpect.TIMEOUT])
         if i == 0:
             ssh_conn.sendline('yes')
-            i = ssh_conn.expect([ssh_newkey, 'password:', pexpect.EOF, pexpect.TIMEOUT])
+            i = ssh_conn.expect([ssh_newkey, 'Password:', pexpect.EOF, pexpect.TIMEOUT])
         # Enter password
         if i == 1:
             ssh_conn.sendline(fw_pass)
@@ -46,9 +46,11 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
             raise Exception('SSH connection failed')
         # Wait for prompt
         ssh_conn.expect_exact('>')
+        # Start configuration and wait for config prompt
+        ssh_conn.sendline("configure")
+        ssh_conn.expect_exact('#')
         # Send commands
         commands = [
-            "configure",
             f"{config}set network interface tunnel units tunnel.{team_num} ip 192.168.{octet}.2/24",
             f"{config}set network interface tunnel units tunnel.{team_num} mtu 1350",
             f"{config}set network virtual-router default interface tunnel.{team_num}",
@@ -92,12 +94,13 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
             f"{config}set network virtual-router default protocol ospf export-rules Kit{kit_num} new-path-type ext-2",
             f"{config}set network virtual-router default protocol ospf enable yes area 0.0.0.{octet} type normal",
             "commit",
-            "exit",
             "exit"
         ]
         for command in commands:
             ssh_conn.sendline(command)
-            ssh_conn.expect_exact('>')
+            ssh_conn.expect_exact('#')
+        ssh_conn.expect_exact('>')
+        ssh_conn.sendline("exit")
         ssh_conn.close()
         self.show_loading_screen()
     except Exception as e:
