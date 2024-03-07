@@ -141,6 +141,8 @@ class FirewallManager:
             ("Firewall IP Address", self.entries[0]),
             ("Firewall Username", self.entries[1])
         ]
+        self.welcome_label = tk.Label(self.root, text="Welcome to AutoVPN.", font=tkFont.Font(family='Verdana', size=30), bg="#393d49", fg="#ffffff", justify="center")
+        self.welcome_label.place(x=20,y=10,width=560,height=70)
         for label_text, entry in default_labels:
             if not entry.get():
                 label = [widget for widget in self.root.children.values() if isinstance(widget, tk.Label) and widget.cget('text') == label_text]
