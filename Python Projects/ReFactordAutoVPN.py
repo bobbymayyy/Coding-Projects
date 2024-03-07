@@ -29,6 +29,7 @@ def remove_zeros(team_num):
         return int(team_num)
 
 def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet):
+    success = False
     try:
         # Create SSH connection
         ssh_newkey = 'Are you sure you want to continue connecting'
@@ -102,11 +103,12 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         ssh_conn.expect_exact('>')
         ssh_conn.sendline("exit")
         ssh_conn.close()
-        self.show_loading_screen()
+        success = True
     except Exception as e:
         print(f"Error: {e}")
         if ssh_conn:
             ssh_conn.close()
+    return success
 
 #===================================================================================================================================
 # Firewall Manager App
@@ -124,6 +126,7 @@ class FirewallManager:
         self.create_labels()
         self.create_entries()
         self.create_buttons()
+        self.configure_success = False
 
     def reset_app(self):
         # Reset labels with no user input to red font color
@@ -204,6 +207,10 @@ class FirewallManager:
         cancel_button = tk.Button(loading_window, text="Menu", font=tkFont.Font(family='Verdana',size=12), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", command=loading_window.destroy)
         cancel_button.place(x=85, y=85, width=85, height=30)
 
+    def update_label_color(self, color):
+        # Change color of welcome_label
+        welcome_label.config(fg=color)
+
     def deploy_button_action(self):
         # Get input values from entries and perform deployment
         config=""
@@ -226,10 +233,12 @@ class FirewallManager:
             team_num = int(team_num)
             if team_num >= 255:
                 octet = remove_zeros(team_num)
-                configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+                self.configure_success = configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
             else:
                 octet = team_num
-                configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+                self.configure_success = configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+            if self.configure_success:
+                self.update_label_color("#00ff00")
 
     def destroy_button_action(self):
         # Get input values from entries and perform deployment
@@ -253,11 +262,13 @@ class FirewallManager:
             team_num = int(team_num)
             if team_num >= 255:
                 octet = remove_zeros(team_num)
-                configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+                self.configure_success = configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
             else:
                 octet = team_num
-                configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
-
+                self.configure_success = configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+            if self.configure_success:
+                self.update_label_color("#00ff00")
+            
 #===================================================================================================================================
 # Main Flow
 #===================================================================================================================================
