@@ -190,6 +190,17 @@ class FirewallManager:
             button = tk.Button(self.root, text=text, font=tkFont.Font(family='Verdana',size=12), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", command=command)
             button.place(x=x, y=y, width=85, height=30)
 
+    def show_loading_screen(self):
+        loading_window = tk.Toplevel(self.root)
+        loading_window.title("Progress")
+        loading_window.geometry("250x140")
+        loading_window.resizable(False, False)
+        loading_window.configure(background='#393d49')
+        label = tk.Label(loading_window, text="Done.", font=tkFont.Font(family='Verdana', size=30), bg="#393d49", fg="#ffffff", justify="center")
+        label.place(x=5, y=5, width=250, height=80)
+        cancel_button = tk.Button(loading_window, text="Menu", font=tkFont.Font(family='Verdana',size=12), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", command=loading_window.destroy)
+        cancel_button.place(x=85, y=85, width=85, height=30)
+
     def deploy_button_action(self):
         # Get input values from entries and perform deployment
         config=""
@@ -243,17 +254,6 @@ class FirewallManager:
             else:
                 octet = team_num
                 configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
-
-    def show_loading_screen(self):
-        loading_window = tk.Toplevel(self.root)
-        loading_window.title("Progress")
-        loading_window.geometry("250x140")
-        loading_window.resizable(False, False)
-        loading_window.configure(background='#393d49')
-        label = tk.Label(loading_window, text="Done.", font=tkFont.Font(family='Verdana', size=30), bg="#393d49", fg="#ffffff", justify="center")
-        label.place(x=5, y=5, width=250, height=80)
-        cancel_button = tk.Button(loading_window, text="Menu", font=tkFont.Font(family='Verdana',size=12), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", command=loading_window.destroy)
-        cancel_button.place(x=85, y=85, width=85, height=30)
 
 #===================================================================================================================================
 # Main Flow
