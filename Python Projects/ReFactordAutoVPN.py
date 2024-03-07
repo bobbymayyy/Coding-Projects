@@ -163,8 +163,8 @@ class FirewallManager:
             ("Firewall IP Address", 20, 75, 260, 25),
             ("Firewall Username", 320, 75, 260, 25)
         ]
-        welcome_label = tk.Label(self.root, text="Welcome to AutoVPN.", font=tkFont.Font(family='Verdana', size=30), bg="#393d49", fg="#ffffff", justify="center")
-        welcome_label.place(x=20,y=10,width=560,height=70)
+        self.welcome_label = tk.Label(self.root, text="Welcome to AutoVPN.", font=tkFont.Font(family='Verdana', size=30), bg="#393d49", fg="#ffffff", justify="center")
+        self.welcome_label.place(x=20,y=10,width=560,height=70)
         for text, x, y, width, height in labels_info:
             label = tk.Label(self.root, text=text, font=tkFont.Font(family='Verdana', size=10), bg="#393d49", fg="#ffffff", justify="center")
             label.place(x=x, y=y, width=width, height=height)
@@ -196,20 +196,9 @@ class FirewallManager:
             button = tk.Button(self.root, text=text, font=tkFont.Font(family='Verdana',size=12), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", command=command)
             button.place(x=x, y=y, width=85, height=30)
 
-    def show_loading_screen(self):
-        loading_window = tk.Toplevel(self.root)
-        loading_window.title("Progress")
-        loading_window.geometry("250x140")
-        loading_window.resizable(False, False)
-        loading_window.configure(background='#393d49')
-        label = tk.Label(loading_window, text="Done.", font=tkFont.Font(family='Verdana', size=30), bg="#393d49", fg="#ffffff", justify="center")
-        label.place(x=5, y=5, width=250, height=80)
-        cancel_button = tk.Button(loading_window, text="Menu", font=tkFont.Font(family='Verdana',size=12), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", command=loading_window.destroy)
-        cancel_button.place(x=85, y=85, width=85, height=30)
-
     def update_label_color(self, color):
         # Change color of welcome_label
-        welcome_label.config(fg=color)
+        self.welcome_label.config(fg=color)
 
     def deploy_button_action(self):
         # Get input values from entries and perform deployment
