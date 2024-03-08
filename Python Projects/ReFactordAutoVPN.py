@@ -3,6 +3,7 @@
 import tkinter as tk
 import tkinter.font as tkFont
 from functools import partial
+import ipaddress
 import pexpect
 
 def remove_zeros(team_num):
@@ -191,12 +192,12 @@ class FirewallManager:
 
     def create_buttons(self):
         buttons_info = [
-            ("Deploy", self.deploy_button_action, 120, 345),
-            ("Destroy", self.destroy_button_action, 400, 345)
+            ("Establish", self.deploy_button_action, 110, 345),
+            ("Demolish", self.destroy_button_action, 400, 345)
         ]
         for text, command, x, y in buttons_info:
             button = tk.Button(self.root, text=text, font=tkFont.Font(family='Verdana',size=12), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", command=command)
-            button.place(x=x, y=y, width=85, height=30)
+            button.place(x=x, y=y, width=90, height=30)
 
     def update_label_color(self, color):
         # Change color of welcome_label
