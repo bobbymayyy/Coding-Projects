@@ -3,7 +3,6 @@
 import tkinter as tk
 import tkinter.font as tkFont
 from functools import partial
-import ipaddress
 import pexpect
 
 def remove_zeros(team_num):
@@ -53,48 +52,50 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         ssh_conn.expect_exact('#')
         # Send commands
         commands = [
-            f"{config}set network interface tunnel units tunnel.{team_num} ip 192.168.{octet}.2/24",
-            f"{config}set network interface tunnel units tunnel.{team_num} mtu 1350",
-            f"{config}set network virtual-router default interface tunnel.{team_num}",
-            f"{config}set zone VPN network layer3 tunnel.{team_num}",
-            f"{config}set network ike crypto-profiles ike-crypto-profiles CPT{team_num} hash sha384 dh-group group20 encryption aes-256-cbc lifetime seconds 28800",
-            f"{config}set network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} esp authentication sha256 encryption aes-256-cbc",
-            f"{config}set network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} lifetime seconds 3600",
-            f"{config}set network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} dh-group group20",
-            f"{config}set network ike gateway CPT{team_num} authentication pre-shared-key key {psk_key}",
-            f"{config}set network ike gateway CPT{team_num} protocol ikev2 dpd enable yes",
-            f"{config}set network ike gateway CPT{team_num} protocol ikev2 ike-crypto-profile CPT{team_num}",
-            f"{config}set network ike gateway CPT{team_num} protocol version ikev2",
-            f"{config}set network ike gateway CPT{team_num} local-address interface ethernet1/{int_num} ip {wan_addr}/28",
-            f"{config}set network ike gateway CPT{team_num} protocol-common nat-traversal enable no",
-            f"{config}set network ike gateway CPT{team_num} protocol-common fragmentation enable yes",
-            f"{config}set network ike gateway CPT{team_num} peer-address ip {peer_addr}",
-            f"{config}set network ike gateway CPT{team_num} local-id id {team_num}cpt@cpb.army.mil type ufqdn",
-            f"{config}set network tunnel ipsec CPT{team_num} auto-key ike-gateway CPT{team_num}",
-            f"{config}set network tunnel ipsec CPT{team_num} auto-key ipsec-crypto-profile CPT{team_num}",
-            f"{config}set network tunnel ipsec CPT{team_num} tunnel-monitor enable no",
-            f"{config}set network tunnel ipsec CPT{team_num} tunnel-interface tunnel.{team_num}",
-            f"{config}set network tunnel ipsec CPT{team_num} anti-replay yes",
-            f"{config}set network tunnel ipsec CPT{team_num} copy-tos yes",
-            f"{config}set network tunnel ipsec CPT{team_num} disabled no",
-            f"{config}set network tunnel ipsec CPT{team_num} tunnel-monitor destination-ip 192.168.{octet}.1 enable yes tunnel-monitor-profile default",
-            f"{config}set network virtual-router default protocol ospf enable yes",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} enable yes",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} passive no",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} gr-delay 10",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} metric 10",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} priority 1",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} hello-interval 10",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} dead-counts 4",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} retransmit-interval 5",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} transit-delay 1",
-            f"{config}set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} link-type p2p",
-            f"{config}set network virtual-router default protocol ospf router-id {wan_addr}",
-            f"{config}set network virtual-router default protocol redist-profile Kit{kit_num} action redist",
-            f"{config}set network virtual-router default protocol redist-profile Kit{kit_num} priority 1",
-            f"{config}set network virtual-router default protocol redist-profile Kit{kit_num} filter type connect destination 10.{kit_num}.0.0/16",
-            f"{config}set network virtual-router default protocol ospf export-rules Kit{kit_num} new-path-type ext-2",
-            f"{config}set network virtual-router default protocol ospf enable yes area 0.0.0.{octet} type normal",
+            #f"{config} deviceconfig system hostname GOODAFTERNOON" - last resort to test...
+            f"{config} network interface tunnel units tunnel.{team_num} ip 192.168.{octet}.2/24",
+            f"{config} network interface tunnel units tunnel.{team_num} mtu 1350",
+            f"{config} network interface ethernet ethernet1/{int_num} layer3 ip {wan_addr}/28",
+            f"{config} network virtual-router default interface tunnel.{team_num}",
+            f"{config} zone VPN network layer3 tunnel.{team_num}",
+            f"{config} network ike crypto-profiles ike-crypto-profiles CPT{team_num} hash sha384 dh-group group20 encryption aes-256-cbc lifetime seconds 28800",
+            f"{config} network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} esp authentication sha256 encryption aes-256-cbc",
+            f"{config} network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} lifetime seconds 3600",
+            f"{config} network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} dh-group group20",
+            f"{config} network ike gateway CPT{team_num} authentication pre-shared-key key {psk_key}",
+            f"{config} network ike gateway CPT{team_num} protocol ikev2 dpd enable yes",
+            f"{config} network ike gateway CPT{team_num} protocol ikev2 ike-crypto-profile CPT{team_num}",
+            f"{config} network ike gateway CPT{team_num} protocol version ikev2",
+            f"{config} network ike gateway CPT{team_num} local-address interface ethernet1/{int_num} ip {wan_addr}/28",
+            f"{config} network ike gateway CPT{team_num} protocol-common nat-traversal enable no",
+            f"{config} network ike gateway CPT{team_num} protocol-common fragmentation enable yes",
+            f"{config} network ike gateway CPT{team_num} peer-address ip {peer_addr}",
+            f"{config} network ike gateway CPT{team_num} local-id id {team_num}cpt@cpb.army.mil type ufqdn",
+            f"{config} network tunnel ipsec CPT{team_num} auto-key ike-gateway CPT{team_num}",
+            f"{config} network tunnel ipsec CPT{team_num} auto-key ipsec-crypto-profile CPT{team_num}",
+            f"{config} network tunnel ipsec CPT{team_num} tunnel-monitor enable no",
+            f"{config} network tunnel ipsec CPT{team_num} tunnel-interface tunnel.{team_num}",
+            f"{config} network tunnel ipsec CPT{team_num} anti-replay yes",
+            f"{config} network tunnel ipsec CPT{team_num} copy-tos yes",
+            f"{config} network tunnel ipsec CPT{team_num} disabled no",
+            f"{config} network tunnel ipsec CPT{team_num} tunnel-monitor destination-ip 192.168.{octet}.1 enable yes tunnel-monitor-profile default",
+            f"{config} network virtual-router default protocol ospf enable yes",
+            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} enable yes",
+            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} passive no",
+            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} gr-delay 10",
+            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} metric 10",
+            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} priority 1",
+            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} hello-interval 10",
+            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} dead-counts 4",
+            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} retransmit-interval 5",
+            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} transit-delay 1",
+            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} link-type p2p",
+            f"{config} network virtual-router default protocol ospf router-id {wan_addr}",
+            f"{config} network virtual-router default protocol redist-profile Kit{kit_num} action redist",
+            f"{config} network virtual-router default protocol redist-profile Kit{kit_num} priority 1",
+            f"{config} network virtual-router default protocol redist-profile Kit{kit_num} filter type connect destination 10.{kit_num}.0.0/16",
+            f"{config} network virtual-router default protocol ospf export-rules Kit{kit_num} new-path-type ext-2",
+            f"{config} network virtual-router default protocol ospf enable yes area 0.0.0.{octet} type normal",
             "commit",
             "exit"
         ]
@@ -205,7 +206,7 @@ class FirewallManager:
 
     def deploy_button_action(self):
         # Get input values from entries and perform deployment
-        config=""
+        config="set"
         fw_addr = self.entries[0].get()
         fw_user = self.entries[1].get()
         fw_pass = self.password_entry.get()
@@ -234,7 +235,7 @@ class FirewallManager:
 
     def destroy_button_action(self):
         # Get input values from entries and perform deployment
-        config="no "
+        config="delete"
         fw_addr = self.entries[0].get()
         fw_user = self.entries[1].get()
         fw_pass = self.password_entry.get()
