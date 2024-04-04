@@ -52,7 +52,6 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         ssh_conn.expect_exact('#')
         # Send commands
         commands = [
-            #f"{config} deviceconfig system hostname GOODAFTERNOON" - last resort to test...
             f"{config} network interface tunnel units tunnel.{team_num} ip 192.168.{octet}.2/24",
             f"{config} network interface tunnel units tunnel.{team_num} mtu 1350",
             f"{config} network interface ethernet ethernet1/{int_num} layer3 ip {wan_addr}/28",
@@ -79,6 +78,7 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
             f"{config} network tunnel ipsec CPT{team_num} copy-tos yes",
             f"{config} network tunnel ipsec CPT{team_num} disabled no",
             f"{config} network tunnel ipsec CPT{team_num} tunnel-monitor destination-ip 192.168.{octet}.1 enable yes tunnel-monitor-profile default",
+            f"{config} network virtual-router default protocol ospf router-id {wan_addr}",
             f"{config} network virtual-router default protocol ospf enable yes",
             f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} enable yes",
             f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} passive no",
@@ -90,7 +90,6 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
             f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} retransmit-interval 5",
             f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} transit-delay 1",
             f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} link-type p2p",
-            f"{config} network virtual-router default protocol ospf router-id {wan_addr}",
             f"{config} network virtual-router default protocol redist-profile Kit{kit_num} action redist",
             f"{config} network virtual-router default protocol redist-profile Kit{kit_num} priority 1",
             f"{config} network virtual-router default protocol redist-profile Kit{kit_num} filter type connect destination 10.{kit_num}.0.0/16",
