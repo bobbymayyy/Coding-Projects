@@ -48,10 +48,13 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         # Wait for prompt
         ssh_conn.expect_exact('>')
         # Start configuration and wait for config prompt
+        ssh_conn.sendline("set cli terminal width 500")
+        ssh_conn.sendline("set cli scripting-mode on")
         ssh_conn.sendline("configure")
         ssh_conn.expect_exact('#')
         # Send commands
         commands = [
+            f"save config to pre_tunnel.xml",
             f"{config} network interface tunnel units tunnel.{team_num} ip 192.168.{octet}.2/24",
             f"{config} network interface tunnel units tunnel.{team_num} mtu 1350",
             f"{config} network interface ethernet ethernet1/{int_num} layer3 ip {wan_addr}/28",
@@ -120,7 +123,7 @@ class FirewallManager:
         self.create_gui()
 
     def create_gui(self):
-        self.root.title("Menu")
+        self.root.title("AutoVPN")
         self.root.geometry("600x400")
         self.root.resizable(False, False)
         self.root.configure(background='#393d49')
