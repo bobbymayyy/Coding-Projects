@@ -49,7 +49,9 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         ssh_conn.expect_exact('>')
         # Start configuration and wait for config prompt
         ssh_conn.sendline("set cli terminal width 500")
+        ssh_conn.expect_exact('>')
         ssh_conn.sendline("set cli scripting-mode on")
+        ssh_conn.expect_exact('>')
         ssh_conn.sendline("configure")
         ssh_conn.expect_exact('#')
         # Send commands
@@ -112,7 +114,9 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         print(f"Error: {e}")
         if ssh_conn:
             ssh_conn.close()
+    fw_pass = ""
     return success
+
 
 #===================================================================================================================================
 # Firewall Manager App
