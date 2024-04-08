@@ -56,7 +56,6 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         ssh_conn.expect_exact('#')
         # Send commands
         commands = [
-            f"save config to pre_tunnel.xml",
             f"{config} network interface tunnel units tunnel.{team_num} ip 192.168.{octet}.2/24",
             f"{config} network interface tunnel units tunnel.{team_num} mtu 1350",
             f"{config} network interface ethernet ethernet1/{int_num} layer3 ip {wan_addr}/28",
