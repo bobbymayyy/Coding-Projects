@@ -34,7 +34,7 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         # Create SSH connection
         ssh_newkey = 'Are you sure you want to continue connecting'
         ssh_cmd = f'ssh {fw_user}@{fw_addr}'
-        ssh_conn = pexpect.spawn(ssh_cmd)
+        ssh_conn = pexpect.spawn(ssh_cmd, timeout=120)
         # Handle SSH key verification
         i = ssh_conn.expect([ssh_newkey, 'Password:', pexpect.EOF, pexpect.TIMEOUT])
         if i == 0:
@@ -99,12 +99,12 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
             f"{config} network virtual-router default protocol redist-profile Kit{kit_num} filter type connect destination 10.{kit_num}.0.0/16",
             f"{config} network virtual-router default protocol ospf export-rules Kit{kit_num} new-path-type ext-2",
             f"{config} network virtual-router default protocol ospf enable yes area 0.0.0.{octet} type normal",
-            "commit",
-            "exit"
+            "commit"
         ]
         for command in commands:
             ssh_conn.sendline(command)
             ssh_conn.expect_exact('#')
+        ssh_conn.sendline("exit")
         ssh_conn.expect_exact('>')
         ssh_conn.sendline("exit")
         ssh_conn.close()
@@ -115,7 +115,6 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
             ssh_conn.close()
     fw_pass = ""
     return success
-
 
 #===================================================================================================================================
 # Firewall Manager App
