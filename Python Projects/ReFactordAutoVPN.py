@@ -28,7 +28,7 @@ def remove_zeros(team_num):
     else:
         return int(team_num)
 
-def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet):
+def configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet):
     success = False
     try:
         # Create SSH connection
@@ -55,52 +55,104 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
         ssh_conn.sendline("configure")
         ssh_conn.expect_exact('#')
         # Send commands
-        commands = [
-            f"{config} network interface tunnel units tunnel.{team_num} ip 192.168.{octet}.2/24",
-            f"{config} network interface tunnel units tunnel.{team_num} mtu 1350",
-            f"{config} network interface ethernet ethernet1/{int_num} layer3 ip {wan_addr}/28",
-            f"{config} network virtual-router default interface tunnel.{team_num}",
-            f"{config} zone VPN network layer3 tunnel.{team_num}",
-            f"{config} network ike crypto-profiles ike-crypto-profiles CPT{team_num} hash sha384 dh-group group20 encryption aes-256-cbc lifetime seconds 28800",
-            f"{config} network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} esp authentication sha256 encryption aes-256-cbc",
-            f"{config} network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} lifetime seconds 3600",
-            f"{config} network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} dh-group group20",
-            f"{config} network ike gateway CPT{team_num} authentication pre-shared-key key {psk_key}",
-            f"{config} network ike gateway CPT{team_num} protocol ikev2 dpd enable yes",
-            f"{config} network ike gateway CPT{team_num} protocol ikev2 ike-crypto-profile CPT{team_num}",
-            f"{config} network ike gateway CPT{team_num} protocol version ikev2",
-            f"{config} network ike gateway CPT{team_num} local-address interface ethernet1/{int_num} ip {wan_addr}/28",
-            f"{config} network ike gateway CPT{team_num} protocol-common nat-traversal enable no",
-            f"{config} network ike gateway CPT{team_num} protocol-common fragmentation enable yes",
-            f"{config} network ike gateway CPT{team_num} peer-address ip {peer_addr}",
-            f"{config} network ike gateway CPT{team_num} local-id id {team_num}cpt@cpb.army.mil type ufqdn",
-            f"{config} network tunnel ipsec CPT{team_num} auto-key ike-gateway CPT{team_num}",
-            f"{config} network tunnel ipsec CPT{team_num} auto-key ipsec-crypto-profile CPT{team_num}",
-            f"{config} network tunnel ipsec CPT{team_num} tunnel-monitor enable no",
-            f"{config} network tunnel ipsec CPT{team_num} tunnel-interface tunnel.{team_num}",
-            f"{config} network tunnel ipsec CPT{team_num} anti-replay yes",
-            f"{config} network tunnel ipsec CPT{team_num} copy-tos yes",
-            f"{config} network tunnel ipsec CPT{team_num} disabled no",
-            f"{config} network tunnel ipsec CPT{team_num} tunnel-monitor destination-ip 192.168.{octet}.1 enable yes tunnel-monitor-profile default",
-            f"{config} network virtual-router default protocol ospf router-id {wan_addr}",
-            f"{config} network virtual-router default protocol ospf enable yes",
-            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} enable yes",
-            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} passive no",
-            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} gr-delay 10",
-            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} metric 10",
-            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} priority 1",
-            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} hello-interval 10",
-            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} dead-counts 4",
-            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} retransmit-interval 5",
-            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} transit-delay 1",
-            f"{config} network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} link-type p2p",
-            f"{config} network virtual-router default protocol redist-profile Kit{kit_num} action redist",
-            f"{config} network virtual-router default protocol redist-profile Kit{kit_num} priority 1",
-            f"{config} network virtual-router default protocol redist-profile Kit{kit_num} filter type connect destination 10.{kit_num}.0.0/16",
-            f"{config} network virtual-router default protocol ospf export-rules Kit{kit_num} new-path-type ext-2",
-            f"{config} network virtual-router default protocol ospf enable yes area 0.0.0.{octet} type normal"
+        deploy_commands = [
+            f"set network interface tunnel units tunnel.{team_num} ip 192.168.{octet}.2/24",
+            f"set network interface tunnel units tunnel.{team_num} mtu 1350",
+            f"set network interface ethernet ethernet1/{int_num} layer3 ip {wan_addr}/28",
+            f"set network virtual-router default interface tunnel.{team_num}",
+            f"set zone VPN network layer3 tunnel.{team_num}",
+            f"set network ike crypto-profiles ike-crypto-profiles CPT{team_num} hash sha384 dh-group group20 encryption aes-256-cbc lifetime seconds 28800",
+            f"set network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} esp authentication sha256 encryption aes-256-cbc",
+            f"set network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} lifetime seconds 3600",
+            f"set network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} dh-group group20",
+            f"set network ike gateway CPT{team_num} authentication pre-shared-key key {psk_key}",
+            f"set network ike gateway CPT{team_num} protocol ikev2 dpd enable yes",
+            f"set network ike gateway CPT{team_num} protocol ikev2 ike-crypto-profile CPT{team_num}",
+            f"set network ike gateway CPT{team_num} protocol version ikev2",
+            f"set network ike gateway CPT{team_num} local-address interface ethernet1/{int_num} ip {wan_addr}/28",
+            f"set network ike gateway CPT{team_num} protocol-common nat-traversal enable no",
+            f"set network ike gateway CPT{team_num} protocol-common fragmentation enable yes",
+            f"set network ike gateway CPT{team_num} peer-address ip {peer_addr}",
+            f"set network ike gateway CPT{team_num} local-id id {team_num}cpt@cpb.army.mil type ufqdn",
+            f"set network tunnel ipsec CPT{team_num} auto-key ike-gateway CPT{team_num}",
+            f"set network tunnel ipsec CPT{team_num} auto-key ipsec-crypto-profile CPT{team_num}",
+            f"set network tunnel ipsec CPT{team_num} tunnel-monitor enable no",
+            f"set network tunnel ipsec CPT{team_num} tunnel-interface tunnel.{team_num}",
+            f"set network tunnel ipsec CPT{team_num} anti-replay yes",
+            f"set network tunnel ipsec CPT{team_num} copy-tos yes",
+            f"set network tunnel ipsec CPT{team_num} disabled no",
+            f"set network tunnel ipsec CPT{team_num} tunnel-monitor destination-ip 192.168.{octet}.1 enable yes tunnel-monitor-profile default",
+            f"set network virtual-router default protocol ospf router-id {wan_addr}",
+            f"set network virtual-router default protocol ospf enable yes",
+            f"set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} enable yes",
+            f"set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} passive no",
+            f"set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} gr-delay 10",
+            f"set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} metric 10",
+            f"set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} priority 1",
+            f"set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} hello-interval 10",
+            f"set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} dead-counts 4",
+            f"set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} retransmit-interval 5",
+            f"set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} transit-delay 1",
+            f"set network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} link-type p2p",
+            f"set network virtual-router default protocol redist-profile Kit{kit_num} action redist",
+            f"set network virtual-router default protocol redist-profile Kit{kit_num} priority 1",
+            f"set network virtual-router default protocol redist-profile Kit{kit_num} filter type connect destination 10.{kit_num}.0.0/16",
+            f"set network virtual-router default protocol ospf export-rules Kit{kit_num} new-path-type ext-2",
+            f"set network virtual-router default protocol ospf enable yes area 0.0.0.{octet} type normal"
         ]
-        for command in commands:
+        destroy_commands = [
+            f"delete zone VPN network layer3 tunnel.{team_num}",
+            f"delete network tunnel ipsec CPT{team_num} disabled no",
+            f"delete network tunnel ipsec CPT{team_num} copy-tos yes",
+            f"delete network tunnel ipsec CPT{team_num} anti-replay yes",
+            f"delete network tunnel ipsec CPT{team_num} tunnel-interface tunnel.{team_num}",
+            f"delete network tunnel ipsec CPT{team_num} tunnel-monitor tunnel-monitor-profile default",
+            f"delete network tunnel ipsec CPT{team_num} tunnel-monitor destination-ip 192.168.{octet}.1",
+            f"delete network tunnel ipsec CPT{team_num} tunnel-monitor enable yes",
+            f"delete network tunnel ipsec CPT{team_num} auto-key ipsec-crypto-profile CPT{team_num}",
+            f"delete network tunnel ipsec CPT{team_num} auto-key ike-gateway CPT{team_num}",
+            f"delete network virtual-router default interface [ ethernet1/{int_num} tunnel.{team_num} ]",
+            f"delete network virtual-router default protocol redist-profile Kit{kit_num} filter destination 10.{kit_num}.0.0/16",
+            f"delete network virtual-router default protocol redist-profile Kit{kit_num} filter type connect",
+            f"delete network virtual-router default protocol redist-profile Kit{kit_num} priority 1",
+            f"delete network virtual-router default protocol redist-profile Kit{kit_num} action redist",
+            f"delete network virtual-router default protocol ospf export-rules Kit{kit_num} new-path-type ext-2",
+            f"delete network virtual-router default protocol ospf area 0.0.0.{octet} type normal",
+            f"delete network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} link-type p2p",
+            f"delete network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} transit-delay 1",
+            f"delete network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} retransmit-interval 5",
+            f"delete network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} dead-counts 4",
+            f"delete network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} hello-interval 10",
+            f"delete network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} priority 1",
+            f"delete network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} metric 10",
+            f"delete network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} gr-delay 10",
+            f"delete network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} passive no",
+            f"delete network virtual-router default protocol ospf area 0.0.0.{octet} interface tunnel.{team_num} enable yes",
+            f"delete network virtual-router default protocol ospf enable yes",
+            f"delete network virtual-router default protocol ospf router-id {wan_addr}",
+            f"delete network ike gateway CPT{team_num} local-id type ufqdn",
+            f"delete network ike gateway CPT{team_num} local-id id {team_num}cpt@cpb.army.mil",
+            f"delete network ike gateway CPT{team_num} peer-address ip {peer_addr}",
+            f"delete network ike gateway CPT{team_num} protocol-common nat-traversal enable no",
+            f"delete network ike gateway CPT{team_num} local-address ip {wan_addr}/28",
+            f"delete network ike gateway CPT{team_num} local-address interface ethernet1/{int_num}",
+            f"delete network ike gateway CPT{team_num} protocol version ikev2",
+            f"delete network ike gateway CPT{team_num} protocol ikev2 ike-crypto-profile CPT{team_num}",
+            f"delete network ike gateway CPT{team_num} protocol ikev2 dpd enable yes",
+            f"delete network ike gateway CPT{team_num} authentication pre-shared-key key {psk_key}",
+            f"delete network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} dh-group group20",
+            f"delete network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} lifetime seconds 3600",
+            f"delete network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} esp encryption aes-256-cbc",
+            f"delete network ike crypto-profiles ipsec-crypto-profiles CPT{team_num} esp authentication sha256",
+            f"delete network ike crypto-profiles ike-crypto-profiles CPT{team_num} lifetime seconds 28800",
+            f"delete network ike crypto-profiles ike-crypto-profiles CPT{team_num} encryption aes-256-cbc",
+            f"delete network ike crypto-profiles ike-crypto-profiles CPT{team_num} dh-group group20",
+            f"delete network ike crypto-profiles ike-crypto-profiles CPT{team_num} hash sha384",
+            f"delete network interface tunnel units tunnel.{team_num} mtu 1350",
+            f"delete network interface tunnel units tunnel.{team_num} ip 192.168.{octet}.2/24",
+            f"delete network interface ethernet ethernet1/{int_num} layer3 ip {wan_addr}/28"
+        ]
+        for command in {commands}:
             ssh_conn.sendline(command)
             ssh_conn.expect_exact('#')
         ssh_conn.sendline("commit")
@@ -211,7 +263,7 @@ class FirewallManager:
 
     def deploy_button_action(self):
         # Get input values from entries and perform deployment
-        config="set"
+        commands="deploy_commands"
         fw_addr = self.entries[0].get()
         fw_user = self.entries[1].get()
         fw_pass = self.password_entry.get()
@@ -231,16 +283,16 @@ class FirewallManager:
             team_num = int(team_num)
             if team_num >= 255:
                 octet = remove_zeros(team_num)
-                self.configure_success = configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+                self.configure_success = configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
             else:
                 octet = team_num
-                self.configure_success = configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+                self.configure_success = configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
             if self.configure_success:
                 self.update_label_color("#00ff00")
 
     def destroy_button_action(self):
         # Get input values from entries and perform deployment
-        config="delete"
+        commands="destroy_commands"
         fw_addr = self.entries[0].get()
         fw_user = self.entries[1].get()
         fw_pass = self.password_entry.get()
@@ -260,10 +312,10 @@ class FirewallManager:
             team_num = int(team_num)
             if team_num >= 255:
                 octet = remove_zeros(team_num)
-                self.configure_success = configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+                self.configure_success = configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
             else:
                 octet = team_num
-                self.configure_success = configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
+                self.configure_success = configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
             if self.configure_success:
                 self.update_label_color("#00ff00")
             
@@ -274,58 +326,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = FirewallManager(root)
     root.mainloop()
-
-
-
-'''
-set zone VPN network layer3 tunnel.401
-set network tunnel ipsec CPT401 disabled no
-set network tunnel ipsec CPT401 copy-tos yes
-set network tunnel ipsec CPT401 anti-replay yes
-set network tunnel ipsec CPT401 tunnel-interface tunnel.401
-set network tunnel ipsec CPT401 tunnel-monitor tunnel-monitor-profile default
-set network tunnel ipsec CPT401 tunnel-monitor destination-ip 192.168.41.1
-set network tunnel ipsec CPT401 tunnel-monitor enable yes
-set network tunnel ipsec CPT401 auto-key ipsec-crypto-profile CPT401
-set network tunnel ipsec CPT401 auto-key ike-gateway CPT401
-set network virtual-router default interface [ ethernet1/1 tunnel.401 ]
-set network virtual-router default protocol redist-profile Kit102 filter destination 10.102.0.0/16
-set network virtual-router default protocol redist-profile Kit102 filter type connect
-set network virtual-router default protocol redist-profile Kit102 priority 1
-set network virtual-router default protocol redist-profile Kit102 action redist
-set network virtual-router default protocol ospf export-rules Kit102 new-path-type ext-2
-set network virtual-router default protocol ospf area 0.0.0.41 type normal
-set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 link-type p2p
-set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 transit-delay 1
-set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 retransmit-interval 5
-set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 dead-counts 4
-set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 hello-interval 10
-set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 priority 1
-set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 metric 10
-set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 gr-delay 10
-set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 passive no
-set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 enable yes
-set network virtual-router default protocol ospf enable yes
-set network virtual-router default protocol ospf router-id 10.10.10.10
-set network ike gateway CPT401 local-id type ufqdn
-set network ike gateway CPT401 local-id id 401cpt@cpb.army.mil
-set network ike gateway CPT401 peer-address ip 10.10.10.11
-set network ike gateway CPT401 protocol-common nat-traversal enable no
-set network ike gateway CPT401 local-address ip 10.10.10.10/28
-set network ike gateway CPT401 local-address interface ethernet1/1
-set network ike gateway CPT401 protocol version ikev2
-set network ike gateway CPT401 protocol ikev2 ike-crypto-profile CPT401
-set network ike gateway CPT401 protocol ikev2 dpd enable yes
-set network ike gateway CPT401 authentication pre-shared-key key ***
-set network ike crypto-profiles ipsec-crypto-profiles CPT401 dh-group group20
-set network ike crypto-profiles ipsec-crypto-profiles CPT401 lifetime seconds 3600
-set network ike crypto-profiles ipsec-crypto-profiles CPT401 esp encryption aes-256-cbc
-set network ike crypto-profiles ipsec-crypto-profiles CPT401 esp authentication sha256
-set network ike crypto-profiles ike-crypto-profiles CPT401 lifetime seconds 28800
-set network ike crypto-profiles ike-crypto-profiles CPT401 encryption aes-256-cbc
-set network ike crypto-profiles ike-crypto-profiles CPT401 dh-group group20
-set network ike crypto-profiles ike-crypto-profiles CPT401 hash sha384
-set network interface tunnel units tunnel.401 mtu 1350
-set network interface tunnel units tunnel.401 ip 192.168.41.2/24
-set network interface ethernet ethernet1/1 layer3 ip 10.10.10.10/28
-'''
