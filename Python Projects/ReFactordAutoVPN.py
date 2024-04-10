@@ -98,12 +98,13 @@ def configure_firewall(config, fw_addr, fw_user, fw_pass, team_num, kit_num, psk
             f"{config} network virtual-router default protocol redist-profile Kit{kit_num} priority 1",
             f"{config} network virtual-router default protocol redist-profile Kit{kit_num} filter type connect destination 10.{kit_num}.0.0/16",
             f"{config} network virtual-router default protocol ospf export-rules Kit{kit_num} new-path-type ext-2",
-            f"{config} network virtual-router default protocol ospf enable yes area 0.0.0.{octet} type normal",
-            "commit"
+            f"{config} network virtual-router default protocol ospf enable yes area 0.0.0.{octet} type normal"
         ]
         for command in commands:
             ssh_conn.sendline(command)
             ssh_conn.expect_exact('#')
+        ssh_conn.sendline("commit")
+        ssh_conn.expect_exact('#')
         ssh_conn.sendline("exit")
         ssh_conn.expect_exact('>')
         ssh_conn.sendline("exit")
@@ -273,3 +274,58 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = FirewallManager(root)
     root.mainloop()
+
+
+
+'''
+set zone VPN network layer3 tunnel.401
+set network tunnel ipsec CPT401 disabled no
+set network tunnel ipsec CPT401 copy-tos yes
+set network tunnel ipsec CPT401 anti-replay yes
+set network tunnel ipsec CPT401 tunnel-interface tunnel.401
+set network tunnel ipsec CPT401 tunnel-monitor tunnel-monitor-profile default
+set network tunnel ipsec CPT401 tunnel-monitor destination-ip 192.168.41.1
+set network tunnel ipsec CPT401 tunnel-monitor enable yes
+set network tunnel ipsec CPT401 auto-key ipsec-crypto-profile CPT401
+set network tunnel ipsec CPT401 auto-key ike-gateway CPT401
+set network virtual-router default interface [ ethernet1/1 tunnel.401 ]
+set network virtual-router default protocol redist-profile Kit102 filter destination 10.102.0.0/16
+set network virtual-router default protocol redist-profile Kit102 filter type connect
+set network virtual-router default protocol redist-profile Kit102 priority 1
+set network virtual-router default protocol redist-profile Kit102 action redist
+set network virtual-router default protocol ospf export-rules Kit102 new-path-type ext-2
+set network virtual-router default protocol ospf area 0.0.0.41 type normal
+set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 link-type p2p
+set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 transit-delay 1
+set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 retransmit-interval 5
+set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 dead-counts 4
+set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 hello-interval 10
+set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 priority 1
+set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 metric 10
+set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 gr-delay 10
+set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 passive no
+set network virtual-router default protocol ospf area 0.0.0.41 interface tunnel.401 enable yes
+set network virtual-router default protocol ospf enable yes
+set network virtual-router default protocol ospf router-id 10.10.10.10
+set network ike gateway CPT401 local-id type ufqdn
+set network ike gateway CPT401 local-id id 401cpt@cpb.army.mil
+set network ike gateway CPT401 peer-address ip 10.10.10.11
+set network ike gateway CPT401 protocol-common nat-traversal enable no
+set network ike gateway CPT401 local-address ip 10.10.10.10/28
+set network ike gateway CPT401 local-address interface ethernet1/1
+set network ike gateway CPT401 protocol version ikev2
+set network ike gateway CPT401 protocol ikev2 ike-crypto-profile CPT401
+set network ike gateway CPT401 protocol ikev2 dpd enable yes
+set network ike gateway CPT401 authentication pre-shared-key key ***
+set network ike crypto-profiles ipsec-crypto-profiles CPT401 dh-group group20
+set network ike crypto-profiles ipsec-crypto-profiles CPT401 lifetime seconds 3600
+set network ike crypto-profiles ipsec-crypto-profiles CPT401 esp encryption aes-256-cbc
+set network ike crypto-profiles ipsec-crypto-profiles CPT401 esp authentication sha256
+set network ike crypto-profiles ike-crypto-profiles CPT401 lifetime seconds 28800
+set network ike crypto-profiles ike-crypto-profiles CPT401 encryption aes-256-cbc
+set network ike crypto-profiles ike-crypto-profiles CPT401 dh-group group20
+set network ike crypto-profiles ike-crypto-profiles CPT401 hash sha384
+set network interface tunnel units tunnel.401 mtu 1350
+set network interface tunnel units tunnel.401 ip 192.168.41.2/24
+set network interface ethernet ethernet1/1 layer3 ip 10.10.10.10/28
+'''
