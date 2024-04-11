@@ -254,6 +254,8 @@ class FirewallManager:
                 self.configure_success = configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
             if self.configure_success:
                 self.update_label_color("#00ff00")
+            else:
+                self.update_label_color("#ff0000")
 
     def destroy_button_action(self):
         # Get input values from entries and perform deployment
@@ -283,6 +285,8 @@ class FirewallManager:
                 self.configure_success = configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet)
             if self.configure_success:
                 self.update_label_color("#00ff00")
+            else:
+                self.update_label_color("#ff0000")
             
 #===================================================================================================================================
 # Main Flow
