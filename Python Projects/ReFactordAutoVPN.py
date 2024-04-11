@@ -44,7 +44,7 @@ def configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, p
         if i == 1:
             ssh_conn.sendline(fw_pass)
         elif i == 2 or i == 3:
-            raise Exception('SSH connection failed')
+            raise Exception('SSH Failed, check FW IP, Username and Password.')
         # Wait for prompt
         ssh_conn.expect_exact('>')
         # Start configuration and wait for config prompt
@@ -127,11 +127,15 @@ def configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, p
         ssh_conn.sendline("exit")
         ssh_conn.close()
         success = True
+        fw_addr = ""
+        fw_user = ""
+        fw_pass = ""
+        psk_key = ""
     except Exception as e:
         print(f"Error: {e}")
         if ssh_conn:
             ssh_conn.close()
-    fw_pass = ""
+        return success
     return success
 
 #===================================================================================================================================
