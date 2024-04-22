@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import tkinter as tk
-import tkinter.font as tkFont
 from functools import partial
 import pexpect
 import platform
@@ -93,6 +91,9 @@ def configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, p
             ssh_conn.sendline(fw_pass)
         elif i == 2 or i == 3:
             raise Exception('SSH Failed, check FW IP, Username and Password.')
+        fw_addr = ""
+        fw_user = ""
+        fw_pass = ""
         # Wait for prompt
         ssh_conn.expect_exact('>')
         # Start configuration and wait for config prompt
@@ -175,9 +176,6 @@ def configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, p
         ssh_conn.sendline("exit")
         ssh_conn.close()
         success = True
-        fw_addr = ""
-        fw_user = ""
-        fw_pass = ""
         psk_key = ""
     except Exception as e:
         print(f"Error: {e}")
@@ -246,7 +244,7 @@ class FirewallManager:
         for text, x, y, width, height in labels_info:
             label = tk.Label(self.root, text=text, font=tkFont.Font(family='Verdana', size=10), bg="#393d49", fg="#ffffff", justify="center")
             label.place(x=x, y=y, width=width, height=height)
-
+        
     def create_entries(self):
         self.password_entry=tk.Entry(root, font=tkFont.Font(family='Verdana',size=10), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", show="*")
         self.password_entry.place(x=40,y=150,width=520,height=25)
@@ -344,7 +342,9 @@ class FirewallManager:
 # Main Flow
 #===================================================================================================================================
 if __name__ == "__main__":
-    print("Linux Distribution:", get_linux_distribution())
+    get_linux_distribution()
+    import tkinter as tk
+    import tkinter.font as tkFont
     root = tk.Tk()
     app = FirewallManager(root)
     root.mainloop()
