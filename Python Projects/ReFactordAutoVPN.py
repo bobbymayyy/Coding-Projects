@@ -4,6 +4,54 @@ import tkinter as tk
 import tkinter.font as tkFont
 from functools import partial
 import pexpect
+import platform
+import os
+import subprocess
+
+def check_and_install_package(package_name, distribution):
+    if distribution == 'Red Hat-based':
+        try:
+            subprocess.check_output(['rpm', '-q', package_name])
+        except subprocess.CalledProcessError:
+            print(f"{package_name} not found on {distribution}. Installing...")
+            subprocess.call(['sudo', 'yum', 'install', '-y', package_name])
+            print(f"{package_name} installed successfully on {distribution}.")
+            return True
+    elif distribution == 'Debian-based':
+        try:
+            subprocess.check_output(['dpkg', '-s', package_name])
+        except subprocess.CalledProcessError:
+            print(f"{package_name} not found on {distribution}. Installing...")
+            subprocess.call(['sudo', 'apt-get', 'install', '-y', package_name])
+            print(f"{package_name} installed successfully on {distribution}.")
+            return True
+    elif distribution == 'Arch Linux':
+        try:
+            subprocess.check_output(['pacman', '-Q', package_name])
+        except subprocess.CalledProcessError:
+            print(f"{package_name} not found on {distribution}. Installing...")
+            subprocess.call(['sudo', 'pacman', '-S', '--noconfirm', package_name])
+            print(f"{package_name} installed successfully on {distribution}.")
+            return True
+    else:
+        print(f"Package installation not supported for {distribution}.")
+        return False
+
+def get_linux_distribution():
+    if platform.system() == 'Linux':
+        if os.path.exists('/etc/redhat-release'):
+            if check_and_install_package('python3-tkinter', 'Red Hat-based'):
+                return 'Red Hat-based'
+        elif os.path.exists('/etc/debian_version'):
+            if check_and_install_package('python3-tk', 'Debian-based'):
+                return 'Debian-based'
+        elif os.path.exists('/etc/arch-release'):
+            if check_and_install_package('tk', 'Arch Linux'):
+                return 'Arch Linux'
+        else:
+            return 'Unknown Linux distribution'
+    else:
+        return 'Not a Linux system'
 
 def remove_zeros(team_num):
     # Convert number to string to handle zeroes
@@ -296,6 +344,7 @@ class FirewallManager:
 # Main Flow
 #===================================================================================================================================
 if __name__ == "__main__":
+    print("Linux Distribution:", get_linux_distribution())
     root = tk.Tk()
     app = FirewallManager(root)
     root.mainloop()
