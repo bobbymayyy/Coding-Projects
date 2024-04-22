@@ -86,5 +86,48 @@ exec 3>&-
                 "$DIALOG" \
                 --textbox "$0" 0 0
                 ;;
+        $DIALOG_EXTRA)
+                tag=`echo "$returntext" | sed -e 's/^EDITED //' -e 's/:.*/:/'`
+                item=`echo "$returntext" | sed -e 's/^[^:]*:[ ]*//' -e 's/[ ]*$//'`
+
+                case "$tag" in
+                Firewall IP Address:)
+                        fw_addr="$item"
+                        ;;
+                Firewall Username:)
+                        fw_user="$item"
+                        ;;
+                Firewall Password:)
+                        fw_pass="$item"
+                        ;;
+                Team Number:)
+                        team_num="$item"
+                        ;;
+                Kit Number:)
+                        kit_num="$item"
+                        ;;
+                WAN Interface:)
+                        int_num="$item"
+                        ;;
+                WAN IP Address:)
+                        wan_addr="$item"
+                        ;;
+                Peer IP Address:)
+                        peer_addr="$item"
+                        ;;
+                Pre-Shared Key:)
+                        psk_key="$item"
+                        ;;
+                *)
+                        tag=
+                        ;;
+                esac
+                test -n "$tag" && defaultitem="$tag"
+                ;;
+
+        *)
+                break
+                ;;
+                
         esac
 done
