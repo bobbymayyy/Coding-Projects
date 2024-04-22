@@ -31,6 +31,7 @@ defaultitem="Firewall IP Address:"
 while test $returncode != 1 && test $returncode != 250
 do
 exec 3>&1
+
 returntext=`$DIALOG --clear --ok-label "Establish" \
             --backtitle "$backtitle" \
             --help-button \
@@ -44,7 +45,7 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
         "Firewall Password:"    "$fw_pass"      "The password of your kit's Palo Alto firewall account" \
         "Team Number:"          "$team_num"     "Your CPT number; ie 401, 154, 03, 600" \
         "Kit Number:"           "$kit_num"      "Your kit number; ie 102, 14, 43, 69" \
-        "WAN Interface:"        "$int_num"      "The WAN interface you want to apply this tunnel to; should really only be Untrust (1/'X') \
+        "WAN Interface:"        "$int_num"      "The WAN interface you want to apply this tunnel to; should really only be Untrust (1/'X')" \
         "WAN IP Address:"       "$wan_addr"     "The IP address you want to give to the WAN interface for this tunnel" \
         "Peer IP Address:"      "$peer_addr"    "The IP address of the Juniper you are creating a tunnel to" \
         "Pre-Shared Key:"       "$psk_key"      "The shared key that is decided when discussing the need for this tunnel to be created; must be the same on both sides" \
@@ -53,27 +54,27 @@ returncode=$?
 exec 3>&-
 
         case $returncode in
-        $DIALOG_CANCEL)
+            $DIALOG_CANCEL)
                 "$DIALOG" \
                 --clear \
                 --backtitle "$backtitle" \
                 --yesno "Are you sure you want to quit?" 10 30
                 case $? in
-                $DIALOG_OK)
+                    $DIALOG_OK)
                         break
                         ;;
-                $DIALOG_CANCEL)
+                    $DIALOG_CANCEL)
                         returncode=99
                         ;;
                 esac
                 ;;
-        $DIALOG_OK)
+            $DIALOG_OK)
                 case $returntext in
-                HELP*)
+                    HELP*)
                         "$DIALOG" \
                         --textbox "$0" 0 0
                         ;;
-                *)
+                    *)
                         "$DIALOG" \
                         --clear \
                         --backtitle "$backtitle" \
@@ -82,52 +83,49 @@ exec 3>&-
                         ;;
                 esac
                 ;;
-        $DIALOG_HELP)
+            $DIALOG_HELP)
                 "$DIALOG" \
                 --textbox "$0" 0 0
                 ;;
-        $DIALOG_EXTRA)
+            $DIALOG_EXTRA)
                 tag=`echo "$returntext" | sed -e 's/^EDITED //' -e 's/:.*/:/'`
                 item=`echo "$returntext" | sed -e 's/^[^:]*:[ ]*//' -e 's/[ ]*$//'`
-
                 case "$tag" in
-                Firewall IP Address:)
+                    'Firewall IP Address':)
                         fw_addr="$item"
                         ;;
-                Firewall Username:)
+                    'Firewall Username':)
                         fw_user="$item"
                         ;;
-                Firewall Password:)
+                    'Firewall Password':)
                         fw_pass="$item"
                         ;;
-                Team Number:)
+                    'Team Number':)
                         team_num="$item"
                         ;;
-                Kit Number:)
+                    'Kit Number':)
                         kit_num="$item"
                         ;;
-                WAN Interface:)
+                    'WAN Interface':)
                         int_num="$item"
                         ;;
-                WAN IP Address:)
+                    'WAN IP Address':)
                         wan_addr="$item"
                         ;;
-                Peer IP Address:)
+                    'Peer IP Address':)
                         peer_addr="$item"
                         ;;
-                Pre-Shared Key:)
+                    'Pre-Shared Key':)
                         psk_key="$item"
                         ;;
-                *)
+                    *)
                         tag=
                         ;;
                 esac
                 test -n "$tag" && defaultitem="$tag"
                 ;;
-
-        *)
+            *)
                 break
                 ;;
-                
         esac
 done
