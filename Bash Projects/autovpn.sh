@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #This is a dialog "gui" for creating tunnels through Palo Alto CLI configuration changes...
-
+clear
 # - The asparagus ||
 #                 \/
 #==========================#===========================#===========================#
@@ -13,14 +13,12 @@ DIALOG_EXTRA=3
 DIALOG_ITEM_HELP=4
 DIALOG_TIMEOUT=5
 DIALOG_ESC=255
-#-------------------------
 SIG_NONE=0
 SIG_HUP=1
 SIG_INT=2
 SIG_QUIT=3
 SIG_KILL=9
 SIG_TERM=15
-
 # - The meat and potatoes ||
 #                         \/
 #==========================#===========================#===========================#
@@ -47,13 +45,14 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
             --extra-label "Edit" \
             --help-button \
             --help-label "Demolish" \
+            --item-help "$@" \
             --default-button extra \
             --default-item "$defaultitem" \
-            --inputmenu "Input the needed values for IPSEC tunnel creation." \
+            --inputmenu "Welcome to AutoVPN." \
 30 80 10 \
-        "FW IP Address:"  "$fw_addr"      "The IP address of your kit's Palo Alto FW" \
-        "FW Username:"    "$fw_user"      "The username of your kit's Palo Alto FW account that can create and apply configuration" \
-        "FW Password:"    "$pass_cover"      "The password of your kit's Palo Alto FW account" \
+        "FW IP Address:"        "$fw_addr"      "The IP address of your kit's Palo Alto FW" \
+        "FW Username:"          "$fw_user"      "The username of your kit's Palo Alto FW account that can create and apply configuration" \
+        "FW Password:"          "$pass_cover"      "The password of your kit's Palo Alto FW account" \
         "Team Number:"          "$team_num"     "Your CPT number; ie 401, 154, 03, 600" \
         "Kit Number:"           "$kit_num"      "Your kit number; ie 102, 14, 43, 69" \
         "WAN Interface:"        "$int_num"      "The WAN interface you want to apply this tunnel to; should really only be Untrust (1/'X')" \
@@ -152,3 +151,4 @@ exec 3>&-
             ;;
     esac
 done
+clear
