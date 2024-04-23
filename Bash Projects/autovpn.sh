@@ -7,7 +7,7 @@ clear
 #==========================#===========================#===========================#
 DIALOG=dialog
 DIALOG_ESTABLISH=0
-DIALOG_DEMOLISH=6
+DIALOG_DEMOLISH=1
 DIALOG_HELP=2
 DIALOG_EDIT=3
 DIALOG_ITEM_HELP=4
