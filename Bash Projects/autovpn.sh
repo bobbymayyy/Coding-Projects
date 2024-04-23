@@ -37,7 +37,7 @@ psk_key=""
 pass_cover=""
 psk_cover=""
 returncode=0
-defaultitem="Firewall IP Address:"
+defaultitem="FW IP Address:"
 while test $returncode != 1 && test $returncode != 250
 do
 exec 3>&1
@@ -52,9 +52,9 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
             --item-help "$@" \
             --inputmenu "Input the needed values for IPSEC tunnel creation." \
 30 80 10 \
-        "Firewall IP Address:"  "$fw_addr"      "The IP address of your kit's Palo Alto firewall" \
-        "Firewall Username:"    "$fw_user"      "The username of your kit's Palo Alto firewall account that can create and apply configuration" \
-        "Firewall Password:"    "$pass_cover"      "The password of your kit's Palo Alto firewall account" \
+        "FW IP Address:"  "$fw_addr"      "The IP address of your kit's Palo Alto FW" \
+        "FW Username:"    "$fw_user"      "The username of your kit's Palo Alto FW account that can create and apply configuration" \
+        "FW Password:"    "$pass_cover"      "The password of your kit's Palo Alto FW account" \
         "Team Number:"          "$team_num"     "Your CPT number; ie 401, 154, 03, 600" \
         "Kit Number:"           "$kit_num"      "Your kit number; ie 102, 14, 43, 69" \
         "WAN Interface:"        "$int_num"      "The WAN interface you want to apply this tunnel to; should really only be Untrust (1/'X')" \
@@ -102,13 +102,13 @@ exec 3>&-
             tag=`echo "$returntext" | sed -e 's/^RENAMED //' -e 's/:.*/:/'`
             item=`echo "$returntext" | sed -e 's/^[^:]*:[ ]*//' -e 's/[ ]*$//'`
             case "$tag" in
-                'Firewall IP Address':)
+                'FW IP Address':)
                     fw_addr="$item"
                     ;;
-                'Firewall Username':)
+                'FW Username':)
                     fw_user="$item"
                     ;;
-                'Firewall Password':)
+                'FW Password':)
                     fw_pass="$item"
                     pass_cover="******"
                     ;;
