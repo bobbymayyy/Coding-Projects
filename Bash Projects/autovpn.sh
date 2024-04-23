@@ -38,12 +38,6 @@ pass_cover="" # - Veil the sensitive values -
 psk_cover="" # --------------------------------
 returncode=0        # - Initialize
 defaultitem="FW IP Address:"    # - Set default input field
-field_check() {
-    # Check for empty fields and complain
-    if [ -z "$fw_addr" ] || [ -z "$fw_user" ] || [ -z "$fw_pass" ] || [ -z "$team_num" ] || [ -z "$kit_num" ] || [ -z "$int_num" ] || [ -z "$wan_addr" ] || [ -z "$peer_addr" ] || [ -z "$psk_key" ]; then
-        DIALOG_TITLE="Welcome to AutoVPN. \Zb(Please fill in all fields.)\ZB"
-    fi
-}
 remove_zeros() {
     # Convert number to string to handle leading zeros
     local team_num="$1"
@@ -97,7 +91,10 @@ exec 3>&-
                     --textbox "$0" 0 0
                     ;;
                 *)
-                    field_check
+                    # Check for empty fields and complain
+                    if [ -z "$fw_addr" ] || [ -z "$fw_user" ] || [ -z "$fw_pass" ] || [ -z "$team_num" ] || [ -z "$kit_num" ] || [ -z "$int_num" ] || [ -z "$wan_addr" ] || [ -z "$peer_addr" ] || [ -z "$psk_key" ]; then
+                        DIALOG_TITLE="Welcome to AutoVPN. \Zb(Please fill in all fields.)\ZB"
+                    fi
                     octet=$(remove_zeros "$team_num")
 ########################################################################
                     DIALOG_TITLE="\Zb\Z1Welcome to AutoVPN.\ZB\Zn"
@@ -111,7 +108,10 @@ exec 3>&-
                     --textbox "$0" 0 0
                     ;;
                 *)
-                    field_check
+                    # Check for empty fields and complain
+                    if [ -z "$fw_addr" ] || [ -z "$fw_user" ] || [ -z "$fw_pass" ] || [ -z "$team_num" ] || [ -z "$kit_num" ] || [ -z "$int_num" ] || [ -z "$wan_addr" ] || [ -z "$peer_addr" ] || [ -z "$psk_key" ]; then
+                        DIALOG_TITLE="Welcome to AutoVPN. \Zb(Please fill in all fields.)\ZB"
+                    fi
                     octet=$(remove_zeros "$team_num")
 ########################################################################
                     DIALOG_TITLE="\Zb\Z2Welcome to AutoVPN.\ZB\Zn"
