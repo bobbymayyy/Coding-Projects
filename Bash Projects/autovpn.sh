@@ -70,7 +70,7 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
             --default-item "$defaultitem" \
             --colors \
             --inputmenu "$DIALOG_TITLE" \
-30 80 10 \
+20 70 20 \
         "FW IP Address:"        "$fw_addr"      "The IP address of your kit's Palo Alto FW" \
         "FW Username:"          "$fw_user"      "The username of your kit's Palo Alto FW account that can create and apply configuration" \
         "FW Password:"          "$pass_cover"   "The password of your kit's Palo Alto FW account" \
