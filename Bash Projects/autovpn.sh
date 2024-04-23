@@ -80,7 +80,7 @@ exec 3>&-
 ##########          --progressbox           ##############################
                     ;;
             esac
-            DIALOG_TITLE="\t- \Z1Welcome to AutoVPN.\Zn"
+            DIALOG_TITLE="\Z1Welcome to AutoVPN.\Zn"
             ;;
         $DIALOG_ESTABLISH)
             case $returntext in
@@ -96,7 +96,7 @@ exec 3>&-
 ##########          --progressbox           ##############################
                     ;;
             esac
-            DIALOG_TITLE="\t- \Z2Welcome to AutoVPN.\Zn"
+            DIALOG_TITLE="\Z2Welcome to AutoVPN.\Zn"
             ;;
         $DIALOG_HELP)
             "$DIALOG" \
