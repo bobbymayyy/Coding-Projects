@@ -50,6 +50,7 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
             --cancel-label "Demolish" \
             --default-button extra \
             --default-item "$defaultitem" \
+            --colors \
             --inputmenu "$DIALOG_TITLE" \
 30 80 10 \
         "FW IP Address:"        "$fw_addr"      "The IP address of your kit's Palo Alto FW" \
