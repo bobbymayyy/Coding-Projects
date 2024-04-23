@@ -5,7 +5,8 @@ clear
 # - The asparagus ||
 #                 \/
 #==========================#===========================#===========================#
-DIALOG=dialog
+DIALOG=dialog   # - Set dialog variables
+DIALOG_TITLE="Welcome to AutoVPN."
 DIALOG_ESTABLISH=0
 DIALOG_DEMOLISH=1
 DIALOG_HELP=2
@@ -23,20 +24,20 @@ SIG_TERM=15
 #                         \/
 #==========================#===========================#===========================#
 backtitle="AutoVPN - A utility for easily creating IPSEC tunnels in Palo Alto"
-fw_addr=""
-fw_user=""
-fw_pass=""
-team_num=""
-kit_num=""
-int_num=""
-wan_addr=""
-peer_addr=""
-psk_key=""
-pass_cover=""
-psk_cover=""
-returncode=0
-defaultitem="FW IP Address:"
-while test $returncode != 250
+fw_addr=""          # - Passed to main function
+fw_user=""          #             ||
+fw_pass=""          #             ||
+team_num=""         #             ||
+kit_num=""          #             ||
+int_num=""          #             ||
+wan_addr=""         #             ||
+peer_addr=""        #             ||
+psk_key=""          #             \/
+pass_cover="" # - Veil the sensitive values -
+psk_cover="" # --------------------------------
+returncode=0        # - Initialize
+defaultitem="FW IP Address:"    # - Set default input field
+while test $returncode != 250   # - Main Menu Loop
 do
 exec 3>&1
 returntext=`$DIALOG --clear --ok-label "Establish" \
@@ -49,7 +50,7 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
             --cancel-label "Demolish" \
             --default-button extra \
             --default-item "$defaultitem" \
-            --inputmenu "Welcome to AutoVPN." \
+            --inputmenu "$DIALOG_TITLE" \
 30 80 10 \
         "FW IP Address:"        "$fw_addr"      "The IP address of your kit's Palo Alto FW" \
         "FW Username:"          "$fw_user"      "The username of your kit's Palo Alto FW account that can create and apply configuration" \
@@ -78,6 +79,7 @@ exec 3>&-
 ##########          --progressbox           ##############################
                     ;;
             esac
+            DIALOG_TITLE="\t- \Z1Welcome to AutoVPN.\Zn"
             ;;
         $DIALOG_ESTABLISH)
             case $returntext in
@@ -93,6 +95,7 @@ exec 3>&-
 ##########          --progressbox           ##############################
                     ;;
             esac
+            DIALOG_TITLE="\t- \Z2Welcome to AutoVPN.\Zn"
             ;;
         $DIALOG_HELP)
             "$DIALOG" \
@@ -141,5 +144,5 @@ exec 3>&-
             break
             ;;
     esac
-done
+done    # - Main Menu Loop End
 clear
