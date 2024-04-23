@@ -34,6 +34,8 @@ int_num=""
 wan_addr=""
 peer_addr=""
 psk_key=""
+pass_cover=""
+psk_cover=""
 returncode=0
 defaultitem="Firewall IP Address:"
 while test $returncode != 1 && test $returncode != 250
@@ -49,16 +51,16 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
             --default-item "$defaultitem" \
             --item-help "$@" \
             --inputmenu "Input the needed values for IPSEC tunnel creation." \
-20 60 10 \
+30 80 10 \
         "Firewall IP Address:"  "$fw_addr"      "The IP address of your kit's Palo Alto firewall" \
         "Firewall Username:"    "$fw_user"      "The username of your kit's Palo Alto firewall account that can create and apply configuration" \
-        "Firewall Password:"    "$fw_pass"      "The password of your kit's Palo Alto firewall account" \
+        "Firewall Password:"    "$pass_cover"      "The password of your kit's Palo Alto firewall account" \
         "Team Number:"          "$team_num"     "Your CPT number; ie 401, 154, 03, 600" \
         "Kit Number:"           "$kit_num"      "Your kit number; ie 102, 14, 43, 69" \
         "WAN Interface:"        "$int_num"      "The WAN interface you want to apply this tunnel to; should really only be Untrust (1/'X')" \
         "WAN IP Address:"       "$wan_addr"     "The IP address you want to give to the WAN interface for this tunnel" \
         "Peer IP Address:"      "$peer_addr"    "The IP address of the Juniper you are creating a tunnel to" \
-        "Pre-Shared Key:"       "$psk_key"      "The shared key that is decided when discussing the need for this tunnel to be created; must be the same on both sides" \
+        "Pre-Shared Key:"       "$psk_cover"      "The shared key that is decided when discussing the need for this tunnel to be created; must be the same on both sides" \
 2>&1 1>&3`
 returncode=$?
 exec 3>&-
@@ -108,6 +110,7 @@ exec 3>&-
                     ;;
                 'Firewall Password':)
                     fw_pass="$item"
+                    pass_cover="******"
                     ;;
                 'Team Number':)
                     team_num="$item"
@@ -126,6 +129,7 @@ exec 3>&-
                     ;;
                 'Pre-Shared Key':)
                     psk_key="$item"
+                    psk_cover="******"
                     ;;
                 *)
                     tag=
