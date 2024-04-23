@@ -36,7 +36,7 @@ pass_cover=""
 psk_cover=""
 returncode=0
 defaultitem="FW IP Address:"
-while test $returncode != 1 && test $returncode != 250
+while test $returncode != 250
 do
 exec 3>&1
 returntext=`$DIALOG --clear --ok-label "Establish" \
