@@ -134,7 +134,7 @@ exec 3>&-
                     ;;
                 'FW Password':)
                     fw_pass="$item"
-                    if [ -n "$fw_addr" ]
+                    if [ -n "$fw_addr" ]; then
                         pass_cover="******"
                     else
                         pass_cover=""
@@ -157,7 +157,7 @@ exec 3>&-
                     ;;
                 'Pre-Shared Key':)
                     psk_key="$item"
-                    if [ -n "$psk_key" ]
+                    if [ -n "$psk_key" ]; then
                         psk_cover="******"
                     else
                         psk_cover=""
