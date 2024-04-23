@@ -25,13 +25,20 @@ SIG_TERM=15
 #                         \/
 #==========================#===========================#===========================#
 backtitle="AutoVPN - A utility for easily creating IPSEC tunnels in Palo Alto"
-
+fw_addr=""
+fw_user=""
+fw_pass=""
+team_num=""
+kit_num=""
+int_num=""
+wan_addr=""
+peer_addr=""
+psk_key=""
 returncode=0
 defaultitem="Firewall IP Address:"
 while test $returncode != 1 && test $returncode != 250
 do
 exec 3>&1
-
 returntext=`$DIALOG --clear --ok-label "Establish" \
             --backtitle "$backtitle" \
             --help-button \
@@ -52,80 +59,79 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
 2>&1 1>&3`
 returncode=$?
 exec 3>&-
-
-        case $returncode in
-            $DIALOG_CANCEL)
-                "$DIALOG" \
-                --clear \
-                --backtitle "$backtitle" \
-                --yesno "Are you sure you want to quit?" 10 30
-                case $? in
-                    $DIALOG_OK)
-                        break
-                        ;;
-                    $DIALOG_CANCEL)
-                        returncode=99
-                        ;;
-                esac
-                ;;
-            $DIALOG_OK)
-                case $returntext in
-                    HELP*)
-                        "$DIALOG" \
-                        --textbox "$0" 0 0
-                        ;;
-                    *)
-                        "$DIALOG" \
-                        --clear \
-                        --backtitle "$backtitle" \
-                        --msgbox "A progress bar will go here and things will be done..." 10 40
-###########             --progressbox           ##############################
-                        ;;
-                esac
-                ;;
-            $DIALOG_HELP)
-                "$DIALOG" \
-                --textbox "$0" 0 0
-                ;;
-            $DIALOG_EXTRA)
-                tag=`echo "$returntext" | sed -e 's/^EDITED //' -e 's/:.*/:/'`
-                item=`echo "$returntext" | sed -e 's/^[^:]*:[ ]*//' -e 's/[ ]*$//'`
-                case "$tag" in
-                    'Firewall IP Address':)
-                        fw_addr="$item"
-                        ;;
-                    'Firewall Username':)
-                        fw_user="$item"
-                        ;;
-                    'Firewall Password':)
-                        fw_pass="$item"
-                        ;;
-                    'Team Number':)
-                        team_num="$item"
-                        ;;
-                    'Kit Number':)
-                        kit_num="$item"
-                        ;;
-                    'WAN Interface':)
-                        int_num="$item"
-                        ;;
-                    'WAN IP Address':)
-                        wan_addr="$item"
-                        ;;
-                    'Peer IP Address':)
-                        peer_addr="$item"
-                        ;;
-                    'Pre-Shared Key':)
-                        psk_key="$item"
-                        ;;
-                    *)
-                        tag=
-                        ;;
-                esac
-                test -n "$tag" && defaultitem="$tag"
-                ;;
-            *)
-                break
-                ;;
-        esac
+    case $returncode in
+        $DIALOG_CANCEL)
+            "$DIALOG" \
+            --clear \
+            --backtitle "$backtitle" \
+            --yesno "Are you sure you want to quit?" 5 35
+            case $? in
+                $DIALOG_OK)
+                    break
+                    ;;
+                $DIALOG_CANCEL)
+                    returncode=99
+                    ;;
+            esac
+            ;;
+        $DIALOG_OK)
+            case $returntext in
+                HELP*)
+                    "$DIALOG" \
+                    --textbox "$0" 0 0
+                    ;;
+                *)
+                    "$DIALOG" \
+                    --clear \
+                    --backtitle "$backtitle" \
+                    --msgbox "A progress bar will go here and things will be done..." 10 40
+##########             --progressbox           ##############################
+                    ;;
+            esac
+            ;;
+        $DIALOG_HELP)
+            "$DIALOG" \
+            --textbox "$0" 0 0
+            ;;
+        $DIALOG_EXTRA)
+            tag=`echo "$returntext" | sed -e 's/^EDITED //' -e 's/:.*/:/' -e 's/^\([A-Za-z].*\)$/\1:/'`
+            item=`echo "$returntext" | sed -e 's/^[^:]*:[ ]*//' -e 's/[ ]*$//'`
+            case "$tag" in
+                'Firewall IP Address':)
+                    fw_addr="$item"
+                    ;;
+                'Firewall Username':)
+                    fw_user="$item"
+                    ;;
+                'Firewall Password':)
+                    fw_pass="$item"
+                    ;;
+                'Team Number':)
+                    team_num="$item"
+                    ;;
+                'Kit Number':)
+                    kit_num="$item"
+                    ;;
+                'WAN Interface':)
+                    int_num="$item"
+                    ;;
+                'WAN IP Address':)
+                    wan_addr="$item"
+                    ;;
+                'Peer IP Address':)
+                    peer_addr="$item"
+                    ;;
+                'Pre-Shared Key':)
+                    psk_key="$item"
+                    ;;
+                *)
+                    tag=
+                    ;;
+            esac
+            test -n "$tag" && defaultitem="$tag"
+            ;;
+        *)
+            break
+            ;;
+    esac
 done
