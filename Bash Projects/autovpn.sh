@@ -73,13 +73,13 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
 30 80 10 \
         "FW IP Address:"        "$fw_addr"      "The IP address of your kit's Palo Alto FW" \
         "FW Username:"          "$fw_user"      "The username of your kit's Palo Alto FW account that can create and apply configuration" \
-        "FW Password:"          "$pass_cover"      "The password of your kit's Palo Alto FW account" \
+        "FW Password:"          "$pass_cover"   "The password of your kit's Palo Alto FW account" \
         "Team Number:"          "$team_num"     "Your CPT number; ie 401, 154, 03, 600" \
         "Kit Number:"           "$kit_num"      "Your kit number; ie 102, 14, 43, 69" \
         "WAN Interface:"        "$int_num"      "The WAN interface you want to apply this tunnel to; should really only be Untrust (1/'X')" \
         "WAN IP Address:"       "$wan_addr"     "The IP address you want to give to the WAN interface for this tunnel" \
         "Peer IP Address:"      "$peer_addr"    "The IP address of the Juniper you are creating a tunnel to" \
-        "Pre-Shared Key:"       "$psk_cover"      "The shared key that is decided when discussing the need for this tunnel to be created; must be the same on both sides" \
+        "Pre-Shared Key:"       "$psk_cover"    "The shared key that is decided when discussing the need for this tunnel to be created; must be the same on both sides" \
 2>&1 1>&3`
 returncode=$?
 exec 3>&-
@@ -91,14 +91,15 @@ exec 3>&-
                     --textbox "$0" 0 0
                     ;;
                 *)
-                    octet=$(remove_zeros)
+                    octet=$(remove_zeros "$team_num")
                     echo "$octet"
                     "$DIALOG" \
                     --clear \
                     --backtitle "$backtitle" \
                     --title "Processing..." "$@" \
                     --gauge \
-                    10 40
+                    20 70 0 \
+                    ""
                     ;;
             esac
             DIALOG_TITLE="\Zb\Z1Welcome to AutoVPN.\ZB\Zn"
@@ -110,12 +111,15 @@ exec 3>&-
                     --textbox "$0" 0 0
                     ;;
                 *)
+                    octet=$(remove_zeros "$team_num")
+                    echo "$octet"
                     "$DIALOG" \
                     --clear \
                     --backtitle "$backtitle" \
                     --title "Processing..." "$@" \
                     --gauge \
-                    10 40
+                    20 70 0 \
+                    ""
                     ;;
             esac
             DIALOG_TITLE="\Zb\Z2Welcome to AutoVPN.\ZB\Zn"
