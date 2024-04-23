@@ -6,10 +6,10 @@ clear
 #                 \/
 #==========================#===========================#===========================#
 DIALOG=dialog
-DIALOG_OK=0
-DIALOG_CANCEL=0
+DIALOG_ESTABLISH=0
+DIALOG_DEMOLISH=6
 DIALOG_HELP=2
-DIALOG_EXTRA=3
+DIALOG_EDIT=3
 DIALOG_ITEM_HELP=4
 DIALOG_TIMEOUT=5
 DIALOG_ESC=255
@@ -64,7 +64,7 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
 returncode=$?
 exec 3>&-
     case $returncode in
-        $DIALOG_CANCEL)
+        $DIALOG_DEMOLISH)
             case $returntext in
                 HELP*)
                     "$DIALOG" \
@@ -79,7 +79,7 @@ exec 3>&-
                     ;;
             esac
             ;;
-        $DIALOG_OK)
+        $DIALOG_ESTABLISH)
             case $returntext in
                 HELP*)
                     "$DIALOG" \
@@ -98,7 +98,7 @@ exec 3>&-
             "$DIALOG" \
             --textbox "$0" 0 0
             ;;
-        $DIALOG_EXTRA)
+        $DIALOG_EDIT)
             tag=`echo "$returntext" | sed -e 's/^RENAMED //' -e 's/:.*/:/'`
             item=`echo "$returntext" | sed -e 's/^[^:]*:[ ]*//' -e 's/[ ]*$//'`
             case "$tag" in
