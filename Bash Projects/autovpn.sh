@@ -134,7 +134,11 @@ exec 3>&-
                     ;;
                 'FW Password':)
                     fw_pass="$item"
-                    pass_cover="******"
+                    if [ -n "$fw_addr" ]
+                        pass_cover="******"
+                    else
+                        pass_cover=""
+                    fi
                     ;;
                 'Team Number':)
                     team_num="$item"
@@ -153,7 +157,11 @@ exec 3>&-
                     ;;
                 'Pre-Shared Key':)
                     psk_key="$item"
-                    psk_cover="******"
+                    if [ -n "$psk_key" ]
+                        psk_cover="******"
+                    else
+                        psk_cover=""
+                    fi
                     ;;
                 *)
                     tag=
