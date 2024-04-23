@@ -94,7 +94,7 @@ exec 3>&-
             --textbox "$0" 0 0
             ;;
         $DIALOG_EXTRA)
-            tag=`echo "$returntext" | sed -e 's/^EDITED //' -e 's/:.*/:/' -e 's/^\([A-Za-z].*\)$/\1:/'`
+            tag=`echo "$returntext" | sed -e 's/^EDITED //' -e 's/:.*/:/'`
             item=`echo "$returntext" | sed -e 's/^[^:]*:[ ]*//' -e 's/[ ]*$//'`
             case "$tag" in
                 'Firewall IP Address':)
