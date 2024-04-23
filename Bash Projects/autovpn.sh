@@ -46,10 +46,9 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
             --extra-button \
             --extra-label "Edit" \
             --help-button \
-            --help-label "Script" \
+            --help-label "Demolish" \
             --default-button extra \
             --default-item "$defaultitem" \
-            --item-help "$@" \
             --inputmenu "Input the needed values for IPSEC tunnel creation." \
 30 80 10 \
         "FW IP Address:"  "$fw_addr"      "The IP address of your kit's Palo Alto FW" \
@@ -95,8 +94,19 @@ exec 3>&-
             esac
             ;;
         $DIALOG_HELP)
-            "$DIALOG" \
-            --textbox "$0" 0 0
+            case $returntext in
+                HELP*)
+                    "$DIALOG" \
+                    --textbox "$0" 0 0
+                    ;;
+                *)
+                    "$DIALOG" \
+                    --clear \
+                    --backtitle "$backtitle" \
+                    --msgbox "A progress bar will go here and things will be done..." 10 40
+##########          --progressbox           ##############################
+                    ;;
+            esac
             ;;
         $DIALOG_EXTRA)
             tag=`echo "$returntext" | sed -e 's/^RENAMED //' -e 's/:.*/:/'`
