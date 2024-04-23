@@ -44,8 +44,9 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
             --extra-button \
             --extra-label "Edit" \
             --help-button \
-            --help-label "Demolish" \
+            --help-label "Help" \
             --item-help "$@" \
+            --cancel-label "Demolish" \
             --default-button extra \
             --default-item "$defaultitem" \
             --inputmenu "Welcome to AutoVPN." \
@@ -64,16 +65,17 @@ returncode=$?
 exec 3>&-
     case $returncode in
         $DIALOG_CANCEL)
-            "$DIALOG" \
-            --clear \
-            --backtitle "$backtitle" \
-            --yesno "Are you sure you want to quit?" 5 35
-            case $? in
-                $DIALOG_OK)
-                    break
+            case $returntext in
+                HELP*)
+                    "$DIALOG" \
+                    --textbox "$0" 0 0
                     ;;
-                $DIALOG_CANCEL)
-                    returncode=99
+                *)
+                    "$DIALOG" \
+                    --clear \
+                    --backtitle "$backtitle" \
+                    --msgbox "A progress bar will go here and things will be done..." 10 40
+##########          --progressbox           ##############################
                     ;;
             esac
             ;;
@@ -93,19 +95,8 @@ exec 3>&-
             esac
             ;;
         $DIALOG_HELP)
-            case $returntext in
-                HELP*)
-                    "$DIALOG" \
-                    --textbox "$0" 0 0
-                    ;;
-                *)
-                    "$DIALOG" \
-                    --clear \
-                    --backtitle "$backtitle" \
-                    --msgbox "A progress bar will go here and things will be done..." 10 40
-##########          --progressbox           ##############################
-                    ;;
-            esac
+            "$DIALOG" \
+            --textbox "$0" 0 0
             ;;
         $DIALOG_EXTRA)
             tag=`echo "$returntext" | sed -e 's/^RENAMED //' -e 's/:.*/:/'`
