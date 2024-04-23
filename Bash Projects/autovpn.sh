@@ -134,7 +134,7 @@ exec 3>&-
                     ;;
                 'FW Password':)
                     fw_pass="$item"
-                    if [ -n "$fw_addr" ]; then
+                    if [ -n "$fw_pass" ]; then
                         pass_cover="******"
                     else
                         pass_cover=""
