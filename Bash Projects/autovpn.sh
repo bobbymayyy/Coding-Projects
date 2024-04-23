@@ -113,7 +113,7 @@ exec 3>&-
                         DIALOG_TITLE="Welcome to AutoVPN. \Zb(Please fill in all fields.)\ZB"
                     else
                         octet=$(remove_zeros "$team_num")
-                        DIALOG_TITLE="\Zb\Z1Welcome to AutoVPN.\ZB\Zn"
+                        DIALOG_TITLE="\Zb\Z2Welcome to AutoVPN.\ZB\Zn"
                     fi
                     ;;
             esac
