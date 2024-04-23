@@ -41,6 +41,7 @@ do
 exec 3>&1
 returntext=`$DIALOG --clear --ok-label "Establish" \
             --backtitle "$backtitle" \
+            --extra-button --extra-label "Edit" \
             --help-button \
             --help-label "Script" \
             --default-item "$defaultitem" \
@@ -85,7 +86,7 @@ exec 3>&-
                     --clear \
                     --backtitle "$backtitle" \
                     --msgbox "A progress bar will go here and things will be done..." 10 40
-##########             --progressbox           ##############################
+##########          --progressbox           ##############################
                     ;;
             esac
             ;;
@@ -94,7 +95,7 @@ exec 3>&-
             --textbox "$0" 0 0
             ;;
         $DIALOG_EXTRA)
-            tag=`echo "$returntext" | sed -e 's/^EDITED //' -e 's/:.*/:/'`
+            tag=`echo "$returntext" | sed -e 's/^RENAMED //' -e 's/:.*/:/'`
             item=`echo "$returntext" | sed -e 's/^[^:]*:[ ]*//' -e 's/[ ]*$//'`
             case "$tag" in
                 'Firewall IP Address':)
@@ -128,9 +129,7 @@ exec 3>&-
                     tag=
                     ;;
             esac
-            if [ -n "$tag" ]; then
-                defaultitem="$tag $item"
-            fi
+            test -n "$tag" && defaultitem="$tag"
             ;;
         *)
             break
