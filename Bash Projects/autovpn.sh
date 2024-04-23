@@ -41,9 +41,11 @@ do
 exec 3>&1
 returntext=`$DIALOG --clear --ok-label "Establish" \
             --backtitle "$backtitle" \
-            --extra-button --extra-label "Edit" \
+            --extra-button \
+            --extra-label "Edit" \
             --help-button \
             --help-label "Script" \
+            --default-button extra \
             --default-item "$defaultitem" \
             --item-help "$@" \
             --inputmenu "Input the needed values for IPSEC tunnel creation." \
