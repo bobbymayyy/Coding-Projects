@@ -128,7 +128,9 @@ exec 3>&-
                     tag=
                     ;;
             esac
-            test -n "$tag" && defaultitem="$tag"
+            if [ -n "$tag" ]; then
+                defaultitem="$tag $item"
+            fi
             ;;
         *)
             break
