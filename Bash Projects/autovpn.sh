@@ -91,6 +91,8 @@ exec 3>&-
                     --textbox "$0" 0 0
                     ;;
                 *)
+                    octet=$(remove_zeros)
+                    echo "$octet"
                     "$DIALOG" \
                     --clear \
                     --backtitle "$backtitle" \
