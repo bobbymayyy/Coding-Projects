@@ -28,6 +28,7 @@ fw_addr=""          # - Passed to main function
 fw_user=""          #             ||
 fw_pass=""          #             ||
 team_num=""         #             ||
+octet=""            #             ||
 kit_num=""          #             ||
 int_num=""          #             ||
 wan_addr=""         #             ||
@@ -37,6 +38,23 @@ pass_cover="" # - Veil the sensitive values -
 psk_cover="" # --------------------------------
 returncode=0        # - Initialize
 defaultitem="FW IP Address:"    # - Set default input field
+remove_zeros() {
+    # Convert number to string to handle leading zeros
+    local team_num="$1"
+    local len="${#team_num}"
+    # Remove leading zero
+    team_num="${team_num##+(0)}"
+    # Remove trailing zero
+    team_num="${team_num%0}"
+    # If already mitigated then return otherwise remove all zeroes
+    if (( $team_num >= 255 )); then
+        team_num="${team_num//0}"
+        team_num=$(( team_num >= 255 ? 88 : team_num ))
+        echo "$team_num"
+    else
+        echo "$team_num"
+    fi
+}
 while test $returncode != 250   # - Main Menu Loop
 do
 exec 3>&1
@@ -76,11 +94,12 @@ exec 3>&-
                     "$DIALOG" \
                     --clear \
                     --backtitle "$backtitle" \
-                    --msgbox "A progress bar will go here and things will be done..." 10 40
-##########          --progressbox           ##############################
+                    --title "Processing..." "$@" \
+                    --gauge \
+                    10 40
                     ;;
             esac
-            DIALOG_TITLE="\Z1Welcome to AutoVPN.\Zn"
+            DIALOG_TITLE="\Zb\Z1Welcome to AutoVPN.\ZB\Zn"
             ;;
         $DIALOG_ESTABLISH)
             case $returntext in
@@ -92,11 +111,12 @@ exec 3>&-
                     "$DIALOG" \
                     --clear \
                     --backtitle "$backtitle" \
-                    --msgbox "A progress bar will go here and things will be done..." 10 40
-##########          --progressbox           ##############################
+                    --title "Processing..." "$@" \
+                    --gauge \
+                    10 40
                     ;;
             esac
-            DIALOG_TITLE="\Z2Welcome to AutoVPN.\Zn"
+            DIALOG_TITLE="\Zb\Z2Welcome to AutoVPN.\ZB\Zn"
             ;;
         $DIALOG_HELP)
             "$DIALOG" \
