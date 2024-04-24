@@ -131,15 +131,15 @@ returntext=`$DIALOG --clear --ok-label "Establish" \
             --colors \
             --inputmenu "$DIALOG_TITLE" \
 20 70 20 \
-        "FW IP Address:"        "$fw_addr"      "The IP address of your kit's Palo Alto FW" \
-        "FW Username:"          "$fw_user"      "The username of your kit's Palo Alto FW account that can create and apply configuration" \
-        "FW Password:"          "$pass_cover"   "The password of your kit's Palo Alto FW account" \
-        "Team Number:"          "$team_num"     "Your CPT number; ie 401, 154, 03, 600" \
-        "Kit Number:"           "$kit_num"      "Your kit number; ie 102, 14, 43, 69" \
-        "WAN Interface:"        "$int_num"      "The WAN interface you want to apply this tunnel to; should really only be Untrust (1/'X')" \
-        "WAN IP Address:"       "$wan_addr"     "The IP address you want to give to the WAN interface for this tunnel" \
+        "FW IP Address:"        "$fw_addr"      "The IP address of your kit's PA FW" \
+        "FW Username:"          "$fw_user"      "The username of your kit's PA FW (can create/apply configuration)" \
+        "FW Password:"          "$pass_cover"   "The password to the username you have provided" \
+        "Team Number:"          "$team_num"     "Your CPT, team number; ie 401, 154, 03, 600" \
+        "Kit Number:"           "$kit_num"      "Your kit, DDS-M number; ie 102, 14, 43, 69" \
+        "WAN Interface:"        "$int_num"      "The WAN interface the tunnel starts from; should be Untrust (1/'X')" \
+        "WAN IP Address:"       "$wan_addr"     "The IP address you want to give to the WAN interface" \
         "Peer IP Address:"      "$peer_addr"    "The IP address of the Juniper you are creating a tunnel to" \
-        "Pre-Shared Key:"       "$psk_cover"    "The shared key that is decided when discussing the need for this tunnel to be created; must be the same on both sides" \
+        "Pre-Shared Key:"       "$psk_cover"    "The shared key decided by makers of this tunnel; must be same on both sides" \
 2>&1 1>&3`
 returncode=$?
 exec 3>&-
