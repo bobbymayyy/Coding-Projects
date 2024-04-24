@@ -69,8 +69,7 @@ configure_firewall() {
     local commands="${11}"
     # Create SSH connection
     ssh_newkey="Are you sure you want to continue connecting"
-    ssh_cmd="ssh $fw_user@$fw_addr"
-    sshpass -p "$fw_pass" ssh -o StrictHostKeyChecking=no "$fw_user@$fw_addr" << EOF
+    sshpass -p "$fw_pass" ssh -tt -o StrictHostKeyChecking=no "$fw_user@$fw_addr" << EOF
     # Handle SSH key verification
     expect {
         "$ssh_newkey" {
