@@ -172,7 +172,11 @@ exec 3>&-
                             "delete network interface ethernet ethernet1/$int_num layer3 ip $wan_addr/28"
                         )
                         configure_firewall "$fw_addr" "$fw_user" "$fw_pass" "$team_num" "$octet" "$kit_num" "$int_num" "$wan_addr" "$peer_addr" "$psk_key" "$commands"
-                        DIALOG_TITLE="\Zb\Z1Welcome to AutoVPN.\ZB\Zn"
+                        if [ "$success" == true ]; then
+                            DIALOG_TITLE="\Zb\Z2Welcome to AutoVPN.\ZB\Zn"
+                        else
+                            DIALOG_TITLE="\Zb\Z1Welcome to AutoVPN.\ZB\Zn"
+                        fi
                     fi
                     ;;
             esac
@@ -235,7 +239,11 @@ exec 3>&-
                             "set network virtual-router default protocol ospf enable yes area 0.0.0.$octet type normal"
                         )
                         configure_firewall "$fw_addr" "$fw_user" "$fw_pass" "$team_num" "$octet" "$kit_num" "$int_num" "$wan_addr" "$peer_addr" "$psk_key" "$commands"
-                        DIALOG_TITLE="\Zb\Z2Welcome to AutoVPN.\ZB\Zn"
+                        if [ "$success" == true ]; then
+                            DIALOG_TITLE="\Zb\Z2Welcome to AutoVPN.\ZB\Zn"
+                        else
+                            DIALOG_TITLE="\Zb\Z1Welcome to AutoVPN.\ZB\Zn"
+                        fi
                     fi
                     ;;
             esac
