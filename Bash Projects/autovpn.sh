@@ -69,18 +69,15 @@ configure_firewall() {
     local commands="${11}"
     # Create SSH connection
     ssh_newkey="Are you sure you want to continue connecting"
-    sshpass -p "$fw_pass" ssh -tt -o StrictHostKeyChecking=no "$fw_user@$fw_addr" << EOF
-    # Handle SSH key verification
+    expect -c "
+    spawn ssh -o StrictHostKeyChecking=no $fw_user@$fw_addr
     expect {
-        "> " {
-            send "set cli terminal width 500\n"
-        }
-        "$ssh_newkey" {
-            send "yes\n"
+        \"$ssh_newkey\" {
+            send \"yes\\n\"
             exp_continue
         }
-        "assword:" {
-            send "$fw_pass\n"
+        \"assword:\" {
+            send \"$fw_pass\\n\"
         }
         timeout {
             exit 1
@@ -89,24 +86,18 @@ configure_firewall() {
             exit 1
         }
     }
-    # Start configuration
-    expect "> "
-    send "set cli scripting-mode on\n"
-    expect "> "
-    send "configure\n"
-    expect "# "
-    # Send commands
-    for cmd in "\${commands[@]}"; do
-        send "\$cmd\n"
-        expect "# "
-    done
-    send "commit\n"
-    expect "# "
-    send "exit\n"
-    expect "> "
-    send "exit\n"
+    foreach cmd {${commands[*]}} {
+        expect {
+            \"> \" {
+                send \"\$cmd\\n\"
+            }
+            \"# \" {
+                send \"\$cmd\\n\"
+            }
+        }
+    }
     expect eof
-EOF
+    "
     # Check if SSH command was successful
     if [ $? -eq 0 ]; then
         success=true
@@ -157,6 +148,9 @@ exec 3>&-
                     else
                         octet=$(remove_zeros "$team_num")
                         commands=(
+                            "set cli terminal width 500"
+                            "set cli scripting-mode on"
+                            "configure"
                             "delete zone VPN network layer3 tunnel.$team_num"
                             "delete network tunnel ipsec CPT$team_num"
                             "delete network virtual-router default protocol ospf area 0.0.0.$octet"
@@ -170,6 +164,8 @@ exec 3>&-
                             "delete network ike crypto-profiles ike-crypto-profiles CPT$team_num"
                             "delete network interface tunnel units tunnel.$team_num"
                             "delete network interface ethernet ethernet1/$int_num layer3 ip $wan_addr/28"
+                            "exit"
+                            "exit"
                         )
                         configure_firewall "$fw_addr" "$fw_user" "$fw_pass" "$team_num" "$octet" "$kit_num" "$int_num" "$wan_addr" "$peer_addr" "$psk_key" "$commands"
                         if [ "$success" == true ]; then
@@ -194,6 +190,9 @@ exec 3>&-
                     else
                         octet=$(remove_zeros "$team_num")
                         commands=(
+                            "set cli terminal width 500"
+                            "set cli scripting-mode on"
+                            "configure"
                             "set network interface tunnel units tunnel.$team_num ip 192.168.$octet.2/24"
                             "set network interface tunnel units tunnel.$team_num mtu 1350"
                             "set network interface ethernet ethernet1/$int_num layer3 ip $wan_addr/28"
@@ -237,6 +236,8 @@ exec 3>&-
                             "set network virtual-router default protocol redist-profile Kit$kit_num filter type connect destination 10.$kit_num.0.0/16"
                             "set network virtual-router default protocol ospf export-rules Kit$kit_num new-path-type ext-2"
                             "set network virtual-router default protocol ospf enable yes area 0.0.0.$octet type normal"
+                            "exit"
+                            "exit"
                         )
                         configure_firewall "$fw_addr" "$fw_user" "$fw_pass" "$team_num" "$octet" "$kit_num" "$int_num" "$wan_addr" "$peer_addr" "$psk_key" "$commands"
                         if [ "$success" == true ]; then
