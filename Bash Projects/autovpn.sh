@@ -72,6 +72,9 @@ configure_firewall() {
     sshpass -p "$fw_pass" ssh -tt -o StrictHostKeyChecking=no "$fw_user@$fw_addr" << EOF
     # Handle SSH key verification
     expect {
+        "> " {
+            send "set cli terminal width 500\n"
+        }
         "$ssh_newkey" {
             send "yes\n"
             exp_continue
@@ -87,8 +90,6 @@ configure_firewall() {
         }
     }
     # Start configuration
-    expect "> "
-    send "set cli terminal width 500\n"
     expect "> "
     send "set cli scripting-mode on\n"
     expect "> "
