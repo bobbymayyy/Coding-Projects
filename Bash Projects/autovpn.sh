@@ -66,7 +66,7 @@ configure_firewall() {
     local wan_addr="$8"
     local peer_addr="$9"
     local psk_key="${10}"
-    local commands=("${@}")
+    local commands="${11}"
     # Create SSH connection
     ssh_newkey="Are you sure you want to continue connecting"
     expect -c "
@@ -86,7 +86,7 @@ configure_firewall() {
             exit 1
         }
     }
-    foreach cmd {${commands[*]}} {
+    foreach cmd {${commands[@]}} {
         expect {
             \"> \" {
                 send \"\$cmd\\n\"
@@ -167,7 +167,7 @@ exec 3>&-
                             "exit" \
                             "exit"
                         )
-                        configure_firewall "$fw_addr" "$fw_user" "$fw_pass" "$team_num" "$octet" "$kit_num" "$int_num" "$wan_addr" "$peer_addr" "$psk_key" "${commands[@]}"
+                        configure_firewall "$fw_addr" "$fw_user" "$fw_pass" "$team_num" "$octet" "$kit_num" "$int_num" "$wan_addr" "$peer_addr" "$psk_key" "$commands"
                         if [ "$success" == true ]; then
                             DIALOG_TITLE="\Zb\Z2Welcome to AutoVPN.\ZB\Zn"
                         else
@@ -239,7 +239,7 @@ exec 3>&-
                             "exit" \
                             "exit"
                         )
-                        configure_firewall "$fw_addr" "$fw_user" "$fw_pass" "$team_num" "$octet" "$kit_num" "$int_num" "$wan_addr" "$peer_addr" "$psk_key" "${commands[@]}"
+                        configure_firewall "$fw_addr" "$fw_user" "$fw_pass" "$team_num" "$octet" "$kit_num" "$int_num" "$wan_addr" "$peer_addr" "$psk_key" "$commands"
                         if [ "$success" == true ]; then
                             DIALOG_TITLE="\Zb\Z2Welcome to AutoVPN.\ZB\Zn"
                         else
