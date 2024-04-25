@@ -159,16 +159,16 @@ configure_firewall() {
             exit 1
         }
     }
-    foreach cmd {${command_list[@]}} {
+    for cmd in "${command_list[@]}"; do
         expect {
             \"> \" {
-                send \"\$cmd\\n\"
+                send "$cmd\r"
             }
             \"# \" {
-                send \"\$cmd\\n\"
+                send "$cmd\r"
             }
         }
-    }
+    done
     expect eof
     "
     # Check if SSH command was successful
