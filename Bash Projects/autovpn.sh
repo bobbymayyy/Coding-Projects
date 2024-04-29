@@ -159,7 +159,7 @@ configure_firewall() {
             exit 1
         }
     }
-    foreach cmd {${command_list[@]}} {
+    foreach cmd {${command_list[*]}} {
         expect {
             \"> \" {
                 send \"\$cmd\\n\"
