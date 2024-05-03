@@ -144,7 +144,7 @@ infrastructure_action() {
             read
           fi
         else
-          echo "Enter a password properly! Press enter to continue..."
+          echo "ENTER A PASSWORD! Press enter to continue..."
           unset $PROX_PASS1
           unset $PROX_PASS2
           read
