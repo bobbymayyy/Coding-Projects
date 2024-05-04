@@ -79,7 +79,7 @@ unseal_vault() {
   VAULT_PASS=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
           --title "Unseal Vault" \
           --insecure  "$@" \
-          --passwordbox "Please enter the password to the Ansible Vault:" 9 62 2>&1 > /dev/tty`
+          --passwordbox "Please enter the password to the Ansible Vault:" 10 65 2>&1 > /dev/tty`
   
   #Set return_value variable to previous commands return code
   return_value=$?
@@ -118,7 +118,7 @@ infrastructure_action() {
     PROX_PASS1=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
         --title "Proxmox Password" \
         --insecure  "$@" \
-        --passwordbox "Please enter the password you gave root on Proxmox:" 9 62 2>&1 > /dev/tty`
+        --passwordbox "Please enter the password you gave root on Proxmox:" 10 65 2>&1 > /dev/tty`
     
 
     #Set return_value variable to previous commands return code
@@ -131,7 +131,7 @@ infrastructure_action() {
           PROX_PASS2=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
               --title "Proxmox Password" \
               --insecure  "$@" \
-              --passwordbox "Please confirm the password:" 9 62 2>&1 > /dev/tty`
+              --passwordbox "Please confirm the password:" 10 65 2>&1 > /dev/tty`
           if [[ $PROX_PASS1 == $PROX_PASS2 ]]; then
             PROX_SUCCESS=TRUE
             debugger
@@ -189,7 +189,7 @@ infra_menu() {
   INTERNET$(if [ -n "$internet" ]; then echo -e "\t- \Z2SUCCESS\Zn"; else echo -e "\t- \Z1FAILURE\Zn"; fi) \n\
   DNS$(if [ -n "$dns" ]; then echo -e "\t- \Z2SUCCESS\Zn"; else echo -e "\t- \Z1FAILURE\Zn"; fi) \n\
   $(echo $ipaddr) \n\n\
-  Which of the following would you like to setup?" 21 62 5 \
+  Which of the following would you like to setup?" 25 65 5 \
           "Networking" "Router and vSwitches." on \
           "Nextcloud" "C2 - Local SAAS Storage." off \
           "Mattermost" "C2 - Team Communication." off \
@@ -257,9 +257,10 @@ while [[ $MAIN_MENU == TRUE ]]; do
           --backtitle "DIP (Deployable Infrastructure Platform)" \
           --title "Main Menu" "$@" \
           --menu "Welcome to the DIP! \n\
-  This is a process made to ease setup of Infrastructure. \n\n\
-  What would you like to do?" 14 62 5 \
-          "Infrastructure" "Select deployment or teardown." \
+  This is a program made to ease setup of \n\
+  boutique DCO infrastructure for risky analysis. \n\n\
+  What would you like to do?" 15 65 5 \
+          "Infrastructure" "Choose what to deploy." \
           "View Vault" "See all your passwords." \
           "Error Correction" "Attempt error correction to deploy." \
           "Teardown" "Teardown and start over." 2> $tmp_file
@@ -313,4 +314,5 @@ done
 unset $VAULT_PASS
 unset $PROX_PASS1
 unset $PROX_PASS2
+clear
 echo "Goodbye :)"
