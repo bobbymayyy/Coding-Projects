@@ -12,7 +12,7 @@ debugger() {
 #Menu functions
 #-----------------------------------------------
 
-#Check for Dialog
+#Check for Dialog and Ansible
 while [[ -z $(which dialog 2>/dev/null) ]] || [[ -z $(which ansible-vault 2>/dev/null) ]]; do
   clear
   echo "--------------------"
