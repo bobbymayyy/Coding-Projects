@@ -43,6 +43,7 @@ status_check() {
   pvedaemon=$(ps -x | awk '{print $5}' | egrep ^pvedaemon) #Determines if script host is Proxmox
 }
 
+#
 #Define the dialog exit status codes
 : ${DIALOG_OK=0}
 : ${DIALOG_CANCEL=1}
