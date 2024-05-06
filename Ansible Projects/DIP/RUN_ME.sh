@@ -28,7 +28,7 @@ while [[ -z $(which dialog 2>/dev/null) ]] || [[ -z $(which ansible-vault 2>/dev
   else
     clear
     echo "--------------------"
-    echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the .deb or .rpm files for Dialog and Ansible."
+    echo "You do not have apt or dnf as a package manager, so I can not extrapolate how to install the needed .deb or .rpm files."
     echo "They are needed to move on with a remote install, or you can re-run and install on the Proxmox."
     exit
   fi
@@ -37,10 +37,15 @@ done
 #Checks some things as prerequisites for deploying DIP
 status_check() {
   pvedaemon=$(ps -x | awk '{print $5}' | egrep ^pvedaemon) #Determines if script host is Proxmox
-  internet=$(ping -c 1 8.8.8.8 2>/dev/null | grep 'bytes from' &) #Tests connection to 8.8.8.8
-  dns=$(ping -c 1 google.com 2>/dev/null | grep 'bytes from' &) #Tests connection to google.com
-  nic=$(ip a | grep "master vmbr0") #Grabs NIC of script host
-  ipaddr=$(ip a | grep "global vmbr0" | awk '{print $2}') #Grabs IP of script host
+  internet=$(ping -c 1 8.8.8.8 2>/dev/null | grep 'bytes from') & #Tests connection to 8.8.8.8
+  dns=$(ping -c 1 google.com 2>/dev/null | grep 'bytes from') & #Tests connection to google.com
+  if [[ -n $pvedaemon ]]; then
+    nic=$(ip a | grep "master vmbr0") #Grabs NIC of script host
+    ipaddr=$(ip a | grep "scope global vmbr0" | awk '{print $2}') #Grabs IP of script host
+  else
+    nic=$(ip a | grep "state UP") #Grabs NIC of script host
+    ipaddr=$(ip a | grep "scope global" | awk '{print $2}') #Grabs IP of script host
+  fi
 }
 
 #Define the dialog exit status codes
@@ -89,7 +94,6 @@ unseal_vault() {
     $DIALOG_OK)
       validate_vault;;
     $DIALOG_CANCEL)
-      echo "Cancel pressed."
       echo "Goodbye :)"
       exit;;
     $DIALOG_HELP)
@@ -134,6 +138,8 @@ infrastructure_action() {
               --passwordbox "Please confirm the password:" 10 65 2>&1 > /dev/tty`
           if [[ $PROX_PASS1 == $PROX_PASS2 ]]; then
             PROX_SUCCESS=TRUE
+            prox_ips=($(for i in {129..134}; do (ping -c 1 10.1.1.$i | grep 'bytes from' &); done | grep -Eo "10\.1\.1\.\w*"))
+            
             debugger
             #.................................................
           else
@@ -315,4 +321,5 @@ unset $VAULT_PASS
 unset $PROX_PASS1
 unset $PROX_PASS2
 clear
+echo "EOS"
 echo "Goodbye :)"
