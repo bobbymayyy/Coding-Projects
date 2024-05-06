@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #This is a dialog "gui" for creating tunnels through Palo Alto CLI configuration changes...
 clear
