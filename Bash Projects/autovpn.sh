@@ -38,6 +38,11 @@ pass_cover="" # - Veil the sensitive values -
 psk_cover="" # --------------------------------
 returncode=0        # - Initialize
 defaultitem="FW IP Address:"    # - Set default input field
+debugger() {
+    echo "--------------------"
+    echo "Press any key to continue..."
+    read -rsn1
+}
 remove_zeros() {
     # Convert number to string to handle leading zeros
     local team_num="$1"
@@ -171,6 +176,7 @@ configure_firewall() {
     }
     expect eof
     "
+    debugger
     # Check if SSH command was successful
     if [ $? -eq 0 ]; then
         success=true
