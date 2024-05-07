@@ -147,7 +147,9 @@ configure_firewall() {
     fi
     # Create SSH connection
     ssh_newkey="Are you sure you want to continue connecting"
-    expect -c "
+    expect -f - "${command_list[@]}" -c "<<- 'EXPECT_DONE'
+    exp_internal 1
+    set cmd 0
     spawn ssh -o StrictHostKeyChecking=no $fw_user@$fw_addr
     expect {
         \"$ssh_newkey\" {
@@ -164,17 +166,21 @@ configure_firewall() {
             exit 1
         }
     }
-    foreach cmd {${command_list[@]}} {
+    while {[llength \$argv] > 0} {
         expect {
             \"> \" {
-                send \"\$cmd\\n\"
+                set cmd_arg [lindex \$argv 0]
+                send \"\$cmd_arg\\n\"
+                set argv [lrange \$argv 1 end]
             }
             \"# \" {
-                send \"\$cmd\\n\"
+                set cmd_arg [lindex \$argv 0]
+                send \"\$cmd_arg\\n\"
+                set argv [lrange \$argv 1 end]
             }
         }
     }
-    expect eof
+    EXPECT_DONE
     "
     debugger
     # Check if SSH command was successful
