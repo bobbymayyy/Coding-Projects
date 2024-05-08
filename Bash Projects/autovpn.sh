@@ -74,6 +74,72 @@ configure_firewall() {
     local commands="${11}"
     local success=0
     local ssh_newkey="Are you sure you want to continue connecting"
+    # Define command list
+    if [ "$commands" == "deploy" ]; then
+        command_list=(
+            "set network interface tunnel units tunnel.$team_num ip 192.168.$octet.2/24"
+            "set network interface tunnel units tunnel.$team_num mtu 1350"
+            "set network interface ethernet ethernet1/$int_num layer3 ip $wan_addr/28"
+            "set network virtual-router default interface tunnel.$team_num"
+            "set zone VPN network layer3 tunnel.$team_num"
+            "set network ike crypto-profiles ike-crypto-profiles CPT$team_num hash sha384 dh-group group20 encryption aes-256-cbc lifetime seconds 28800"
+            "set network ike crypto-profiles ipsec-crypto-profiles CPT$team_num esp authentication sha256 encryption aes-256-cbc"
+            "set network ike crypto-profiles ipsec-crypto-profiles CPT$team_num lifetime seconds 3600"
+            "set network ike crypto-profiles ipsec-crypto-profiles CPT$team_num dh-group group20"
+            "set network ike gateway CPT$team_num authentication pre-shared-key key $psk_key"
+            "set network ike gateway CPT$team_num protocol ikev2 dpd enable yes"
+            "set network ike gateway CPT$team_num protocol ikev2 ike-crypto-profile CPT$team_num"
+            "set network ike gateway CPT$team_num protocol version ikev2"
+            "set network ike gateway CPT$team_num local-address interface ethernet1/$int_num ip $wan_addr/28"
+            "set network ike gateway CPT$team_num protocol-common nat-traversal enable no"
+            "set network ike gateway CPT$team_num protocol-common fragmentation enable yes"
+            "set network ike gateway CPT$team_num peer-address ip $peer_addr"
+            "set network ike gateway CPT$team_num local-id id $team_num'cpt@cpb.army.mil' type ufqdn"
+            "set network tunnel ipsec CPT$team_num auto-key ike-gateway CPT$team_num"
+            "set network tunnel ipsec CPT$team_num auto-key ipsec-crypto-profile CPT$team_num"
+            "set network tunnel ipsec CPT$team_num tunnel-monitor enable no"
+            "set network tunnel ipsec CPT$team_num tunnel-interface tunnel.$team_num"
+            "set network tunnel ipsec CPT$team_num anti-replay yes"
+            "set network tunnel ipsec CPT$team_num copy-tos yes"
+            "set network tunnel ipsec CPT$team_num disabled no"
+            "set network tunnel ipsec CPT$team_num tunnel-monitor destination-ip 192.168.$octet.1 enable yes tunnel-monitor-profile default"
+            "set network virtual-router default protocol ospf router-id $wan_addr"
+            "set network virtual-router default protocol ospf enable yes"
+            "set network virtual-router default protocol ospf area 0.0.0.$octet interface tunnel.$team_num enable yes"
+            "set network virtual-router default protocol ospf area 0.0.0.$octet interface tunnel.$team_num passive no"
+            "set network virtual-router default protocol ospf area 0.0.0.$octet interface tunnel.$team_num gr-delay 10"
+            "set network virtual-router default protocol ospf area 0.0.0.$octet interface tunnel.$team_num metric 10"
+            "set network virtual-router default protocol ospf area 0.0.0.$octet interface tunnel.$team_num priority 1"
+            "set network virtual-router default protocol ospf area 0.0.0.$octet interface tunnel.$team_num hello-interval 10"
+            "set network virtual-router default protocol ospf area 0.0.0.$octet interface tunnel.$team_num dead-counts 4"
+            "set network virtual-router default protocol ospf area 0.0.0.$octet interface tunnel.$team_num retransmit-interval 5"
+            "set network virtual-router default protocol ospf area 0.0.0.$octet interface tunnel.$team_num transit-delay 1"
+            "set network virtual-router default protocol ospf area 0.0.0.$octet interface tunnel.$team_num link-type p2p"
+            "set network virtual-router default protocol redist-profile Kit$kit_num action redist"
+            "set network virtual-router default protocol redist-profile Kit$kit_num priority 1"
+            "set network virtual-router default protocol redist-profile Kit$kit_num filter type connect destination 10.$kit_num.0.0/16"
+            "set network virtual-router default protocol ospf export-rules Kit$kit_num new-path-type ext-2"
+            "set network virtual-router default protocol ospf enable yes area 0.0.0.$octet type normal"
+            # Add more commands as needed
+        )
+    elif [ "$commands" == "destroy" ]; then
+        command_list=(
+            "delete zone VPN network layer3 tunnel.$team_num"
+            "delete network tunnel ipsec CPT$team_num"
+            "delete network virtual-router default protocol ospf area 0.0.0.$octet"
+            "set network virtual-router default protocol ospf enable no"
+            "delete network virtual-router default protocol ospf router-id"
+            "delete network virtual-router default interface tunnel.$team_num"
+            "delete network virtual-router default protocol ospf export-rules Kit$kit_num"
+            "delete network virtual-router default protocol redist-profile Kit$kit_num"
+            "delete network ike gateway CPT$team_num"
+            "delete network ike crypto-profiles ipsec-crypto-profiles CPT$team_num"
+            "delete network ike crypto-profiles ike-crypto-profiles CPT$team_num"
+            "delete network interface tunnel units tunnel.$team_num"
+            "delete network interface ethernet ethernet1/$int_num layer3 ip $wan_addr/28"
+            # Add more commands as needed
+        )
+    fi
     # Create SSH connection
     expect -c "
         spawn ssh -o StrictHostKeyChecking=no $fw_user@$fw_addr
@@ -177,8 +243,9 @@ configure_firewall() {
         expect \">\"
         send \"exit\r\"
         close
-    "
+    " command_list
     debugger
+    success=$?
     # Check if SSH command was successful
     if [ $? -eq 0 ]; then
         success=true
