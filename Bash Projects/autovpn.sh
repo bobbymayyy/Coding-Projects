@@ -76,6 +76,7 @@ configure_firewall() {
     local ssh_newkey="Are you sure you want to continue connecting"
     # Define command list
     if [ "$commands" == "deploy" ]; then
+        debugger
         expect -c "
             set timeout 90
             spawn ssh -o StrictHostKeyChecking=no $fw_user@$fw_addr
