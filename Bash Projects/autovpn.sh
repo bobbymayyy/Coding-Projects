@@ -250,7 +250,6 @@ configure_firewall() {
             send \"exit\\r\"
             expect \">\"
             send \"exit\\r\"
-            close
         "
     fi
 }
