@@ -254,15 +254,6 @@ configure_firewall() {
             close
         "
     fi
-    debugger
-    success=$?
-    # Check if SSH command was successful
-    if [ $? -eq 0 ]; then
-        success=true
-    else
-        success=false
-    fi
-    return $success
 }
 while test $returncode != 250   # - Main Menu Loop
 do
@@ -307,7 +298,7 @@ exec 3>&-
                         commands="demolish"
                         octet=$(remove_zeros "$team_num")
                         configure_firewall "$fw_addr" "$fw_user" "$fw_pass" "$team_num" "$octet" "$kit_num" "$int_num" "$wan_addr" "$peer_addr" "$psk_key" "$commands"
-                        if [ "$success" == true ]; then
+                        if configure_firewall; then
                             DIALOG_TITLE="\Zb\Z2Welcome to AutoVPN.\ZB\Zn"
                         else
                             DIALOG_TITLE="\Zb\Z1Welcome to AutoVPN.\ZB\Zn"
@@ -330,7 +321,7 @@ exec 3>&-
                         commands="establish"
                         octet=$(remove_zeros "$team_num")
                         configure_firewall "$fw_addr" "$fw_user" "$fw_pass" "$team_num" "$octet" "$kit_num" "$int_num" "$wan_addr" "$peer_addr" "$psk_key" "$commands"
-                        if [ "$success" == true ]; then
+                        if configure_firewall; then
                             DIALOG_TITLE="\Zb\Z2Welcome to AutoVPN.\ZB\Zn"
                         else
                             DIALOG_TITLE="\Zb\Z1Welcome to AutoVPN.\ZB\Zn"
