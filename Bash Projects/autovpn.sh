@@ -135,7 +135,7 @@ configure_firewall() {
             expect \"#\"
             send \"set network ike gateway CPT$team_num peer-address ip $peer_addr\\r\"
             expect \"#\"
-            send \"set network ike gateway CPT$team_num local-id id \"$team_num\"cpt@cpb.army.mil type ufqdn\\r\"
+            send \"set network ike gateway CPT$team_num local-id id "$team_num"cpt@cpb.army.mil type ufqdn\\r\"
             expect \"#\"
             send \"set network tunnel ipsec CPT$team_num auto-key ike-gateway CPT$team_num\\r\"
             expect \"#\"
