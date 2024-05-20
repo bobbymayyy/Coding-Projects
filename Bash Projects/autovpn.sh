@@ -1,11 +1,6 @@
 #!/bin/bash
-
-#This is a dialog "gui" for creating tunnels through Palo Alto CLI configuration changes...
 clear
-# - The asparagus ||
-#                 \/
-#==========================#===========================#===========================#
-DIALOG=dialog   # - Set dialog variables
+# Initialize variables for dialog
 DIALOG_TITLE="Welcome to AutoVPN."
 DIALOG_ESTABLISH=0
 DIALOG_DEMOLISH=1
@@ -20,25 +15,24 @@ SIG_INT=2
 SIG_QUIT=3
 SIG_KILL=9
 SIG_TERM=15
-# - The meat and potatoes ||
-#                         \/
-#==========================#===========================#===========================#
 backtitle="AutoVPN - A utility for easily creating IPSEC tunnels in Palo Alto"
-fw_addr=""          # - Passed to main function
-fw_user=""          #             ||
-fw_pass=""          #             ||
-team_num=""         #             ||
-octet=""            #             ||
-kit_num=""          #             ||
-int_num=""          #             ||
-wan_addr=""         #             ||
-peer_addr=""        #             ||
-psk_key=""          #             \/
-pass_cover="" # - Veil the sensitive values -
-psk_cover="" # --------------------------------
-returncode=0        # - Initialize
-defaultitem="FW IP Address:"    # - Set default input field
+# Initialize variables for configuration function
+fw_addr=""
+fw_user=""
+fw_pass=""
+team_num=""
+octet=""
+kit_num=""
+int_num=""
+wan_addr=""
+peer_addr=""
+psk_key=""
+pass_cover=""
+psk_cover=""
+returncode=0
+defaultitem="FW IP Address:"
 debugger() {
+    # Debug function
     echo "--------------------"
     echo "Press any key to continue..."
     read -rsn1
@@ -61,6 +55,7 @@ remove_zeros() {
     fi
 }
 configure_firewall() {
+    # Bring in variables to this function
     local fw_addr="$1"
     local fw_user="$2"
     local fw_pass="$3"
@@ -74,7 +69,7 @@ configure_firewall() {
     local commands="${11}"
     local success=0
     local ssh_newkey="Are you sure you want to continue connecting"
-    # Define command list
+    # If function for establish vs demolish
     if [ "$commands" == "establish" ]; then
         expect -c "
             set timeout 90

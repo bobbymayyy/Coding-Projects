@@ -1,11 +1,9 @@
 #!/usr/bin/python3
-
 from functools import partial
 import pexpect
 import platform
 import os
 import subprocess
-
 def check_and_install_package(package_name, distribution):
     if distribution == 'Red Hat-based':
         try:
@@ -34,7 +32,6 @@ def check_and_install_package(package_name, distribution):
     else:
         print(f"Package installation not supported for {distribution}.")
         return False
-
 def get_linux_distribution():
     if platform.system() == 'Linux':
         if os.path.exists('/etc/redhat-release'):
@@ -50,7 +47,6 @@ def get_linux_distribution():
             return 'Unknown Linux distribution'
     else:
         return 'Not a Linux system'
-
 def remove_zeros(team_num):
     # Convert number to string to handle zeroes
     team_num = str(team_num)
@@ -73,7 +69,6 @@ def remove_zeros(team_num):
             return int(team_num)
     else:
         return int(team_num)
-
 def configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, psk_key, peer_addr, int_num, wan_addr, octet):
     success = False
     try:
@@ -183,7 +178,6 @@ def configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, p
             ssh_conn.close()
         return success
     return success
-
 #===================================================================================================================================
 # Firewall Manager App
 #===================================================================================================================================
@@ -191,7 +185,6 @@ class FirewallManager:
     def __init__(self, root):
         self.root = root
         self.create_gui()
-
     def create_gui(self):
         self.root.title("AutoVPN")
         self.root.geometry("600x400")
@@ -201,7 +194,6 @@ class FirewallManager:
         self.create_entries()
         self.create_buttons()
         self.configure_success = False
-
     def reset_app(self):
         # Reset labels with no user input to red font color
         default_labels = [
@@ -226,7 +218,6 @@ class FirewallManager:
                 label = [widget for widget in self.root.children.values() if isinstance(widget, tk.Label) and widget.cget('text') == label_text]
                 if label:
                     label[0].config(fg="#ffffff")
-
     def create_labels(self):
         labels_info = [
             ("Please enter your password below:", 170, 125, 260, 25),
@@ -244,7 +235,6 @@ class FirewallManager:
         for text, x, y, width, height in labels_info:
             label = tk.Label(self.root, text=text, font=tkFont.Font(family='Verdana', size=10), bg="#393d49", fg="#ffffff", justify="center")
             label.place(x=x, y=y, width=width, height=height)
-        
     def create_entries(self):
         self.password_entry=tk.Entry(root, font=tkFont.Font(family='Verdana',size=10), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", show="*")
         self.password_entry.place(x=40,y=150,width=520,height=25)
@@ -262,7 +252,6 @@ class FirewallManager:
         self.entries = [tk.Entry(root, font=tkFont.Font(family='Verdana',size=10), bg="#5a6074", fg="#ffffff", justify="center", relief="flat") for _ in range(len(entries_info))]
         for entry, (x, y, width, height) in zip(self.entries, entries_info):
             entry.place(x=x, y=y, width=width, height=height)
-
     def create_buttons(self):
         buttons_info = [
             ("Establish", self.deploy_button_action, 110, 345),
@@ -271,11 +260,9 @@ class FirewallManager:
         for text, command, x, y in buttons_info:
             button = tk.Button(self.root, text=text, font=tkFont.Font(family='Verdana',size=12), bg="#5a6074", fg="#ffffff", justify="center", relief="flat", command=command)
             button.place(x=x, y=y, width=90, height=30)
-
     def update_label_color(self, color):
         # Change color of welcome_label
         self.welcome_label.config(fg=color)
-
     def deploy_button_action(self):
         # Get input values from entries and perform deployment
         commands="deploy"
@@ -306,7 +293,6 @@ class FirewallManager:
                 self.update_label_color("#00ff00")
             else:
                 self.update_label_color("#ff0000")
-
     def destroy_button_action(self):
         # Get input values from entries and perform deployment
         commands="destroy"
@@ -337,7 +323,6 @@ class FirewallManager:
                 self.update_label_color("#00ff00")
             else:
                 self.update_label_color("#ff0000")
-            
 #===================================================================================================================================
 # Main Flow
 #===================================================================================================================================
