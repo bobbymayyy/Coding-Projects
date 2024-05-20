@@ -192,7 +192,6 @@ configure_firewall() {
             send \"exit\\r\"
             expect \">\"
             send \"exit\\r\"
-            close
         "
     elif [ "$commands" == "demolish" ]; then
         expect -c "
