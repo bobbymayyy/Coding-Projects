@@ -174,7 +174,7 @@ def configure_firewall(commands, fw_addr, fw_user, fw_pass, team_num, kit_num, p
         ssh_conn.sendline("exit")
         ssh_conn.expect_exact('>')
         ssh_conn.sendline("exit")
-        ssh_conn.close()
+        ssh_conn.sendline("exit")
         success = True
         psk_key = ""
     except Exception as e:
