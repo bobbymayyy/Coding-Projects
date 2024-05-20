@@ -75,8 +75,7 @@ configure_firewall() {
     local success=0
     local ssh_newkey="Are you sure you want to continue connecting"
     # Define command list
-    if [ "$commands" == "deploy" ]; then
-        debugger
+    if [ "$commands" == "establish" ]; then
         expect -c "
             set timeout 90
             spawn ssh -o StrictHostKeyChecking=no $fw_user@$fw_addr
@@ -195,7 +194,7 @@ configure_firewall() {
             send \"exit\\r\"
             close
         "
-    elif [ "$commands" == "destroy" ]; then
+    elif [ "$commands" == "demolish" ]; then
         expect -c "
             set timeout 90
             spawn ssh -o StrictHostKeyChecking=no $fw_user@$fw_addr
