@@ -142,14 +142,15 @@ configure_firewall() {
     fi
     # Create SSH connection
     expect -c "
+        set timeout 30
         spawn ssh -o StrictHostKeyChecking=no $fw_user@$fw_addr
         expect {
             \"$ssh_newkey\" {
-                send \"yes\\n\"
+                send \"yes\\r\"
                 exp_continue
             }
             \"assword:\" {
-                send \"$fw_pass\\n\"
+                send \"$fw_pass\\r\"
             }
             timeout {
                 exit 1
@@ -159,21 +160,21 @@ configure_firewall() {
             }
         }
         expect \">\"
-        send \"set cli terminal width 500\r\"
+        send \"set cli terminal width 500\\r\"
         expect \">\"
-        send \"set cli scripting-mode on\r\"
+        send \"set cli scripting-mode on\\r\"
         expect \">\"
-        send \"configure\r\"
+        send \"configure\\r\"
         expect \"#\"
         foreach command \$command_list {
-            send \"\$command\r\"
+            send \"\$command\\r\"
             expect \"#\"
         }
-        send \"commit\r\"
+        send \"commit\\r\"
         expect \"#\"
-        send \"exit\r\"
+        send \"exit\\r\"
         expect \">\"
-        send \"exit\r\"
+        send \"exit\\r\"
         close
     " command_list
     debugger
