@@ -1,6 +1,7 @@
 #!/bin/bash
 clear
 # Initialize variables for dialog
+DIALOG=dialog
 DIALOG_TITLE="Welcome to AutoVPN."
 DIALOG_ESTABLISH=0
 DIALOG_DEMOLISH=1
