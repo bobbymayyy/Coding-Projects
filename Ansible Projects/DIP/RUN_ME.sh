@@ -210,9 +210,9 @@ infrastructure_action() {
             USERPASS=$PROX_PASS2
             unset $PROX_PASS1
             unset $PROX_PASS2
-            prox_ips=($(for i in {129..134}; do (ping -c 1 10.1.1.$i | grep 'bytes from' &); done | grep -Eo "10\.1\.1\.\w*"))
             if [[ -n $pvedaemon ]]; then
               #The following is only run if the script host is Proxmox
+              prox_ips=($(for i in {132..140}; do (ping -c 1 10.1.1.$i | grep 'bytes from' &); done | grep -Eo "10\.1\.1\.\w*"))
               if [[ -z $dns ]]; then
                 echo "Installing Ansible and its dependencies needed for this exercise..."
                 dpkg --force-depends -i ./packages/debs/ansible/*.deb #dpkg -i ./packages/debs/*/*.deb
@@ -322,6 +322,7 @@ infrastructure_action() {
               fi
             else
               #The following is only run if the script host is not Proxmox
+              prox_ips=($(for i in {131..140}; do (ping -c 1 10.1.1.$i | grep 'bytes from' &); done | grep -Eo "10\.1\.1\.\w*"))
               if [[ -z $dns ]]; then
                 if [[ -n $apt ]]; then
                   echo "I see you are using a Debian based distribution of Linux..."
