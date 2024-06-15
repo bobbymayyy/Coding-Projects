@@ -405,5 +405,5 @@ Ansible Projects/DIP/isos
 Ansible Projects/DIP/packages
 Ansible Projects/DIP/containers
 Ansible Projects/DIP/templates
-Ansible Projects/DIP/ansible/playbooks/13_deploy_securityonion.yml
-Ansible Projects/DIP/ansible/playbooks/132_deploy_securityonion.yml
+Ansible Projects/DIP/ansible/playbooks/31_deploy_securityonion.yml
+Ansible Projects/DIP/ansible/playbooks/32_deploy_securityonion.yml

@@ -307,8 +307,31 @@ infrastructure_action() {
               ansible_check='--check' #This is set so that we can test...
               cd ./ansible
               ansible-playbook $ansible_check playbooks/01_configure_proxmox.yml
-              ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
-              ansible-playbook $ansible_check playbooks/12_deploy_c2.yml
+              printf "Cluster built.\n" >> deployment
+              if [[ -n "$choice_network" ]]; then
+                ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
+                printf "Networking deployed.\n" >> deployment
+              else
+                printf "Networking NOT deployed.\n" >> deployment
+              fi
+              if [[ -n "$choice_nextcloud" ]]; then
+                ansible-playbook $ansible_check playbooks/21_deploy_nextcloud.yml
+                printf "Nextcloud deployed.\n" >> deployment
+              else
+                printf "Nextcloud NOT deployed.\n" >> deployment
+              fi
+              if [[ -n "$choice_mattermost" ]]; then
+                ansible-playbook $ansible_check playbooks/22_deploy_mattermost.yml
+                printf "Mattermost deployed.\n" >> deployment
+              else
+                printf "Mattermost NOT deployed.\n" >> deployment
+              fi
+              if [[ -n "$choice_redmine" ]]; then
+                ansible-playbook $ansible_check playbooks/23_deploy_redmine.yml
+                printf "Redmine deployed.\n" >> deployment
+              else
+                printf "Redmine NOT deployed.\n" >> deployment
+              fi
               if [[ "$cluster_platform" =~ [pP] ]]; then
                 ansible-playbook $ansible_check playbooks/13_deploy_securityonion.yml
               elif [[ "$cluster_platform" =~ [aA] ]]; then
@@ -435,8 +458,31 @@ infrastructure_action() {
               ansible_check='--check' #This is set so that we can test...
               cd ./ansible
               ansible-playbook $ansible_check playbooks/01_configure_proxmox.yml
-              ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
-              ansible-playbook $ansible_check playbooks/12_deploy_c2.yml
+              printf "Cluster built.\n" >> deployment
+              if [[ -n "$choice_network" ]]; then
+                ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
+                printf "Networking deployed.\n" >> deployment
+              else
+                printf "Networking NOT deployed.\n" >> deployment
+              fi
+              if [[ -n "$choice_nextcloud" ]]; then
+                ansible-playbook $ansible_check playbooks/21_deploy_nextcloud.yml
+                printf "Nextcloud deployed.\n" >> deployment
+              else
+                printf "Nextcloud NOT deployed.\n" >> deployment
+              fi
+              if [[ -n "$choice_mattermost" ]]; then
+                ansible-playbook $ansible_check playbooks/22_deploy_mattermost.yml
+                printf "Mattermost deployed.\n" >> deployment
+              else
+                printf "Mattermost NOT deployed.\n" >> deployment
+              fi
+              if [[ -n "$choice_redmine" ]]; then
+                ansible-playbook $ansible_check playbooks/23_deploy_redmine.yml
+                printf "Redmine deployed.\n" >> deployment
+              else
+                printf "Redmine NOT deployed.\n" >> deployment
+              fi
               if [[ "$cluster_platform" =~ [pP] ]]; then
                 ansible-playbook $ansible_check playbooks/13_deploy_securityonion.yml
               elif [[ "$cluster_platform" =~ [aA] ]]; then
@@ -521,6 +567,11 @@ infra_menu() {
   #Handle menu progression
   case $return_value in
     $DIALOG_OK)
+      choice_network=$(echo $tmp_file | grep --only-matching 'Networking')
+      choice_nextcloud=$(echo $tmp_file | grep --only-matching 'Nextcloud')
+      choice_mattermost=$(echo $tmp_file | grep --only-matching 'Mattermost')
+      choice_redmine=$(echo $tmp_file | grep --only-matching 'Redmine')
+      choice_security=$(echo $tmp_file | grep --only-matching 'Security Onion')
       infrastructure_action;;
     $DIALOG_CANCEL)
       echo "Cancel pressed.";;
