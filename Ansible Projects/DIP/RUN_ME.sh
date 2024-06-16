@@ -9,7 +9,7 @@ debugger() {
 }
 
 #=============================================================================================================================
-#Menu functions
+#Action functions
 #-----------------------------------------------
 
 #Setup passwordless SSH
@@ -74,6 +74,51 @@ passwordless_proxproxW2proxM() {
     echo "============================================="
     echo "^ Should say Passwordless config for ${prox_ips[$i]} to PROXMOX CONTROL NODE successful ^"
   done
+}
+ansible_deployment() {
+  clear
+  echo "============================================="
+  echo "We are going to start the Ansible now."
+  echo "============================================="
+  ansible_check='--check' #This is set so that we can test...
+  cd ./ansible
+  ansible-playbook $ansible_check playbooks/01_configure_proxmox.yml
+  printf "Cluster built.\n" >> deployment
+  if [[ -n "$choice_network" ]]; then
+    ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
+    printf "Networking deployed.\n" >> deployment
+  else
+    printf "Networking NOT deployed.\n" >> deployment
+  fi
+  if [[ -n "$choice_nextcloud" ]]; then
+    ansible-playbook $ansible_check playbooks/21_deploy_nextcloud.yml
+    printf "Nextcloud deployed.\n" >> deployment
+  else
+    printf "Nextcloud NOT deployed.\n" >> deployment
+  fi
+  if [[ -n "$choice_mattermost" ]]; then
+    ansible-playbook $ansible_check playbooks/22_deploy_mattermost.yml
+    printf "Mattermost deployed.\n" >> deployment
+  else
+    printf "Mattermost NOT deployed.\n" >> deployment
+  fi
+  if [[ -n "$choice_redmine" ]]; then
+    ansible-playbook $ansible_check playbooks/23_deploy_redmine.yml
+    printf "Redmine deployed.\n" >> deployment
+  else
+    printf "Redmine NOT deployed.\n" >> deployment
+  fi
+  if [[ "$cluster_platform" =~ [pP] ]]; then
+    ansible-playbook $ansible_check playbooks/13_deploy_securityonion.yml
+  elif [[ "$cluster_platform" =~ [aA] ]]; then
+    ansible-playbook $ansible_check playbooks/132_deploy_securityonion.yml
+  elif [[ "$cluster_platform" =~ [cC] ]]; then
+    ansible-playbook $ansible_check playbooks/133_deploy_securityonion.yml
+  else
+    echo "============================================="
+    echo "I have not deployed Security Onion as I do not know what kind of cluster platform we are working with."
+    echo "============================================="
+  fi
 }
 
 #=============================================================================================================================
@@ -300,49 +345,7 @@ infrastructure_action() {
                 echo "============================================="
                 sleep 30
               fi
-              clear
-              echo "============================================="
-              echo "We are going to start the Ansible now."
-              echo "============================================="
-              ansible_check='--check' #This is set so that we can test...
-              cd ./ansible
-              ansible-playbook $ansible_check playbooks/01_configure_proxmox.yml
-              printf "Cluster built.\n" >> deployment
-              if [[ -n "$choice_network" ]]; then
-                ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
-                printf "Networking deployed.\n" >> deployment
-              else
-                printf "Networking NOT deployed.\n" >> deployment
-              fi
-              if [[ -n "$choice_nextcloud" ]]; then
-                ansible-playbook $ansible_check playbooks/21_deploy_nextcloud.yml
-                printf "Nextcloud deployed.\n" >> deployment
-              else
-                printf "Nextcloud NOT deployed.\n" >> deployment
-              fi
-              if [[ -n "$choice_mattermost" ]]; then
-                ansible-playbook $ansible_check playbooks/22_deploy_mattermost.yml
-                printf "Mattermost deployed.\n" >> deployment
-              else
-                printf "Mattermost NOT deployed.\n" >> deployment
-              fi
-              if [[ -n "$choice_redmine" ]]; then
-                ansible-playbook $ansible_check playbooks/23_deploy_redmine.yml
-                printf "Redmine deployed.\n" >> deployment
-              else
-                printf "Redmine NOT deployed.\n" >> deployment
-              fi
-              if [[ "$cluster_platform" =~ [pP] ]]; then
-                ansible-playbook $ansible_check playbooks/13_deploy_securityonion.yml
-              elif [[ "$cluster_platform" =~ [aA] ]]; then
-                ansible-playbook $ansible_check playbooks/132_deploy_securityonion.yml
-              elif [[ "$cluster_platform" =~ [cC] ]]; then
-                ansible-playbook $ansible_check playbooks/133_deploy_securityonion.yml
-              else
-                echo "============================================="
-                echo "I have not deployed Security Onion as I do not know what kind of cluster platform we are working with."
-                echo "============================================="
-              fi
+              ansible_deployment
             else
               #The following is only run if the script host is not Proxmox
               prox_ips=($(for i in {131..140}; do (ping -c 1 10.1.1.$i | grep 'bytes from' &); done | grep -Eo "10\.1\.1\.\w*"))
@@ -451,49 +454,7 @@ infrastructure_action() {
                 echo "============================================="
                 sleep 30
               fi
-              clear
-              echo "============================================="
-              echo "We are going to start the Ansible now."
-              echo "============================================="
-              ansible_check='--check' #This is set so that we can test...
-              cd ./ansible
-              ansible-playbook $ansible_check playbooks/01_configure_proxmox.yml
-              printf "Cluster built.\n" >> deployment
-              if [[ -n "$choice_network" ]]; then
-                ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
-                printf "Networking deployed.\n" >> deployment
-              else
-                printf "Networking NOT deployed.\n" >> deployment
-              fi
-              if [[ -n "$choice_nextcloud" ]]; then
-                ansible-playbook $ansible_check playbooks/21_deploy_nextcloud.yml
-                printf "Nextcloud deployed.\n" >> deployment
-              else
-                printf "Nextcloud NOT deployed.\n" >> deployment
-              fi
-              if [[ -n "$choice_mattermost" ]]; then
-                ansible-playbook $ansible_check playbooks/22_deploy_mattermost.yml
-                printf "Mattermost deployed.\n" >> deployment
-              else
-                printf "Mattermost NOT deployed.\n" >> deployment
-              fi
-              if [[ -n "$choice_redmine" ]]; then
-                ansible-playbook $ansible_check playbooks/23_deploy_redmine.yml
-                printf "Redmine deployed.\n" >> deployment
-              else
-                printf "Redmine NOT deployed.\n" >> deployment
-              fi
-              if [[ "$cluster_platform" =~ [pP] ]]; then
-                ansible-playbook $ansible_check playbooks/13_deploy_securityonion.yml
-              elif [[ "$cluster_platform" =~ [aA] ]]; then
-                ansible-playbook $ansible_check playbooks/132_deploy_securityonion.yml
-              elif [[ "$cluster_platform" =~ [cC] ]]; then
-                ansible-playbook $ansible_check playbooks/133_deploy_securityonion.yml
-              else
-                echo "============================================="
-                echo "I have not deployed Security Onion as I do not know what kind of cluster platform we are working with."
-                echo "============================================="
-              fi
+              ansible_deployment
             fi
             cd ..
             echo '' > ./ansible/inventory.cfg
@@ -673,13 +634,7 @@ while [[ $MAIN_MENU == TRUE ]]; do
   esac
 done
 
-
-
-
-
-
-
-
+#///////////////////////////////////////////////////////////////////////////////
 unset $VAULT_PASS
 clear
 echo "EOS"
