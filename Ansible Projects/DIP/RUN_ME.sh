@@ -81,29 +81,24 @@ ansible_deployment() {
   echo "We are going to start the Ansible now."
   echo "============================================="
   cd ./ansible
-  ansible-playbook $ansible_check playbooks/01_configure_proxmox.yml
-  printf "Cluster built.\n" >> ../docs/deployment
+  ansible-playbook $ansible_check playbooks/01_configure_proxmox.yml && printf "Cluster built.\n" >> ../docs/deployment
   if [[ -n "$choice_network" ]]; then
-    ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
-    printf "Networking deployed.\n" >> ../docs/deployment
+    ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml && printf "Networking deployed.\n" >> ../docs/deployment
   else
     printf "Networking NOT deployed.\n" >> ../docs/deployment
   fi
   if [[ -n "$choice_nextcloud" ]]; then
-    ansible-playbook $ansible_check playbooks/21_deploy_nextcloud.yml
-    printf "Nextcloud deployed.\n" >> ../docs/deployment
+    ansible-playbook $ansible_check playbooks/21_deploy_nextcloud.yml && printf "Nextcloud deployed.\n" >> ../docs/deployment
   else
     printf "Nextcloud NOT deployed.\n" >> ../docs/deployment
   fi
   if [[ -n "$choice_mattermost" ]]; then
-    ansible-playbook $ansible_check playbooks/22_deploy_mattermost.yml
-    printf "Mattermost deployed.\n" >> ../docs/deployment
+    ansible-playbook $ansible_check playbooks/22_deploy_mattermost.yml && printf "Mattermost deployed.\n" >> ../docs/deployment
   else
     printf "Mattermost NOT deployed.\n" >> ../docs/deployment
   fi
   if [[ -n "$choice_redmine" ]]; then
-    ansible-playbook $ansible_check playbooks/23_deploy_redmine.yml
-    printf "Redmine deployed.\n" >> ../docs/deployment
+    ansible-playbook $ansible_check playbooks/23_deploy_redmine.yml && printf "Redmine deployed.\n" >> ../docs/deployment
   else
     printf "Redmine NOT deployed.\n" >> ../docs/deployment
   fi
@@ -126,26 +121,22 @@ ansible_destruction() {
   echo "============================================="
   cd ./ansible
   if [[ -n "$choice_network" ]]; then
-    ansible-playbook $ansible_check playbooks/911_destroy_opnsense.yml
-    sed -i 's/Networking deployed./Networking NOT deployed./g' ../docs/deployment
+    ansible-playbook $ansible_check playbooks/911_destroy_opnsense.yml && sed -i 's/Networking deployed./Networking NOT deployed./g' ../docs/deployment
   else
     echo "Networking still deployed."
   fi
   if [[ -n "$choice_nextcloud" ]]; then
-    ansible-playbook $ansible_check playbooks/921_destroy_nextcloud.yml
-    sed -i 's/Nextcloud deployed./Nextcloud NOT deployed./g' ../docs/deployment
+    ansible-playbook $ansible_check playbooks/921_destroy_nextcloud.yml && sed -i 's/Nextcloud deployed./Nextcloud NOT deployed./g' ../docs/deployment
   else
     echo "Nextcloud still deployed."
   fi
   if [[ -n "$choice_mattermost" ]]; then
-    ansible-playbook $ansible_check playbooks/922_destroy_mattermost.yml
-    sed -i 's/Mattermost deployed./Mattermost NOT deployed./g' ../docs/deployment
+    ansible-playbook $ansible_check playbooks/922_destroy_mattermost.yml && sed -i 's/Mattermost deployed./Mattermost NOT deployed./g' ../docs/deployment
   else
     echo "Mattermost still deployed."
   fi
   if [[ -n "$choice_redmine" ]]; then
-    ansible-playbook $ansible_check playbooks/923_destroy_redmine.yml
-    sed -i 's/Redmine deployed./Redmine NOT deployed./g' ../docs/deployment
+    ansible-playbook $ansible_check playbooks/923_destroy_redmine.yml && sed -i 's/Redmine deployed./Redmine NOT deployed./g' ../docs/deployment
   else
     echo "Redmine still deployed."
   fi
@@ -157,7 +148,7 @@ ansible_destruction() {
     ansible-playbook $ansible_check playbooks/933_destroy_securityonion.yml
   else
     echo "============================================="
-    echo "I have not deployed Security Onion as I do not know what kind of cluster platform we are working with."
+    echo "I have not destroyed Security Onion as I do not know what kind of cluster platform we are working with."
     echo "============================================="
   fi
 }
@@ -506,7 +497,6 @@ infrastructure_action() {
             cd ..
             echo '' > ./ansible/inventory.cfg
             echo "/////////////////////////////////////////////"
-            debugger
             #.................................................
           else
             PROX_SUCCESS=FALSE
@@ -585,7 +575,8 @@ infra_menu() {
       choice_mattermost=$(echo $tmp_file | grep --only-matching 'Mattermost')
       choice_redmine=$(echo $tmp_file | grep --only-matching 'Redmine')
       choice_security=$(echo $tmp_file | grep --only-matching 'Security Onion')
-      infrastructure_action;;
+      infrastructure_action
+      debugger;;
     $DIALOG_CANCEL)
       echo "Cancel pressed.";;
     $DIALOG_HELP)
@@ -596,7 +587,8 @@ infra_menu() {
       choice_mattermost=$(echo $tmp_file | grep --only-matching 'Mattermost')
       choice_redmine=$(echo $tmp_file | grep --only-matching 'Redmine')
       choice_security=$(echo $tmp_file | grep --only-matching 'Security Onion')
-      ansible_destruction;;
+      ansible_destruction
+      debugger;;
     $DIALOG_ITEM_HELP)
       echo "Item-help button pressed.";;
     $DIALOG_ESC)
