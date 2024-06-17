@@ -1,6 +1,6 @@
 #!/bin/bash
 #THIS IS THE DIP (DEPLOYABLE INFRASTRUCTURE PLATFORM); IF YOU HAVE ANY QUESTIONS DEFER TO...
-
+ansible_check='--check' #This is set so that we can test...
 #Puts a wait in the script
 debugger() {
   echo "--------------------"
@@ -80,40 +80,81 @@ ansible_deployment() {
   echo "============================================="
   echo "We are going to start the Ansible now."
   echo "============================================="
-  ansible_check='--check' #This is set so that we can test...
   cd ./ansible
   ansible-playbook $ansible_check playbooks/01_configure_proxmox.yml
-  printf "Cluster built.\n" >> deployment
+  printf "Cluster built.\n" >> ../docs/deployment
   if [[ -n "$choice_network" ]]; then
     ansible-playbook $ansible_check playbooks/11_deploy_opnsense.yml
-    printf "Networking deployed.\n" >> deployment
+    printf "Networking deployed.\n" >> ../docs/deployment
   else
-    printf "Networking NOT deployed.\n" >> deployment
+    printf "Networking NOT deployed.\n" >> ../docs/deployment
   fi
   if [[ -n "$choice_nextcloud" ]]; then
     ansible-playbook $ansible_check playbooks/21_deploy_nextcloud.yml
-    printf "Nextcloud deployed.\n" >> deployment
+    printf "Nextcloud deployed.\n" >> ../docs/deployment
   else
-    printf "Nextcloud NOT deployed.\n" >> deployment
+    printf "Nextcloud NOT deployed.\n" >> ../docs/deployment
   fi
   if [[ -n "$choice_mattermost" ]]; then
     ansible-playbook $ansible_check playbooks/22_deploy_mattermost.yml
-    printf "Mattermost deployed.\n" >> deployment
+    printf "Mattermost deployed.\n" >> ../docs/deployment
   else
-    printf "Mattermost NOT deployed.\n" >> deployment
+    printf "Mattermost NOT deployed.\n" >> ../docs/deployment
   fi
   if [[ -n "$choice_redmine" ]]; then
     ansible-playbook $ansible_check playbooks/23_deploy_redmine.yml
-    printf "Redmine deployed.\n" >> deployment
+    printf "Redmine deployed.\n" >> ../docs/deployment
   else
-    printf "Redmine NOT deployed.\n" >> deployment
+    printf "Redmine NOT deployed.\n" >> ../docs/deployment
   fi
   if [[ "$cluster_platform" =~ [pP] ]]; then
-    ansible-playbook $ansible_check playbooks/13_deploy_securityonion.yml
+    ansible-playbook $ansible_check playbooks/31_deploy_securityonion.yml
   elif [[ "$cluster_platform" =~ [aA] ]]; then
-    ansible-playbook $ansible_check playbooks/132_deploy_securityonion.yml
+    ansible-playbook $ansible_check playbooks/32_deploy_securityonion.yml
   elif [[ "$cluster_platform" =~ [cC] ]]; then
-    ansible-playbook $ansible_check playbooks/133_deploy_securityonion.yml
+    ansible-playbook $ansible_check playbooks/33_deploy_securityonion.yml
+  else
+    echo "============================================="
+    echo "I have not deployed Security Onion as I do not know what kind of cluster platform we are working with."
+    echo "============================================="
+  fi
+}
+ansible_destruction() {
+  clear
+  echo "============================================="
+  echo "We are going to start the Ansible now."
+  echo "============================================="
+  cd ./ansible
+  if [[ -n "$choice_network" ]]; then
+    ansible-playbook $ansible_check playbooks/911_destroy_opnsense.yml
+    sed -i 's/Networking deployed./Networking NOT deployed./g' ../docs/deployment
+  else
+    echo "Networking still deployed."
+  fi
+  if [[ -n "$choice_nextcloud" ]]; then
+    ansible-playbook $ansible_check playbooks/921_destroy_nextcloud.yml
+    sed -i 's/Nextcloud deployed./Nextcloud NOT deployed./g' ../docs/deployment
+  else
+    echo "Nextcloud still deployed."
+  fi
+  if [[ -n "$choice_mattermost" ]]; then
+    ansible-playbook $ansible_check playbooks/922_destroy_mattermost.yml
+    sed -i 's/Mattermost deployed./Mattermost NOT deployed./g' ../docs/deployment
+  else
+    echo "Mattermost still deployed."
+  fi
+  if [[ -n "$choice_redmine" ]]; then
+    ansible-playbook $ansible_check playbooks/923_destroy_redmine.yml
+    sed -i 's/Redmine deployed./Redmine NOT deployed./g' ../docs/deployment
+  else
+    echo "Redmine still deployed."
+  fi
+  if [[ "$cluster_platform" =~ [pP] ]]; then
+    ansible-playbook $ansible_check playbooks/931_destroy_securityonion.yml
+  elif [[ "$cluster_platform" =~ [aA] ]]; then
+    ansible-playbook $ansible_check playbooks/932_destroy_securityonion.yml
+  elif [[ "$cluster_platform" =~ [cC] ]]; then
+    ansible-playbook $ansible_check playbooks/933_destroy_securityonion.yml
   else
     echo "============================================="
     echo "I have not deployed Security Onion as I do not know what kind of cluster platform we are working with."
@@ -514,9 +555,10 @@ infra_menu() {
   dialog --colors \
       --backtitle "DIP (Deployable Infrastructure Platform)" \
       --title "Infrastructure Menu" "$@" \
-      --item-help \
+      --ok-label "Deploy" \
       --extra-button \
       --extra-label "Teardown" \
+      --item-help \
       --checklist "Deploy some Infrastructure! \n\
   Select the infrastructure you would like to deploy. \n\n\
   PVE$(if [ -n "$pvedaemon" ]; then echo -e "\t- \Z2YES\Zn"; else echo -e "\t- \Z1NO\Zn"; fi) \n\
@@ -525,11 +567,11 @@ infra_menu() {
   DNS$(if [ -n "$dns" ]; then echo -e "\t- \Z2SUCCESS\Zn"; else echo -e "\t- \Z1FAILURE\Zn"; fi) \n\
   $(echo $ipaddr) \n\n\
   Which of the following would you like to setup?" 22 65 5 \
-          "Networking" "Router and vSwitches." on \
-          "Nextcloud" "Local SAAS Storage." off \
-          "Mattermost" "Team Communication." off \
-          "Redmine" "Management/Issue Tracking." off \
-          "Security Onion" "SIEM/Analytic Platform." off 2> $tmp_file
+          "Networking" "$(if [ -n "$networking" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" on "OPNsense Router and vSwitches." \
+          "Nextcloud" "$(if [ -n "$nextcloud" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" off "Local SAAS Cloud Storage." \
+          "Mattermost" "$(if [ -n "$mattermost" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" off "Messaging App/Team Communication." \
+          "Redmine" "$(if [ -n "$redmine" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" off "Team Management/Issue Tracking." \
+          "Security Onion" "$(if [ -n "$sec_onion" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" off "Distributed SIEM/Analytic Platform." 2> $tmp_file
 
   #Set return_value variable to previous commands return code
   return_value=$?
@@ -549,7 +591,12 @@ infra_menu() {
     $DIALOG_HELP)
       echo "Help pressed.";;
     $DIALOG_EXTRA)
-      echo "Extra button pressed.";;
+      choice_network=$(echo $tmp_file | grep --only-matching 'Networking')
+      choice_nextcloud=$(echo $tmp_file | grep --only-matching 'Nextcloud')
+      choice_mattermost=$(echo $tmp_file | grep --only-matching 'Mattermost')
+      choice_redmine=$(echo $tmp_file | grep --only-matching 'Redmine')
+      choice_security=$(echo $tmp_file | grep --only-matching 'Security Onion')
+      ansible_destruction;;
     $DIALOG_ITEM_HELP)
       echo "Item-help button pressed.";;
     $DIALOG_ESC)
@@ -602,8 +649,7 @@ while [[ $MAIN_MENU == TRUE ]]; do
   What would you like to do?" 15 65 5 \
           "Infrastructure" "Choose what to deploy." \
           "View Vault" "See all your passwords." \
-          "Error Correction" "Attempt error correction to deploy." \
-          "Teardown" "Teardown and start over." 2> $tmp_file
+          "Error Correction" "Attempt error correction to deploy." 2> $tmp_file
 
   #Set return_value variable to previous commands return code
   return_value=$?
@@ -619,9 +665,6 @@ while [[ $MAIN_MENU == TRUE ]]; do
         debugger
       elif [[ "$(cat $tmp_file)" =~ "Error Correction" ]]; then
         echo "Performing error correction..."
-        debugger
-      elif [[ "$(cat $tmp_file)" =~ "Teardown" ]]; then
-        echo "Tearing everything down..."
         debugger
       fi;;
     $DIALOG_CANCEL)
