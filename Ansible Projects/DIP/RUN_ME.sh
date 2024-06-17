@@ -152,6 +152,12 @@ status_check() {
   pvedaemon=$(ps -x | awk '{print $5}' | egrep ^pvedaemon) #Determines if script host is Proxmox
   internet=$(ping -c 1 8.8.8.8 2>/dev/null | grep 'bytes from') & #Tests connection to 8.8.8.8
   dns=$(ping -c 1 google.com 2>/dev/null | grep 'bytes from') & #Tests connection to google.com
+  cluster=$(cat ./deployment | grep "Cluster built.")
+  networking=$(cat ./deployment | grep "Networking deployed.")
+  nextcloud=$(cat ./deployment | grep "Nextcloud deployed.")
+  mattermost=$(cat ./deployment | grep "Mattermost deployed.")
+  redmine=$(cat ./deployment | grep "Redmine deployed.")
+  sec_onion=$(cat ./deployment | grep "Security Onion deployed.")
   if [[ -n $pvedaemon ]]; then
     nic=$(ip a | grep "master vmbr0") #Grabs NIC of script host
     ipaddr=$(ip a | grep "scope global vmbr0" | awk '{print $2}') #Grabs IP of script host
@@ -508,18 +514,22 @@ infra_menu() {
   dialog --colors \
       --backtitle "DIP (Deployable Infrastructure Platform)" \
       --title "Infrastructure Menu" "$@" \
+      --item-help \
+      --extra-button \
+      --extra-label "Teardown" \
       --checklist "Deploy some Infrastructure! \n\
   Select the infrastructure you would like to deploy. \n\n\
   PVE$(if [ -n "$pvedaemon" ]; then echo -e "\t- \Z2YES\Zn"; else echo -e "\t- \Z1NO\Zn"; fi) \n\
+  CLUSTER$(if [ -n "$cluster" ]; then echo -e "\t- \Z2BUILT\Zn"; else echo -e "\t- \Z1NOT BUILT\Zn"; fi) \n\
   INTERNET$(if [ -n "$internet" ]; then echo -e "\t- \Z2SUCCESS\Zn"; else echo -e "\t- \Z1FAILURE\Zn"; fi) \n\
   DNS$(if [ -n "$dns" ]; then echo -e "\t- \Z2SUCCESS\Zn"; else echo -e "\t- \Z1FAILURE\Zn"; fi) \n\
   $(echo $ipaddr) \n\n\
   Which of the following would you like to setup?" 22 65 5 \
           "Networking" "Router and vSwitches." on \
-          "Nextcloud" "C2 - Local SAAS Storage." off \
-          "Mattermost" "C2 - Team Communication." off \
-          "Redmine" "C2 - Management/Issue Tracking." off \
-          "Security Onion" "Distributed Deployment." off 2> $tmp_file
+          "Nextcloud" "Local SAAS Storage." off \
+          "Mattermost" "Team Communication." off \
+          "Redmine" "Management/Issue Tracking." off \
+          "Security Onion" "SIEM/Analytic Platform." off 2> $tmp_file
 
   #Set return_value variable to previous commands return code
   return_value=$?
