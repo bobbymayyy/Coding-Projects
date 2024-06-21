@@ -235,7 +235,7 @@ unseal_vault() {
   VAULT_PASS=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
       --title "Unseal Vault" \
       --insecure  "$@" \
-      --passwordbox "Please enter the password to the Ansible Vault:" 10 65 2>&1 > /dev/tty`
+      --passwordbox "Please enter password to Ansible Vault:" 10 60 2>&1 > /dev/tty`
   
   #Set return_value variable to previous commands return code
   return_value=$?
@@ -273,7 +273,7 @@ infrastructure_action() {
     PROX_PASS1=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
         --title "Proxmox Password" \
         --insecure  "$@" \
-        --passwordbox "Please enter the password you gave root on Proxmox:" 10 65 2>&1 > /dev/tty`
+        --passwordbox "Please enter password you gave root on Proxmox:" 10 60 2>&1 > /dev/tty`
     
 
     #Set return_value variable to previous commands return code
@@ -286,7 +286,7 @@ infrastructure_action() {
           PROX_PASS2=`dialog --backtitle "DIP (Deployable Infrastructure Platform)" \
               --title "Proxmox Password" \
               --insecure  "$@" \
-              --passwordbox "Please confirm the password:" 10 65 2>&1 > /dev/tty`
+              --passwordbox "Please confirm the password:" 10 60 2>&1 > /dev/tty`
           if [[ $PROX_PASS1 == $PROX_PASS2 ]]; then
             #Off to the races!
             PROX_SUCCESS=TRUE
@@ -347,6 +347,11 @@ infrastructure_action() {
                 ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N "" #on PROXMOX CONTROL NODE
                 touch /root/.ssh/known_hosts
                 cat /root/.ssh/id_rsa > /root/.ssh/known_hosts
+                sshpass -p $USERPASS ssh-copy-id -i /root/.ssh/id_rsa root@10.1.1.131 #on PROXMOX WORKERS(s) for PROXMOX CONTROL NODE
+                echo "============================================="
+                ssh root@10.1.1.131 'echo "Hello" 1>/dev/null' && echo "Passwordless config for PROXMOX CONTROL NODE from PROXMOX CONTROL NODE successful"
+                echo "============================================="
+                echo "^ Should say Passwordless config for PROXMOX CONTROL NODE from PROXMOX CONTROL NODE successful ^"
                 IFS=$'\n';ints=($(ip a | grep -v 'master vmbr0' | grep 'state' | awk '{print $2}' | awk -F: '{print $1}' | grep -v 'lo' | grep -v 'vmbr' | grep -v 'ovs-system' | grep -v 'tap' | grep -v 'fw'));IFS=' '
               fi
               eth_ints=()
@@ -556,12 +561,12 @@ infra_menu() {
   INTERNET$(if [ -n "$internet" ]; then echo -e "\t- \Z2SUCCESS\Zn"; else echo -e "\t- \Z1FAILURE\Zn"; fi) \n\
   DNS$(if [ -n "$dns" ]; then echo -e "\t- \Z2SUCCESS\Zn"; else echo -e "\t- \Z1FAILURE\Zn"; fi) \n\
   $(echo $ipaddr) \n\n\
-  Which of the following would you like to setup?" 22 65 5 \
-          "Networking" "$(if [ -n "$networking" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" on "OPNsense Router and vSwitches." \
-          "Nextcloud" "$(if [ -n "$nextcloud" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" off "Local SAAS Cloud Storage." \
-          "Mattermost" "$(if [ -n "$mattermost" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" off "Messaging App/Team Communication." \
-          "Redmine" "$(if [ -n "$redmine" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" off "Team Management/Issue Tracking." \
-          "Security Onion" "$(if [ -n "$sec_onion" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" off "Distributed SIEM/Analytic Platform." 2> $tmp_file
+  Which of the following would you like to setup?" 21 60 5 \
+          "Networking" "$(if [ -n "$networking" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" on "OPNsense Router and vSwitches. - Select with [Spacebar]" \
+          "Nextcloud" "$(if [ -n "$nextcloud" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" off "Local SAAS Cloud Storage. - Select with [Spacebar]" \
+          "Mattermost" "$(if [ -n "$mattermost" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" off "Messaging App/Team Communication. - Select with [Spacebar]" \
+          "Redmine" "$(if [ -n "$redmine" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" off "Team Management/Issue Tracking. - Select with [Spacebar]" \
+          "Security Onion" "$(if [ -n "$sec_onion" ]; then echo -e "\Z2DEPLOYED\Zn"; else echo -e "\Z1NOT DEPLOYED\Zn"; fi)" off "Distributed SIEM/Analytic Platform. - Select with [Spacebar]" 2> $tmp_file
 
   #Set return_value variable to previous commands return code
   return_value=$?
@@ -638,10 +643,10 @@ while [[ $MAIN_MENU == TRUE ]]; do
       --menu "Welcome to the DIP! \n\
   This is a program made to ease setup of \n\
   boutique DCO infrastructure for risky analysis. \n\n\
-  What would you like to do?" 15 65 5 \
+  What would you like to do?" 14 60 5 \
           "Infrastructure" "Choose what to deploy." \
           "View Vault" "See all your passwords." \
-          "Error Correction" "Attempt error correction to deploy." 2> $tmp_file
+          "Error Correction" "Error correction to deploy." 2> $tmp_file
 
   #Set return_value variable to previous commands return code
   return_value=$?
