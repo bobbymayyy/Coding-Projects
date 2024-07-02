@@ -689,4 +689,3 @@ unset $VAULT_PASS
 clear
 echo "EOS"
 echo "Goodbye :)"
-echo "Testing commit"
