@@ -28,14 +28,15 @@ ddsmiso=$(find / -type f -name ddsm-esxi.iso 2>/dev/null)
 mount -o loop $ddsmiso "/var/iso/test"
 cd "/var/iso/test"
 isobuild=$((find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum; find ddsm-esxi \( -type f -o -type d \) -print0 | sort -z | xargs -0 stat -c '%n %a') | sha1sum)
-echo "This is the control:$isobuild"
+echo "This is the control: $isobuild"
 echo "---"
 
 cd /run/media/nerd/RHEL*
 drivebuild=$((find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum; find ddsm-esxi \( -type f -o -type d \) -print0 | sort -z | xargs -0 stat -c '%n %a') | sha1sum)
-echo "This is your built drive:$drivebuild"
+echo "This is your built drive: $drivebuild"
 echo "==="
 
+cd /
 if [[ $isobuild == $drivebuild ]]; then
 	echo "Your builds MATCH!"
 	echo "========================================="
