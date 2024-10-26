@@ -11,27 +11,22 @@ else
 fi
 
 echo "==="
-echo "PLEASE UNPLUG THE FINISHED DRIVE AND PLUG BACK IN!"
-echo "==="
-echo "Press any key to continue once done..."
-read -rsn1
 
-clear
-echo "==================================================="
-
-drive=$(journalctl --since '5m ago' | grep -Eo "sd\w" | awk -v RS=\n '{print $NF}')
+drive=$(journalctl --since '1m ago' | grep -Eo "sd\w" | awk -v RS=\n '{print $0}')
 echo "Detecting drive as $drive; checking hashes..."
 echo "================"
 
-mkdir "/var/iso/test"
+mkdir "/var/iso/hashing"
 ddsmiso=$(find / -type f -name ddsm-esxi.iso 2>/dev/null)
-mount -o loop $ddsmiso "/var/iso/test"
-cd "/var/iso/test"
+mount -o loop $ddsmiso "/var/iso/hashing"
+cd "/var/iso/hashing"
 isobuild=$((find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum; find ddsm-esxi \( -type f -o -type d \) -print0 | sort -z | xargs -0 stat -c '%n %a') | sha1sum)
 echo "This is the control: $isobuild"
 echo "---"
 
-cd /run/media/nerd/RHEL*
+mkdir "/run/media/nerd/hashing"
+mount /dev/$drive'1' /run/media/nerd/hashing
+cd "/run/media/nerd/hashing"
 drivebuild=$((find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum; find ddsm-esxi \( -type f -o -type d \) -print0 | sort -z | xargs -0 stat -c '%n %a') | sha1sum)
 echo "This is your built drive: $drivebuild"
 echo "==="
@@ -43,10 +38,10 @@ if [[ $isobuild == $drivebuild ]]; then
 	echo "Press any key to return to launcher..."
 	read -rsn1
 	
-	umount "/var/iso/test"
-	rm -rf "/var/iso/test"
-	umount /run/media/nerd/RHEL*
-	rm -rf /run/media/nerd/RHEL*
+	umount "/var/iso/hashing"
+	rm -rf "/var/iso/hashing"
+	umount "/run/media/nerd/hashing"
+	rm -rf "/run/media/nerd/hashing"
 else
 	echo "Your builds DO NOT MATCH!"
 	echo "========================================="
@@ -54,13 +49,13 @@ else
 	read -rsn1
 	
 	clear
-	diff -qrN "/var/iso/test/ddsm-esxi" /run/media/nerd/RHEL*/ddsm-esxi
+	diff -qrN "/var/iso/hashing/ddsm-esxi" /run/media/nerd/hashing/ddsm-esxi
 	echo "========================================="
 	echo "Press any key to return to launcher..."
 	read -rsn1
 	
-	umount "/var/iso/test"
-	rm -rf "/var/iso/test"
-	umount /run/media/nerd/RHEL*
-	rm -rf /run/media/nerd/RHEL*
+	umount "/var/iso/hashing"
+	rm -rf "/var/iso/hashing"
+	umount "/run/media/nerd/hashing"
+	rm -rf "/run/media/nerd/hashing"
 fi
