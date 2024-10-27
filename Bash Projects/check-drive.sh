@@ -12,9 +12,17 @@ fi
 
 echo "==="
 
-drive=$(journalctl --since '1m ago' | grep -Eo "sd\w" | awk -v RS=\n '{print $0}')
-echo "Detecting drive as $drive; checking hashes..."
-echo "================"
+drive=$(journalctl --since '1m ago' | grep -Eo "sd\w" | awk -v RS=\n '{print $NF}')
+if [[ -n $drive ]]; then
+	echo "Detecting drive as $drive; checking hashes..."
+	echo "================"
+else
+	drive=$(lsblk | grep RHEL* | grep -Eo "sd\w")
+	umount /run/media/nerd/RHEL*
+	rm -rf /run/media/nerd/RHEL*
+	echo "Detecting drive as $drive; checking hashes..."
+	echo "================"
+fi
 
 mkdir "/var/iso/hashing"
 ddsmiso=$(find / -type f -name ddsm-esxi.iso 2>/dev/null)
