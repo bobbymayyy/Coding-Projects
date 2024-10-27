@@ -1,7 +1,6 @@
 #!/bin/bash
 #This is a script to hash or compare two folders to test build viability.
 echo "==================================================="
-
 meridiem=$(date | awk '{print $5}')
 if [[ "$meridiem" == AM ]]; then
 	echo "Good Morning :)"
@@ -10,7 +9,6 @@ else
 fi
 
 echo "==="
-
 drive=$(journalctl --since '1m ago' | grep -Eo "sd\w" | awk -v RS=\n '{print $NF}')
 if [[ -n $drive ]]; then
 	echo "Detecting drive as $drive; checking hashes..."
