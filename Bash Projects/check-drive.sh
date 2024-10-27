@@ -1,6 +1,5 @@
 #!/bin/bash
 #This is a script to hash or compare two folders to test build viability.
-clear
 echo "==================================================="
 
 meridiem=$(date | awk '{print $5}')
@@ -26,14 +25,14 @@ fi
 
 mkdir "/var/iso/hashing"
 ddsmiso=$(find / -type f -name ddsm-esxi.iso 2>/dev/null)
-mount -o loop $ddsmiso "/var/iso/hashing"
+mount -o ro,loop $ddsmiso "/var/iso/hashing"
 cd "/var/iso/hashing"
 isobuild=$((find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum; find ddsm-esxi \( -type f -o -type d \) -print0 | sort -z | xargs -0 stat -c '%n %a') | sha1sum)
 echo "This is the control: $isobuild"
 echo "---"
 
 mkdir "/run/media/nerd/hashing"
-mount /dev/$drive'1' /run/media/nerd/hashing
+mount -o ro /dev/$drive'1' /run/media/nerd/hashing
 cd "/run/media/nerd/hashing"
 drivebuild=$((find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum; find ddsm-esxi \( -type f -o -type d \) -print0 | sort -z | xargs -0 stat -c '%n %a') | sha1sum)
 echo "This is your built drive: $drivebuild"
