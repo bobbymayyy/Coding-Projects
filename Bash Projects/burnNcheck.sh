@@ -11,10 +11,8 @@ image_iso=$(find / -type f -name ddsm-esxi.iso 2>/dev/null)
 
 # Function to clean up ROM and RAM
 clean_up() {
-    umount "/srv/iso/hashing"
-    rm -rf "/srv/iso/hashing"
-    umount "/srv/drive/hashing"
-    rm -rf "/srv/drive/hashing"
+    rm -rf "/srv/iso"
+    rm -rf "/srv/drives"
 }
 
 # Function to list drives safely
@@ -58,7 +56,7 @@ burn_image() {
     
     for drive in "${drives[@]}"; do
         (
-            dd if="$image_path" of="$drive" bs=10M status=progress conv=fsync
+            dd if="$image_path" of="$drive" bs=20M status=progress conv=fsync
         ) &
     done
 
@@ -77,23 +75,30 @@ verify_image() {
     echo "Verifying the following drives: ${drives[*]}"
     echo "-----------------------"
 
-    mkdir "/srv/iso/hashing"
-    mount -o ro,loop $image_path "/srv/iso/hashing"
+    mkdir -p "/srv/iso/hashing"
+    mount -o ro,loop "$image_path" "/srv/iso/hashing"
     cd "/srv/iso/hashing"
     isobuild=$(find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
+    cd /
+    umount "/srv/iso/hashing"
+    rm -rf "/srv/iso/hashing"
     echo "Control: $isobuild"
     echo "--------------"
 
     for drive in "${drives[@]}"; do
         (
             drive_name=$(echo $drive | grep -Eo "sd\w")
-            mkdir "/srv/$drive_name/hashing"
-            mount -o ro,loop $drive "/srv/$drive_name/hashing"
-            cd "/srv/$drive_name/hashing"
-            $drive_namebuild=$(find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
-            echo "$drive_name: $drive_namebuild"
+            mkdir -p "/srv/drives/$drive_name/hashing"
+            umount $drive'1' 2>/dev/null
+            mount -o ro,loop $drive'1' "/srv/drives/$drive_name/hashing"
+            cd "/srv/drives/$drive_name/hashing"
+            drive_build=$(find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
+            cd /
+            umount "/srv/drives/$drive_name/hashing"
+            rm -rf "/srv/drives/$drive_name/hashing"
+            echo "$drive_name: $drive_build"
             echo "----"
-            if [[ $isobuild == $drive_namebuild ]]; then
+            if [[ "$isobuild" == "$drive_build" ]]; then
                 echo "$drive_name: OK"
             else
                 echo "$drive_name: NOT OK"
