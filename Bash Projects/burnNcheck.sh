@@ -126,6 +126,7 @@ verify_image() {
     echo "All drives have been verified."
 }
 
+# Function to log simple information about the running of this script
 log_action() {
     echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild" >> "$log_file""
 }
