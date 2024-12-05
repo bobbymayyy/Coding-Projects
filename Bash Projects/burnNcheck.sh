@@ -4,8 +4,23 @@ clear
 
 # Cursory ================
 
+# Specify the overall release file
+release_file=""
+
+# Specify the tools release file
+tools_file=""
+
+# Specify the log file we will report to
+log_file="/srv/REPO/logs/burnNcheck.log"
+
+# Specify the ISO to use for easier updating in the future
+iso_selection="ddsm-esxi*.iso"
+
+# Specify the folder to be hashed - RELATIVE PATH
+hash_folder="ddsm-esxi"
+
 # Find the ISO to burn
-image_iso=$(find / -type f -name ddsm-esxi.iso 2>/dev/null)
+iso_path=$(find / -type f -name "$iso_selection" 2>/dev/null)
 
 # Functions ================
 
@@ -78,7 +93,7 @@ verify_image() {
     mkdir -p "/srv/iso/hashing"
     mount -o ro,loop "$image_path" "/srv/iso/hashing"
     cd "/srv/iso/hashing"
-    isobuild=$(find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
+    isobuild=$(find "$hash_folder" -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
     cd /
     umount "/srv/iso/hashing"
     rm -rf "/srv/iso/hashing"
@@ -92,7 +107,7 @@ verify_image() {
             umount $drive'1' 2>/dev/null
             mount -o ro,loop $drive'1' "/srv/drives/$drive_name/hashing"
             cd "/srv/drives/$drive_name/hashing"
-            drive_build=$(find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
+            drive_build=$(find "$hash_folder" -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
             cd /
             umount "/srv/drives/$drive_name/hashing"
             rm -rf "/srv/drives/$drive_name/hashing"
@@ -109,7 +124,10 @@ verify_image() {
     wait
     echo "-----------------------"
     echo "All drives have been verified."
-    
+}
+
+log_action() {
+    echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild" >> "$log_file""
 }
 
 # Main ==================================
@@ -129,8 +147,9 @@ selected_drives=($selected)
 
 # burnNcheck the image with the selected drives
 clear
-burn_image "$image_iso" "${selected_drives[@]}"
-verify_image "$image_iso" "${selected_drives[@]}"
+burn_image "$iso_path" "${selected_drives[@]}"
+verify_image "$iso_path" "${selected_drives[@]}"
+log_action
 
 # Wait to return back to launcher
 echo "===================================="
