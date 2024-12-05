@@ -52,7 +52,9 @@ burn_image() {
     shift
     local drives=("$@")
 
+    echo "===================================="
     echo "Writing image to the following drives: ${drives[*]}"
+    echo "-----------------------"
     
     for drive in "${drives[@]}"; do
         (
@@ -61,6 +63,7 @@ burn_image() {
     done
 
     wait
+    echo "-----------------------"
     echo "All drives have been written."
 }
 
@@ -70,13 +73,16 @@ verify_image() {
     shift
     local drives=("$@")
 
+    echo "===================================="
     echo "Verifying the following drives: ${drives[*]}"
+    echo "-----------------------"
 
     mkdir "/srv/iso/hashing"
     mount -o ro,loop $image_path "/srv/iso/hashing"
     cd "/srv/iso/hashing"
     isobuild=$(find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
     echo "Control: $isobuild"
+    echo "--------------"
 
     for drive in "${drives[@]}"; do
         (
@@ -86,6 +92,7 @@ verify_image() {
             cd "/srv/$drive_name/hashing"
             $drive_namebuild=$(find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
             echo "$drive_name: $drive_namebuild"
+            echo "----"
             if [[ $isobuild == $drive_namebuild ]]; then
                 echo "$drive_name: OK"
             else
@@ -95,7 +102,9 @@ verify_image() {
     done
 
     wait
+    echo "-----------------------"
     echo "All drives have been verified."
+    
 }
 
 # Main ==================================
@@ -114,10 +123,12 @@ fi
 selected_drives=($selected)
 
 # burnNcheck the image with the selected drives
+clear
 burn_image "$image_iso" "${selected_drives[@]}"
 verify_image "$image_iso" "${selected_drives[@]}"
 
 # Wait to return back to launcher
+echo "===================================="
 echo "Press any key to return to launcher..."
 read -rsn1
 
