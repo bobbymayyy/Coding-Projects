@@ -86,7 +86,7 @@ verify_image() {
             cd "/srv/$drive_name/hashing"
             $drive_namebuild=$(find ddsm-esxi -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
             echo "$drive_name: $drive_namebuild"
-            if [[ $isobuild == $drivebuild ]]; then
+            if [[ $isobuild == $drive_namebuild ]]; then
                 echo "$drive_name: OK"
             else
                 echo "$drive_name: NOT OK"
