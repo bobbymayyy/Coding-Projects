@@ -1,6 +1,6 @@
 #!/bin/bash
 
-username="nerdadmin"
+username=""
 
 # Deploy DIP repository
 mv /etc/yum.repos.d/oracle-epel-ol9.repo /etc/yum.repos.d/oracle-epel-ol9.repo.ark
