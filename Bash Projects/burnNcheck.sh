@@ -71,7 +71,7 @@ burn_image() {
     
     for drive in "${drives[@]}"; do
         (
-            dd if="$image_path" of="$drive" bs=20M status=progress conv=fsync
+            dd if="$image_path" of="$drive" bs=8M status=progress conv=fsync
         ) &
     done
 
@@ -105,7 +105,7 @@ verify_image() {
             drive_name=$(echo $drive | grep -Eo "sd\w")
             mkdir -p "/srv/drives/$drive_name/hashing"
             umount $drive'1' 2>/dev/null
-            mount -o ro,loop $drive'1' "/srv/drives/$drive_name/hashing"
+            mount -o ro $drive'1' "/srv/drives/$drive_name/hashing"
             cd "/srv/drives/$drive_name/hashing"
             drive_build=$(find "$hash_folder" -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
             cd /
@@ -128,7 +128,12 @@ verify_image() {
 
 # Function to log simple information about the running of this script
 log_action() {
-    echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild" >> "$log_file""
+    if [[ -e "$log_file" ]]; then
+        echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild" >> "$log_file""
+    else
+        touch "$log_file"
+        echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild" >> "$log_file""
+    fi
 }
 
 # Main ==================================
