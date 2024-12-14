@@ -11,6 +11,7 @@ release_file=""
 tools_file=""
 
 # Specify the log file we will report to
+log_path="/srv/REPO/logs/"
 log_file="/srv/REPO/logs/burnNcheck.log"
 
 # Specify the ISO to use for easier updating in the future
@@ -131,7 +132,7 @@ log_action() {
     if [[ -e "$log_file" ]]; then
         echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild" >> "$log_file""
     else
-        touch "$log_file"
+        mkdir -p "$log_path" && touch "$log_file"
         echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild" >> "$log_file""
     fi
 }
