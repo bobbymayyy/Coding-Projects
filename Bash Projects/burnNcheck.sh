@@ -4,6 +4,9 @@ clear
 
 # Cursory ================
 
+# Specify if we are bandwidth-conscious
+bandwidth_conscious="yes"
+
 # Specify the overall release file
 release_file=""
 
@@ -33,15 +36,9 @@ clean_up() {
 
 # Function to list drives safely
 list_drives() {
-    root_drive=$(findmnt -nro SOURCE / | sed 's/[0-9]*$//')
-    boot_drive=$(findmnt -nro SOURCE /boot 2>/dev/null | sed 's/[0-9]*$//')
-    swap_drives=$(cat /proc/swaps | awk 'NR>1 {print $1}' | sed 's/[0-9]*$//')
-
-    lsblk -dno NAME,SIZE,TYPE | awk '$3 == "disk"' | while read -r name size type; do
+    lsblk -dno NAME,TRAN,SIZE,TYPE | awk '$2 == "usb"' | while read -r name tran size type; do
         drive="/dev/$name"
-        if [[ "$drive" != "$root_drive" && "$drive" != "$boot_drive" && ! "$swap_drives" =~ "$drive" ]]; then
-            echo "$drive $size"
-        fi
+        echo "$drive $size"
     done
 }
 
@@ -65,6 +62,13 @@ burn_image() {
     local image_path="$1"
     shift
     local drives=("$@")
+    if [[ "$bandwidth_conscious" == "yes" ]]; then
+        local commands=""
+        local concurrency=""
+
+    elif [[ "$bandwidth_conscious" == "no" ]]; then
+        local commands=""
+        local concurrency=" &"
 
     echo "===================================="
     echo "Writing image to the following drives: ${drives[*]}"
@@ -72,8 +76,9 @@ burn_image() {
     
     for drive in "${drives[@]}"; do
         (
+            "$commands"
             dd if="$image_path" of="$drive" bs=8M status=progress conv=fsync
-        ) &
+        )"$concurrency"
     done
 
     wait
