@@ -130,10 +130,10 @@ verify_image() {
 # Function to log simple information about the running of this script
 log_action() {
     if [[ -e "$log_file" ]]; then
-        echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild" >> "$log_file""
+        echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild"" >> "$log_file"
     else
         mkdir -p "$log_path" && touch "$log_file"
-        echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild" >> "$log_file""
+        echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild"" >> "$log_file"
     fi
 }
 
