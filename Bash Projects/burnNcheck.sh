@@ -13,18 +13,15 @@ release_file=""
 # Specify the tools release file
 tools_file=""
 
+# Specify the path to look for ISOs
+isos_path="/srv/REPO/isos"
+
 # Specify the log file we will report to
 log_path="/srv/REPO/logs/"
 log_file="/srv/REPO/logs/burnNcheck.log"
 
-# Specify the ISO to use for easier updating in the future
-iso_selection="ddsm-esxi*.iso"
-
 # Specify the folder to be hashed - RELATIVE PATH
 hash_folder="ddsm-esxi"
-
-# Find the ISO to burn
-iso_path=$(find / -type f -name "$iso_selection" 2>/dev/null)
 
 # Functions ================
 
@@ -42,7 +39,7 @@ list_drives() {
     done
 }
 
-# Function to generate a dialog checklist
+# Function to generate a dialog checklist for drive selection
 select_drives() {
     drives=$(list_drives)
     options=()
@@ -57,18 +54,82 @@ select_drives() {
     echo "$selected_drives"
 }
 
+# Function to list ISO files with their sizes
+list_isos() {
+    find "$isos_path" -maxdepth 1 -type f -name "*.iso" -exec du -h -- "{}" + | sort -k2,2r -t ' ' | awk '{print $1, $2}'
+}
+
+# Function to generate a dialog checklist for ISO selection
+select_iso() {
+    isos=$(list_isos)
+    options=()
+    while read -r size name; do
+        options+=("$name" "$size")
+    done <<< "$isos"
+    
+    selected_iso=$(dialog --clear --stdout \
+        --menu "Select an ISO file:" 15 50 10 \
+        "${options[@]}")
+
+    echo "$selected_iso"
+}
+
+# Function to disable USB ports used by storage devices except the one associated with the current drive
+disable_other_storage_ports() {
+    local current_drive=$1
+    echo "Processing drive: $current_drive"
+
+    # Get the sysfs path of the current drive
+    sysfs_path=$(udevadm info -q path -n "$current_drive")
+    if [[ -z "$sysfs_path" ]]; then
+        echo "Failed to find sysfs path for $current_drive."
+        exit 1
+    fi
+
+    # Extract the USB port identifier for the current drive
+    active_port=$(basename "$sysfs_path")
+    echo "Keeping USB port active: $active_port"
+
+    # List all USB storage devices in sysfs
+    storage_ports=$(ls /sys/bus/usb/devices/*/block/* 2>/dev/null | awk -F'/' '{print $(NF-3)}')
+
+    # Disable all USB storage ports except the active one
+    for port in $storage_ports; do
+        if [[ "$port" != "$active_port" ]]; then
+            echo "Disabling USB storage port: $port"
+            echo 'suspend' | sudo tee /sys/bus/usb/devices/$port/power/level > /dev/null
+        fi
+    done
+}
+
+# Function to re-enable all USB storage ports
+enable_all_storage_ports() {
+    echo "Re-enabling all USB storage ports..."
+    storage_ports=$(ls /sys/bus/usb/devices/*/block/* 2>/dev/null | awk -F'/' '{print $(NF-3)}')
+
+    for port in $storage_ports; do
+        echo "Enabling USB storage port: $port"
+        echo 'on' | sudo tee /sys/bus/usb/devices/$port/power/level > /dev/null
+    done
+    echo "All USB storage ports re-enabled."
+}
+
 # Function to burn an image to multiple drives concurrently
 burn_image() {
     local image_path="$1"
     shift
     local drives=("$@")
     if [[ "$bandwidth_conscious" == "yes" ]]; then
-        local commands=""
+        local disable_unused_ports="$disable_other_storage_ports"
+        local enable_unused_ports="$enable_all_storage_ports"
         local concurrency=""
 
     elif [[ "$bandwidth_conscious" == "no" ]]; then
-        local commands=""
+        local disable_unused_ports=""
+        local enable_unused_ports=""
         local concurrency=" &"
+    
+    fi
 
     echo "===================================="
     echo "Writing image to the following drives: ${drives[*]}"
@@ -76,8 +137,9 @@ burn_image() {
     
     for drive in "${drives[@]}"; do
         (
-            "$commands"
+            "$disable_unused_ports"
             dd if="$image_path" of="$drive" bs=8M status=progress conv=fsync
+            "$enable_unused_ports"
         )"$concurrency"
     done
 
@@ -135,10 +197,10 @@ verify_image() {
 # Function to log simple information about the running of this script
 log_action() {
     if [[ -e "$log_file" ]]; then
-        echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild"" >> "$log_file"
+        echo "$(date) - $(cat "$release_file") - $(cat "$tools_file") - Control: "$isobuild"" >> "$log_file"
     else
         mkdir -p "$log_path" && touch "$log_file"
-        echo "$(date) - Release: $(cat "$release_file") - Tools: $(cat "$tools_file") - Control: "$isobuild"" >> "$log_file"
+        echo "$(date) - $(cat "$release_file") - $(cat "$tools_file") - Control: "$isobuild"" >> "$log_file"
     fi
 }
 
@@ -148,19 +210,26 @@ log_action() {
 clean_up
 
 # Select drives and verify selection
-selected=$(select_drives)
-if [ -z "$selected" ]; then
+selecteddrives=$(select_drives)
+if [ -z "$selecteddrives" ]; then
     echo "No drives selected. Exiting."
     exit 0
 fi
 
 # Convert selected drives to an array
-selected_drives=($selected)
+selected_drives=($selecteddrives)
+
+# Select ISO and verify selection
+selectediso=$(select_iso)
+if [ -z "$selectediso" ]; then
+    echo "No ISO selected. Exiting."
+    exit 0
+fi
 
 # burnNcheck the image with the selected drives
 clear
-burn_image "$iso_path" "${selected_drives[@]}"
-verify_image "$iso_path" "${selected_drives[@]}"
+burn_image "$selectediso" "${selected_drives[@]}"
+verify_image "$selectediso" "${selected_drives[@]}"
 log_action
 
 # Wait to return back to launcher
