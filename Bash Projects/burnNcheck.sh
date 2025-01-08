@@ -31,6 +31,19 @@ clean_up() {
     rm -rf "/srv/drives"
 }
 
+# Cleanup function
+interrupt() {
+    echo "Cleaning up before exit..."
+    kill $(jobs -p) 2>/dev/null
+    wait 2>/dev/null
+    umount /srv/iso/*
+    umount /srv/drives/*
+    clean_up
+    exit 1
+}
+# Trap SIGINT (CTRL+C) and call cleanup
+trap interrupt SIGINT
+
 # Function to list drives safely
 list_drives() {
     lsblk -dno NAME,TRAN,SIZE,TYPE | awk '$2 == "usb"' | while read -r name tran size type; do
@@ -79,21 +92,17 @@ disable_other_storage_ports() {
     local current_drive=$1
     echo "Processing drive: $current_drive"
 
-    # Get the sysfs path of the current drive
     sysfs_path=$(udevadm info -q path -n "$current_drive")
     if [[ -z "$sysfs_path" ]]; then
         echo "Failed to find sysfs path for $current_drive."
         exit 1
     fi
 
-    # Extract the USB port identifier for the current drive
     active_port=$(basename "$sysfs_path")
     echo "Keeping USB port active: $active_port"
 
-    # List all USB storage devices in sysfs
     storage_ports=$(ls /sys/bus/usb/devices/*/block/* 2>/dev/null | awk -F'/' '{print $(NF-3)}')
 
-    # Disable all USB storage ports except the active one
     for port in $storage_ports; do
         if [[ "$port" != "$active_port" ]]; then
             echo "Disabling USB storage port: $port"
@@ -120,14 +129,12 @@ burn_image() {
     shift
     local drives=("$@")
     if [[ "$bandwidth_conscious" == "yes" ]]; then
-        local disable_unused_ports="$disable_other_storage_ports"
-        local enable_unused_ports="$enable_all_storage_ports"
-        local concurrency=""
+        local disable_unused_ports="disable_other_storage_ports"
+        local enable_unused_ports="enable_all_storage_ports"
 
     elif [[ "$bandwidth_conscious" == "no" ]]; then
         local disable_unused_ports=""
         local enable_unused_ports=""
-        local concurrency=" &"
     
     fi
 
@@ -140,7 +147,10 @@ burn_image() {
             "$disable_unused_ports"
             dd if="$image_path" of="$drive" bs=8M status=progress conv=fsync
             "$enable_unused_ports"
-        )"$concurrency"
+        ) &
+        if [[ "bandwidth_conscious" == "yes" ]]; then
+            wait
+        fi
     done
 
     wait
