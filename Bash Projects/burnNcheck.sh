@@ -7,11 +7,11 @@ clear
 # Specify if we are bandwidth-conscious
 bandwidth_conscious="yes"
 
-# Specify the overall release file
-release_file=""
+# Specify the overall release file - REPLACE THE ASTERISK WITH RELATIVE PATH (will be ddsm-esxi and on)
+release_file="*"
 
-# Specify the tools release file
-tools_file=""
+# Specify the tools release file - REPLACE THE ASTERISK WITH RELATIVE PATH (will be ddsm-esxi and on)
+tools_file="*"
 
 # Specify the path to look for ISOs
 isos_path="/srv/REPO/isos"
@@ -27,6 +27,8 @@ hash_folder="ddsm-esxi"
 
 # Function to clean up ROM and RAM
 clean_up() {
+    umount /srv/iso/*
+    umount /srv/drives/*
     rm -rf "/srv/iso"
     rm -rf "/srv/drives"
 }
@@ -59,11 +61,9 @@ select_drives() {
     while read -r drive size; do
         options+=("$drive" "$size" "off")
     done <<< "$drives"
-    
     selected_drives=$(dialog --clear --stdout \
         --checklist "Select drives to burn image:" 15 50 10 \
         "${options[@]}")
-    
     echo "$selected_drives"
 }
 
@@ -79,11 +79,9 @@ select_iso() {
     while read -r size name; do
         options+=("$name" "$size")
     done <<< "$isos"
-    
     selected_iso=$(dialog --clear --stdout \
         --menu "Select an ISO file:" 15 50 10 \
         "${options[@]}")
-
     echo "$selected_iso"
 }
 
@@ -91,18 +89,14 @@ select_iso() {
 disable_other_storage_ports() {
     local current_drive=$1
     echo "Processing drive: $current_drive"
-
     sysfs_path=$(udevadm info -q path -n "$current_drive")
     if [[ -z "$sysfs_path" ]]; then
         echo "Failed to find sysfs path for $current_drive."
         exit 1
     fi
-
     active_port=$(basename "$sysfs_path")
     echo "Keeping USB port active: $active_port"
-
     storage_ports=$(ls /sys/bus/usb/devices/*/block/* 2>/dev/null | awk -F'/' '{print $(NF-3)}')
-
     for port in $storage_ports; do
         if [[ "$port" != "$active_port" ]]; then
             echo "Disabling USB storage port: $port"
@@ -115,7 +109,6 @@ disable_other_storage_ports() {
 enable_all_storage_ports() {
     echo "Re-enabling all USB storage ports..."
     storage_ports=$(ls /sys/bus/usb/devices/*/block/* 2>/dev/null | awk -F'/' '{print $(NF-3)}')
-
     for port in $storage_ports; do
         echo "Enabling USB storage port: $port"
         echo 'on' | sudo tee /sys/bus/usb/devices/$port/power/level > /dev/null
@@ -128,34 +121,46 @@ burn_image() {
     local image_path="$1"
     shift
     local drives=("$@")
-    if [[ "$bandwidth_conscious" == "yes" ]]; then
-        local disable_unused_ports="disable_other_storage_ports"
-        local enable_unused_ports="enable_all_storage_ports"
-
-    elif [[ "$bandwidth_conscious" == "no" ]]; then
-        local disable_unused_ports=""
-        local enable_unused_ports=""
-    
-    fi
-
     echo "===================================="
     echo "Writing image to the following drives: ${drives[*]}"
     echo "-----------------------"
-    
-    for drive in "${drives[@]}"; do
-        (
-            "$disable_unused_ports"
-            dd if="$image_path" of="$drive" bs=8M status=progress conv=fsync
-            "$enable_unused_ports"
-        ) &
-        if [[ "bandwidth_conscious" == "yes" ]]; then
-            wait
-        fi
-    done
-
+    if [[ "$bandwidth_conscious" == "yes" ]]; then
+        for drive in "${drives[@]}"; do
+            (
+                disable_other_storage_ports "$drive"
+                dd if="$image_path" of="$drive" bs=8M status=progress conv=fsync
+                enable_all_storage_ports "$drive"
+            )
+        done
+    elif [[ "$bandwidth_conscious" == "no" ]]; then
+        for drive in "${drives[@]}"; do
+            (
+                dd if="$image_path" of="$drive" bs=8M status=progress conv=fsync
+            ) &
+        done
+    fi
     wait
     echo "-----------------------"
     echo "All drives have been written."
+}
+
+verify_image-core() {
+    drive_name=$(echo $drive | grep -Eo "sd\w")
+    mkdir -p "/srv/drives/$drive_name/hashing"
+    umount $drive'1' 2>/dev/null
+    mount -o ro $drive'1' "/srv/drives/$drive_name/hashing"
+    cd "/srv/drives/$drive_name/hashing"
+    drive_build=$(find "$hash_folder" -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
+    cd /
+    umount "/srv/drives/$drive_name/hashing"
+    rm -rf "/srv/drives/$drive_name/hashing"
+    echo "$drive_name: $drive_build"
+    echo "----"
+    if [[ "$isobuild" == "$drive_build" ]]; then
+        echo "$drive_name: OK"
+    else
+        echo "$drive_name: NOT OK"
+    fi
 }
 
 # Function to verify the image was burnt to multiple drives successfully
@@ -163,54 +168,55 @@ verify_image() {
     local image_path="$1"
     shift
     local drives=("$@")
-
     echo "===================================="
     echo "Verifying the following drives: ${drives[*]}"
     echo "-----------------------"
-
     mkdir -p "/srv/iso/hashing"
     mount -o ro,loop "$image_path" "/srv/iso/hashing"
     cd "/srv/iso/hashing"
+    release=$(cat $release_file)
+    tools=$(cat $tools_file) 
     isobuild=$(find "$hash_folder" -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
     cd /
-    umount "/srv/iso/hashing"
-    rm -rf "/srv/iso/hashing"
     echo "Control: $isobuild"
     echo "--------------"
-
-    for drive in "${drives[@]}"; do
-        (
-            drive_name=$(echo $drive | grep -Eo "sd\w")
-            mkdir -p "/srv/drives/$drive_name/hashing"
-            umount $drive'1' 2>/dev/null
-            mount -o ro $drive'1' "/srv/drives/$drive_name/hashing"
-            cd "/srv/drives/$drive_name/hashing"
-            drive_build=$(find "$hash_folder" -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
-            cd /
-            umount "/srv/drives/$drive_name/hashing"
-            rm -rf "/srv/drives/$drive_name/hashing"
-            echo "$drive_name: $drive_build"
-            echo "----"
-            if [[ "$isobuild" == "$drive_build" ]]; then
-                echo "$drive_name: OK"
-            else
-                echo "$drive_name: NOT OK"
-            fi
-        ) &
-    done
-
+    if [[ "$bandwidth_conscious" == "yes" ]]; then
+        for drive in "${drives[@]}"; do
+            (
+                disable_other_storage_ports "$drive"
+                verify_image-core
+                enable_all_storage_ports "$drive"
+            )
+        done
+    elif [[ "$bandwidth_conscious" == "no" ]]; then
+        for drive in "${drives[@]}"; do
+            (
+                verify_image-core
+            ) &
+        done
+    fi
     wait
     echo "-----------------------"
     echo "All drives have been verified."
 }
 
-# Function to log simple information about the running of this script
-log_action() {
+# Function to log start time of burnNcheck
+start_time() {
     if [[ -e "$log_file" ]]; then
-        echo "$(date) - $(cat "$release_file") - $(cat "$tools_file") - Control: "$isobuild"" >> "$log_file"
+        echo "$(date) ---------------------------------------------- Start Time" >> "$log_file"
     else
         mkdir -p "$log_path" && touch "$log_file"
-        echo "$(date) - $(cat "$release_file") - $(cat "$tools_file") - Control: "$isobuild"" >> "$log_file"
+        echo "$(date) ---------------------------------------------- Start Time" >> "$log_file"
+    fi
+}
+
+# Function to log more information about the burnNcheck
+log_action() {
+    if [[ -e "$log_file" ]]; then
+        echo "$(date) - "$release" - "$tools" - Control: "$isobuild" - End Time" >> "$log_file"
+    else
+        mkdir -p "$log_path" && touch "$log_file"
+        echo "$(date) - "$release" - "$tools" - Control: "$isobuild" - End Time" >> "$log_file"
     fi
 }
 
@@ -238,6 +244,7 @@ fi
 
 # burnNcheck the image with the selected drives
 clear
+start_time
 burn_image "$selectediso" "${selected_drives[@]}"
 verify_image "$selectediso" "${selected_drives[@]}"
 log_action
