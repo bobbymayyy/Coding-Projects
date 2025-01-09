@@ -7,10 +7,10 @@ clear
 # Specify if we are bandwidth-conscious
 bandwidth_conscious="yes"
 
-# Specify the overall release file - REPLACE THE ASTERISK WITH RELATIVE PATH (will be ddsm-esxi and on)
+# Specify the overall release file - REPLACE THE ASTERISK WITH RELATIVE PATH - will be ddsm-esxi (or the hash_folder if they change it) and on
 release_file="*"
 
-# Specify the tools release file - REPLACE THE ASTERISK WITH RELATIVE PATH (will be ddsm-esxi and on)
+# Specify the tools release file - REPLACE THE ASTERISK WITH RELATIVE PATH - will be ddsm-esxi (or the hash_folder if they change it) and on
 tools_file="*"
 
 # Specify the path to look for ISOs
