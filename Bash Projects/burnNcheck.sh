@@ -243,7 +243,6 @@ if [ -z "$selectediso" ]; then
 fi
 
 # burnNcheck the image with the selected drives
-clear
 start_time
 burn_image "$selectediso" "${selected_drives[@]}"
 verify_image "$selectediso" "${selected_drives[@]}"
