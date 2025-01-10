@@ -33,19 +33,6 @@ clean_up() {
     rm -rf "/srv/drives"
 }
 
-# Cleanup function
-interrupt() {
-    echo "Cleaning up before exit..."
-    kill $(jobs -p) 2>/dev/null
-    wait 2>/dev/null
-    umount /srv/iso/*
-    umount /srv/drives/*
-    clean_up
-    exit 1
-}
-# Trap SIGINT (CTRL+C) and call cleanup
-trap interrupt SIGINT
-
 # Function to list drives safely
 list_drives() {
     lsblk -dno NAME,TRAN,SIZE,TYPE | awk '$2 == "usb"' | while read -r name tran size type; do
@@ -115,6 +102,26 @@ enable_all_storage_ports() {
     done
     echo "All USB storage ports re-enabled."
 }
+
+# Interrupt function to properly clean after interrupt
+interrupt() {
+    echo "Cleaning up before exit..."
+    kill $(jobs -p) 2>/dev/null
+    wait 2>/dev/null
+    umount /srv/iso/*
+    umount /srv/drives/*
+    clean_up
+    enable_all_storage_ports
+    if [[ -e "$log_file" ]]; then
+        echo "$(date) ////////////////////////////////////////////// INTERRUPT" >> "$log_file"
+    else
+        mkdir -p "$log_path" && touch "$log_file"
+        echo "$(date) ////////////////////////////////////////////// INTERRUPT" >> "$log_file"
+    fi
+    exit 1
+}
+# Trap SIGINT (CTRL+C) and call cleanup
+trap interrupt SIGINT
 
 # Function to burn an image to multiple drives concurrently
 burn_image() {
