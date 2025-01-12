@@ -23,12 +23,16 @@ log_file="/srv/REPO/logs/burnNcheck.log"
 # Specify the folder to be hashed - RELATIVE PATH
 hash_folder="ddsm-esxi"
 
+# Specify the user-space user the script is running on - NOT ROOT
+user="*"
+
 # Functions ================
 
 # Function to clean up ROM and RAM
 clean_up() {
     umount /srv/iso/*
     umount /srv/drives/*
+    umount /run/media/$user/*
     rm -rf "/srv/iso"
     rm -rf "/srv/drives"
 }
