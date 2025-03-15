@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # CURSORY ===========
-isos_path=""
+isos_path="/srv/REPO/isos"
 
 # FUNCTIONS ================
 
