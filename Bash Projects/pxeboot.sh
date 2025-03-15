@@ -39,7 +39,7 @@ clean_up() {
 
 # MAIN ==================================
 
-# Clean up
+# Pack in
 clean_up
 
 # Select ISO and verify selection
@@ -70,5 +70,5 @@ mount -t iso9660 -o ro,loop "$isos_path""$selected_iso" /var/www/html/pxeboot-me
 #sleep 2h
 dialog --clear --stdout --pause "PXE booting is available for 2 hours...\nIt will not be availble upon exit." 10 50 7200
 
-# Clean up
+# Pack out
 clean_up
