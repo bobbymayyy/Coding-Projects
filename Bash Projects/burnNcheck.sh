@@ -60,7 +60,7 @@ select_drives() {
 
 # Function to list ISO files with their sizes
 list_isos() {
-    find "$isos_path" -maxdepth 1 -type f -name "*.iso" -exec du -h -- "{}" + | sort -k2,2r -t ' ' | awk '{print $1, $2}'
+    find "$isos_path" -maxdepth 1 -type f -name "*.iso" -exec du -h -- "{}" + | sort -r -k2,2r -t ' ' | awk '{print $1,$2}' | awk -F'/' '{print $1,$NF}'
 }
 
 # Function to generate a dialog checklist for ISO selection
