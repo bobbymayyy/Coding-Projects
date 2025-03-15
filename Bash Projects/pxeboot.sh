@@ -17,6 +17,8 @@ systemctl start dnsmasq
 mkdir -p /var/www/html/pxeboot-media
 mount -t iso9660 -o ro,loop $selected_iso /var/www/html/pxeboot-media
 
+# SLEEP FOR 2 HOURS
+sleep 2h
 
 # UNMOUNT THE ISO ONCE DONE
 umount /var/www/html/pxeboot-media
