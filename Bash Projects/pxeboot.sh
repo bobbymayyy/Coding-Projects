@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# CURSORY ===========
+isos_path=""
+
 # FUNCTIONS ================
 
 # Function to list ISO files with their sizes
@@ -61,7 +64,7 @@ systemctl start dnsmasq
 
 # MOUNT THE SELECTED ISO FOR HTTP
 mkdir -p /var/www/html/pxeboot-media
-mount -t iso9660 -o ro,loop $selected_iso /var/www/html/pxeboot-media
+mount -t iso9660 -o ro,loop "$isos_path""$selected_iso" /var/www/html/pxeboot-media
 
 # SLEEP FOR 2 HOURS
 #sleep 2h
