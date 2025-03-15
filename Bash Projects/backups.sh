@@ -4,7 +4,7 @@
 dest_directory=""
 
 # BACKUP
-mkdir $dest_directory
+mkdir -pZ $dest_directory
 yes | cp /etc/hosts $dest_directory
 yes | cp -r /etc/NetworkManager/system-connections/ $dest_directory
 yes | cp -r /srv/REPO/logs/ $dest_directory
