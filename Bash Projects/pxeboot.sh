@@ -1,5 +1,51 @@
 #!/bin/bash
 
+# FUNCTIONS ================
+
+# Function to list ISO files with their sizes
+list_isos() {
+    find "$isos_path" -maxdepth 1 -type f -name "*.iso" -exec du -h -- "{}" + | sort -r -k2,2r -t ' ' | awk '{print $1,$2}' | awk -F'/' '{print $1,$NF}'
+}
+
+# Function to generate a dialog checklist for ISO selection
+select_iso() {
+    isos=$(list_isos)
+    options=()
+    while read -r size name; do
+        options+=("$name" "$size")
+    done <<< "$isos"
+    selected_iso=$(dialog --clear --stdout \
+        --menu "Select an ISO file:" 15 50 10 \
+        "${options[@]}")
+    echo "$selected_iso"
+}
+
+# Function to clean everything up once done
+clean_up() {
+    # UNMOUNT THE ISO ONCE DONE
+    umount /var/www/html/pxeboot-media
+    rm -rf /var/www/html/pxeboot-media
+    systemctl stop httpd
+    systemctl stop dnsmasq
+    firewall-cmd --remove-service=dhcp
+    firewall-cmd --remove-service=tftp
+    firewall-cmd --remove-service=dns
+    firewall-cmd --remove-service=http
+    firewall-cmd --reload
+}
+
+# MAIN ==================================
+
+# Clean up
+clean_up
+
+# Select ISO and verify selection
+selectediso=$(select_iso)
+if [ -z "$selectediso" ]; then
+    echo "No ISO selected. Exiting."
+    exit 0
+fi
+
 # ADD SERVICES ON FIREWALL
 firewall-cmd --add-service=dhcp
 firewall-cmd --add-service=tftp
@@ -18,19 +64,8 @@ mkdir -p /var/www/html/pxeboot-media
 mount -t iso9660 -o ro,loop $selected_iso /var/www/html/pxeboot-media
 
 # SLEEP FOR 2 HOURS
-sleep 2h
+#sleep 2h
+dialog --clear --stdout --pause "PXE booting is available for 2 hours...\nIt will not be availble upon exit." 10 50 7200
 
-# UNMOUNT THE ISO ONCE DONE
-umount /var/www/html/pxeboot-media
-rm -rf /var/www/html/pxeboot-media
-
-# DISABLE SERVICES
-systemctl stop httpd
-systemctl stop dnsmasq
-
-# REMOVE SERVICES ON FIREWALL
-firewall-cmd --remove-service=dhcp
-firewall-cmd --remove-service=tftp
-firewall-cmd --remove-service=dns
-firewall-cmd --remove-service=http
-firewall-cmd --reload
+# Clean up
+clean_up
