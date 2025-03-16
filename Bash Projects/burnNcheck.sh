@@ -73,7 +73,7 @@ select_iso() {
     selected_iso=$(dialog --clear --stdout \
         --menu "Select an ISO file:" 15 50 10 \
         "${options[@]}")
-    echo "$selected_iso"
+    echo "$isos_path"'/'"$selected_iso"
 }
 
 # Function to disable USB ports used by storage devices except the one associated with the current drive
