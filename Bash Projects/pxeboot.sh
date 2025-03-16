@@ -46,6 +46,7 @@ clean_up
 selectediso=$(select_iso)
 if [ -z "$selectediso" ]; then
     echo "No ISO selected. Exiting."
+    clean_up
     exit 0
 fi
 
