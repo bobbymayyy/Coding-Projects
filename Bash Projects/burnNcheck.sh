@@ -17,7 +17,7 @@ tools_file="*"
 isos_path="/srv/REPO/isos"
 
 # Specify the log file we will report to
-log_path="/srv/REPO/logs/"
+log_path="/srv/REPO/logs"
 log_file="/srv/REPO/logs/burnNcheck.log"
 
 # Specify the folder to be hashed - RELATIVE PATH
