@@ -26,9 +26,9 @@ select_iso() {
 # Function to clean everything up once done
 clean_up() {
     # UNMOUNT THE ISO ONCE DONE
-    umount /var/www/html/pxeboot-media
-    rm -rf /var/www/html/pxeboot-media
-    systemctl stop httpd
+    umount /var/www/pxe/selected_os
+    rm -rf /var/www/pxe/selected_os
+    systemctl stop nginx
     systemctl stop dnsmasq
     firewall-cmd --remove-service=dhcp
     firewall-cmd --remove-service=tftp
@@ -60,13 +60,13 @@ firewall-cmd --reload
 
 # ENABLE SERVICES
 # HTTP for media serving
-systemctl start httpd
+systemctl start nginx
 # dnsmasq provides DHCP and TFTP
 systemctl start dnsmasq
 
 # MOUNT THE SELECTED ISO FOR HTTP
-mkdir -p /var/www/html/pxeboot-media
-mount -t iso9660 -o ro,loop "$selectediso" /var/www/html/pxeboot-media
+mkdir -p /var/www/pxe/selected_os
+mount -t iso9660 -o ro,loop "$selectediso" /var/www/pxe/selected_os
 
 # SLEEP FOR 2 HOURS
 #sleep 2h
