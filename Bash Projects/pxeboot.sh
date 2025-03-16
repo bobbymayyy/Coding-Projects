@@ -50,7 +50,7 @@ if [ -z "$selectediso" ]; then
     clean_up
     exit 0
 fi
-selectediso=$(echo "$isos_path"'/'"$selected_iso")
+selectediso=$(echo "$isos_path"'/'"$selectediso")
 
 # ADD SERVICES ON FIREWALL
 firewall-cmd --add-service=dhcp

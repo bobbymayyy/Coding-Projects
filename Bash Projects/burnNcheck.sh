@@ -252,7 +252,7 @@ if [ -z "$selectediso" ]; then
     echo "No ISO selected. Exiting."
     exit 0
 fi
-selectediso=$(echo "$isos_path"'/'"$selected_iso")
+selectediso=$(echo "$isos_path"'/'"$selectediso")
 
 # burnNcheck the image with the selected drives
 start_time
