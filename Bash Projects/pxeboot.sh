@@ -35,6 +35,7 @@ clean_up() {
     firewall-cmd --remove-service=dns
     firewall-cmd --remove-service=http
     firewall-cmd --reload
+    clear
 }
 
 # MAIN ==================================
