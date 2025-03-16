@@ -20,7 +20,7 @@ select_iso() {
     selected_iso=$(dialog --clear --stdout \
         --menu "Select an ISO file:" 15 50 10 \
         "${options[@]}")
-    echo "$isos_path"'/'"$selected_iso"
+    echo "$selected_iso"
 }
 
 # Function to clean everything up once done
@@ -50,6 +50,7 @@ if [ -z "$selectediso" ]; then
     clean_up
     exit 0
 fi
+selectediso=$(echo "$isos_path"'/'"$selected_iso")
 
 # ADD SERVICES ON FIREWALL
 firewall-cmd --add-service=dhcp

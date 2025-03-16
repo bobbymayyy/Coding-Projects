@@ -73,7 +73,7 @@ select_iso() {
     selected_iso=$(dialog --clear --stdout \
         --menu "Select an ISO file:" 15 50 10 \
         "${options[@]}")
-    echo "$isos_path"'/'"$selected_iso"
+    echo "$selected_iso"
 }
 
 # Function to disable USB ports used by storage devices except the one associated with the current drive
@@ -252,6 +252,7 @@ if [ -z "$selectediso" ]; then
     echo "No ISO selected. Exiting."
     exit 0
 fi
+selectediso=$(echo "$isos_path"'/'"$selected_iso")
 
 # burnNcheck the image with the selected drives
 start_time
