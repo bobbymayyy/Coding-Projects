@@ -10,7 +10,8 @@ choose --default selected_os --timeout 10000 option && goto ${option} || goto ca
 :selected_os
 set server_root http://10.10.10.1/selected_os
 initrd ${server_root}/images/pxeboot/initrd.img
-kernel ${server_root}/images/pxeboot/vmlinuz inst.repo=${server_root}/ ip=dhcp ipv6.disable initrd=initrd.img inst.geoloc=0 devfs=nomount
+kernel ${server_root}/images/pxeboot/vmlinuz inst.repo=${server_root}/ ip=dhcp ipv6.disable initrd=initrd.img # - Non-Kickstart
+#kernel ${server_root}/images/pxeboot/vmlinuz inst.ks=${server_root}/ks.cfg ip=dhcp ipv6.disable initrd=initrd.img # - Kickstart
 boot
 
 :shell
