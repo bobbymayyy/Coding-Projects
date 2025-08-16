@@ -396,14 +396,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-Ansible Projects/Francee Xercise/isos
-Ansible Projects/Francee Xercise/packages
-Ansible Projects/Francee Xercise/containers
-Ansible Projects/Francee Xercise/templates
-Ansible Projects/DIP/ansible/passwords.yml
-Ansible Projects/DIP/isos
-Ansible Projects/DIP/packages
-Ansible Projects/DIP/containers
-Ansible Projects/DIP/templates
-Ansible Projects/DIP/ansible/playbooks/31_deploy_securityonion.yml
-Ansible Projects/DIP/ansible/playbooks/32_deploy_securityonion.yml
+
+# Big Stuff to Ignore
+*.iso
+*.ova
