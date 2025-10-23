@@ -400,3 +400,4 @@ FodyWeavers.xsd
 # Big Stuff to Ignore
 *.iso
 *.ova
+*.img
