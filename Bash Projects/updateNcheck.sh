@@ -4,7 +4,6 @@ clear
 set -euo pipefail
 IFS=$'\n\t'
 
-
 # Variables ================
 
 # Functions ================
