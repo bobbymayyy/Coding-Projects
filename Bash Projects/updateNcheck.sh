@@ -257,8 +257,6 @@ if [ -z "$selecteddrives" ]; then
     echo "No drives selected. Exiting."
     exit 0
 fi
-
-# Convert selected drives to an array
 selected_drives=($selecteddrives)
 
 # Select ISO and verify selection
