@@ -17,7 +17,7 @@ iso_tools_file="*"
 img_tools_file="*"
 
 # Specify the path to look for ISOs
-isos_path="/srv/REPO/isos"
+isos_path="/srv/REPO/updates"
 
 # Specify the log file we will report to
 log_path="/srv/REPO/logs"
@@ -161,8 +161,8 @@ burn_image() {
 verify_image-core() {
     drive_name=$(echo $drive | grep -Eo "sd\w")
     mkdir -p "/srv/drives/$drive_name/hashing"
-    umount $drive'1' 2>/dev/null
-    mount -o ro $drive'1' "/srv/drives/$drive_name/hashing"
+    umount $drive$core_partition 2>/dev/null
+    mount -o ro $drive$core_partition "/srv/drives/$drive_name/hashing"
     cd "/srv/drives/$drive_name/hashing"
     drive_build=$(find "$hash_folder" -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
     cd /
@@ -186,7 +186,20 @@ verify_image() {
     echo "Verifying the following drives: ${drives[*]}"
     echo "-----------------------"
     mkdir -p "/srv/iso/hashing"
-    mount -o ro,loop "$image_path" "/srv/iso/hashing"
+    if [[ "$selectediso" =~ img ]]; then
+        release_file=$(cat $img_release_file)
+        tools_file=$(cat $img_tools_file)
+        hash_folder=$(cat $img_hash_folder)
+        partition="4"
+        core_partition="4"
+    else
+        release_file=$(cat $iso_release_file)
+        tools_file=$(cat $iso_tools_file)
+        hash_folder=$(cat $iso_hash_folder)
+        partition=""
+        core_partition="1"
+    fi    
+    mount -o ro,loop $image_path$partition "/srv/iso/hashing"
     cd "/srv/iso/hashing"
     release=$(cat $release_file)
     tools=$(cat $tools_file) 
