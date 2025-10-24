@@ -190,16 +190,16 @@ verify_image() {
         release_file=$(cat $img_release_file)
         tools_file=$(cat $img_tools_file)
         hash_folder=$(cat $img_hash_folder)
-        partition="4"
         core_partition="4"
+        loop_dev=$(losetup -fP --show $image_path)
+        mount -o ro,loop $loop_dev'p4' "/srv/iso/hashing"
     else
         release_file=$(cat $iso_release_file)
         tools_file=$(cat $iso_tools_file)
         hash_folder=$(cat $iso_hash_folder)
-        partition=""
         core_partition="1"
-    fi    
-    mount -o ro,loop $image_path$partition "/srv/iso/hashing"
+        mount -o ro,loop $image_path "/srv/iso/hashing"
+    fi
     cd "/srv/iso/hashing"
     release=$(cat $release_file)
     tools=$(cat $tools_file) 
