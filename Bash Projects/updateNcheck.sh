@@ -130,7 +130,7 @@ interrupt() {
 # Trap SIGINT (CTRL+C) and call cleanup
 trap interrupt SIGINT
 
-# Function to burn an update to multiple drives concurrently
+# Function to update multiple drives (concurrently)
 burn_image() {
     local image_path="$1"
     shift
@@ -177,7 +177,7 @@ verify_image-core() {
     fi
 }
 
-# Function to verify the update was burnt to multiple drives successfully
+# Function to verify multiple drives (concurrently)
 verify_image() {
     local image_path="$1"
     shift
@@ -227,7 +227,7 @@ verify_image() {
     echo "All drives have been verified."
 }
 
-# Function to log start time of burnNcheck
+# Function to log start time of updateNcheck
 start_time() {
     if [[ -e "$log_file" ]]; then
         echo "$(date) ---------------------------------------------- Start Time" >> "$log_file"
