@@ -127,6 +127,7 @@ interrupt() {
     fi
     exit 1
 }
+
 # Trap SIGINT (CTRL+C) and call cleanup
 trap interrupt SIGINT
 
