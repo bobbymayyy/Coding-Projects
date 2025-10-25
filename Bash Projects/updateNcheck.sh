@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #This is a script to update some drives you select and then validate build of the drive against the update used.
 clear
-set -euo pipefail
-IFS=$'\n\t'
+#set -euo pipefail
+#IFS=$'\n\t'
 
 # Variables ================
 # Specify if we are bandwidth-conscious
@@ -42,9 +42,9 @@ clean_up() {
 
 # Function to list drives safely
 list_drives() {
-    lsblk -dno NAME,TRAN,SIZE,TYPE | awk '$2 == "usb"' | while read -r name tran size type; do
+    lsblk -dno NAME,TRAN,MODEL | awk '$2 == "usb"' | while read -r name tran model type; do
         drive="/dev/$name"
-        echo "$drive $size"
+        echo "$drive $model"
     done
 }
 
@@ -52,8 +52,8 @@ list_drives() {
 select_drives() {
     drives=$(list_drives)
     options=()
-    while read -r drive size; do
-        options+=("$drive" "$size" "off")
+    while read -r drive model; do
+        options+=("$drive" "$model" "off")
     done <<< "$drives"
     selected_drives=$(dialog --clear --stdout \
         --checklist "Select drives to burn image:" 15 50 10 \
