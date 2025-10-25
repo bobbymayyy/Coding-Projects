@@ -16,8 +16,8 @@ img_release_file="*"
 iso_tools_file="*"
 img_tools_file="*"
 
-# Specify the path to look for ISOs
-isos_path="/srv/REPO/updates"
+# Specify the path to look for updates
+updates_path="/srv/REPO/updates"
 
 # Specify the log file we will report to
 log_path="/srv/REPO/logs"
@@ -61,12 +61,12 @@ select_drives() {
     echo "$selected_drives"
 }
 
-# Function to list ISO files with their sizes
+# Function to list update files with their sizes
 list_isos() {
-    find "$isos_path" -maxdepth 1 -type f -name "*.i*" -exec du -h -- "{}" + | sort -k2,2r -t ' ' | awk '{print $1,$2}' | awk -F'/' '{print $1,$NF}'
+    find "$updates_path" -maxdepth 1 -type f -name "*.i*" -exec du -h -- "{}" + | sort -k2,2r -t ' ' | awk '{print $1,$2}' | awk -F'/' '{print $1,$NF}'
 }
 
-# Function to generate a dialog checklist for ISO selection
+# Function to generate a dialog checklist for update selection
 select_iso() {
     isos=$(list_isos)
     options=()
@@ -74,7 +74,7 @@ select_iso() {
         options+=("$name" "$size")
     done <<< "$isos"
     selected_iso=$(dialog --clear --stdout \
-        --menu "Select an ISO file:" 15 50 10 \
+        --menu "Select an update file:" 15 50 10 \
         "${options[@]}")
     echo "$selected_iso"
 }
@@ -130,13 +130,13 @@ interrupt() {
 # Trap SIGINT (CTRL+C) and call cleanup
 trap interrupt SIGINT
 
-# Function to burn an image to multiple drives concurrently
+# Function to burn an update to multiple drives concurrently
 burn_image() {
     local image_path="$1"
     shift
     local drives=("$@")
     echo "===================================="
-    echo "Writing image to the following drives: ${drives[*]}"
+    echo "Writing update to the following drives: ${drives[*]}"
     echo "-----------------------"
     if [[ "$bandwidth_conscious" == "yes" ]]; then
         for drive in "${drives[@]}"; do
@@ -177,7 +177,7 @@ verify_image-core() {
     fi
 }
 
-# Function to verify the image was burnt to multiple drives successfully
+# Function to verify the update was burnt to multiple drives successfully
 verify_image() {
     local image_path="$1"
     shift
@@ -237,7 +237,7 @@ start_time() {
     fi
 }
 
-# Function to log more information about the burnNcheck
+# Function to log more information about the updateNcheck
 log_action() {
     if [[ -e "$log_file" ]]; then
         echo "$(date) - "$release" - "$tools" - Control: "$isobuild" - End Time" >> "$log_file"
@@ -259,13 +259,13 @@ if [ -z "$selecteddrives" ]; then
 fi
 selected_drives=($selecteddrives)
 
-# Select ISO and verify selection
+# Selecimage and verify selection
 selectediso=$(select_iso)
 if [ -z "$selectediso" ]; then
-    echo "No ISO selected. Exiting."
+    echo "No image selected. Exiting."
     exit 0
 fi
-selectediso=$(echo "$isos_path"'/'"$selectediso")
+selectediso=$(echo "$updates_path"'/'"$selectediso")
 
 # burnNcheck the image with the selected drives
 start_time
