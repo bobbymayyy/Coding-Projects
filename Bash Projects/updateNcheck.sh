@@ -21,7 +21,7 @@ updates_path="/srv/REPO/updates"
 
 # Specify the log file we will report to
 log_path="/srv/REPO/logs"
-log_file="/srv/REPO/logs/burnNcheck.log"
+log_file="/srv/REPO/logs/updateNcheck.log"
 
 # Specify the folder to be hashed - RELATIVE PATH
 iso_hash_folder="*"
@@ -56,7 +56,7 @@ select_drives() {
         options+=("$drive" "$model" "off")
     done <<< "$drives"
     selected_drives=$(dialog --clear --stdout \
-        --checklist "Select drives to burn image:" 15 50 10 \
+        --checklist "Select drives to update:" 15 50 10 \
         "${options[@]}")
     echo "$selected_drives"
 }
@@ -74,7 +74,7 @@ select_iso() {
         options+=("$name" "$size")
     done <<< "$isos"
     selected_iso=$(dialog --clear --stdout \
-        --menu "Select an update file:" 15 50 10 \
+        --menu "Select an update:" 15 50 10 \
         "${options[@]}")
     echo "$selected_iso"
 }
@@ -136,7 +136,7 @@ burn_image() {
     shift
     local drives=("$@")
     echo "===================================="
-    echo "Writing update to the following drives: ${drives[*]}"
+    echo "Updating the following drives: ${drives[*]}"
     echo "-----------------------"
     if [[ "$bandwidth_conscious" == "yes" ]]; then
         for drive in "${drives[@]}"; do
@@ -155,7 +155,7 @@ burn_image() {
     fi
     wait
     echo "-----------------------"
-    echo "All drives have been written."
+    echo "All drives have been updated."
 }
 
 verify_image-core() {
@@ -259,15 +259,15 @@ if [ -z "$selecteddrives" ]; then
 fi
 selected_drives=($selecteddrives)
 
-# Selecimage and verify selection
+# Select update and verify selection
 selectediso=$(select_iso)
 if [ -z "$selectediso" ]; then
-    echo "No image selected. Exiting."
+    echo "No update selected. Exiting."
     exit 0
 fi
 selectediso=$(echo "$updates_path"'/'"$selectediso")
 
-# burnNcheck the image with the selected drives
+# updateNcheck the selected drives
 start_time
 burn_image "$selectediso" "${selected_drives[@]}"
 verify_image "$selectediso" "${selected_drives[@]}"
