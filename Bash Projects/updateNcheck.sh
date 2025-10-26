@@ -56,7 +56,7 @@ select_drives() {
         options+=("$drive" "$model" "off")
     done <<< "$drives"
     selected_drives=$(dialog --clear --stdout \
-        --checklist "Select drives to update:" 15 50 10 \
+        --checklist "Select drives to update:" 12 45 10 \
         "${options[@]}")
     echo "$selected_drives"
 }
@@ -77,6 +77,13 @@ select_iso() {
         --menu "Select an update:" 15 50 10 \
         "${options[@]}")
     echo "$selected_iso"
+}
+
+# Function to generate a dialog yesno for verification choice
+verify_choice() {
+    dialog --clear --stdout \
+        --yesno "Would you like to verify your chosen drives against the chosen update?" 6 42
+    verification_choice="$?"
 }
 
 # Function to disable USB ports used by storage devices except the one associated with the current drive
@@ -254,7 +261,7 @@ clean_up
 
 # Select drives and verify selection
 selecteddrives=$(select_drives)
-if [ -z "$selecteddrives" ]; then
+if [[ -z "$selecteddrives" ]]; then
     echo "No drives selected. Exiting."
     exit 0
 fi
@@ -262,16 +269,21 @@ selected_drives=($selecteddrives)
 
 # Select update and verify selection
 selectediso=$(select_iso)
-if [ -z "$selectediso" ]; then
+if [[ -z "$selectediso" ]]; then
     echo "No update selected. Exiting."
     exit 0
 fi
 selectediso=$(echo "$updates_path"'/'"$selectediso")
 
+# Choose whether you want to verify
+verify_choice
+
 # updateNcheck the selected drives
 start_time
 burn_image "$selectediso" "${selected_drives[@]}"
-verify_image "$selectediso" "${selected_drives[@]}"
+if [[ "$verification_choice" == "0" ]]; then
+    verify_image "$selectediso" "${selected_drives[@]}"
+fi
 log_action
 
 # Wait to return back to launcher
