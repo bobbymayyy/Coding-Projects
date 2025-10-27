@@ -4,6 +4,11 @@ clear
 #set -euo pipefail
 #IFS=$'\n\t'
 
+# ROOT CHECK
+if [ "$(id -u)" -ne 0 ]; then
+    exec pkexec "$0" "$@"
+fi
+
 # Variables ================
 # Specify if we are bandwidth-conscious
 bandwidth_conscious="yes"
