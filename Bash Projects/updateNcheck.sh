@@ -8,6 +8,9 @@ clear
 # Specify if we are bandwidth-conscious
 bandwidth_conscious="yes"
 
+# Specify whether to include deprecated updates or not - 1 IS NO, 2 IS YES
+deprecated="1"
+
 # Specify the overall release file - REPLACE THE ASTERISK WITH RELATIVE PATH - will be ddsm-esxi (or the hash_folder if they change it) and on
 iso_release_file="*"
 img_release_file="*"
@@ -36,6 +39,7 @@ clean_up() {
     umount /srv/iso/*
     umount /srv/drives/*
     umount /run/media/$user/*
+    losetup -D
     rm -rf "/srv/iso"
     rm -rf "/srv/drives"
 }
@@ -63,7 +67,7 @@ select_drives() {
 
 # Function to list update files with their sizes
 list_isos() {
-    find "$updates_path" -maxdepth 1 -type f -name "*.i*" -exec du -h -- "{}" + | sort -k2,2r -t ' ' | awk '{print $1,$2}' | awk -F'/' '{print $1,$NF}'
+    find "$updates_path" -maxdepth "$deprecated" -type f -name "*.i*" -exec du -h -- "{}" + | sort -k2,2r -t ' ' | awk '{print $1,$2}' | awk -F'/' '{print $1,$NF}'
 }
 
 # Function to generate a dialog checklist for update selection
@@ -195,22 +199,23 @@ verify_image() {
     echo "-----------------------"
     mkdir -p "/srv/iso/hashing"
     if [[ "$selectediso" =~ img ]]; then
-        release_file=$(cat $img_release_file)
-        tools_file=$(cat $img_tools_file)
-        hash_folder=$(cat $img_hash_folder)
         core_partition="4"
         loop_dev=$(losetup -fP --show $image_path)
-        mount -o ro,loop $loop_dev'p4' "/srv/iso/hashing"
+        mount -o ro $loop_dev'p4' "/srv/iso/hashing"
+        cd "/srv/iso/hashing"
+        release_file=$(cat $img_release_file)
+        tools_file=$(cat $img_tools_file)
+        hash_folder=$(echo $img_hash_folder)
     else
-        release_file=$(cat $iso_release_file)
-        tools_file=$(cat $iso_tools_file)
-        hash_folder=$(cat $iso_hash_folder)
         core_partition="1"
         mount -o ro,loop $image_path "/srv/iso/hashing"
+        cd "/srv/iso/hashing"
+        release_file=$(cat $iso_release_file)
+        tools_file=$(cat $iso_tools_file)
+        hash_folder=$(echo $iso_hash_folder)
     fi
-    cd "/srv/iso/hashing"
-    release=$(cat $release_file)
-    tools=$(cat $tools_file) 
+    release=$(echo $release_file)
+    tools=$(echo $tools_file) 
     isobuild=$(find "$hash_folder" -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum)
     cd /
     echo "Control: $isobuild"
