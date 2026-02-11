@@ -273,10 +273,18 @@ tui_configure_apt_distro() {
   local pub_key="${distro}_PUBLISH_PREFIX"
 
   local cur_enable cur_url cur_suite cur_comps
-  cur_enable="$(config_get "$enable_key" | sed 's/^$/no/')"
-  cur_url="$(config_get "$url_key" | sed "s#^$#${default_url}#")"
-  cur_suite="$(config_get "$suite_key" | sed "s#^$#${default_suite}#")"
-  cur_comps="$(config_get "$comp_key" | sed "s#^$#${default_components}#")"
+  cur_enable="$(config_get "$enable_key" || true)"
+  cur_enable="${cur_enable:-no}"
+
+  cur_url="$(config_get "$url_key" || true)"
+  cur_url="${cur_url:-$default_url}"
+
+  cur_suite="$(config_get "$suite_key" || true)"
+  cur_suite="${cur_suite:-$default_suite}"
+
+  cur_comps="$(config_get "$comp_key" || true)"
+  cur_comps="${cur_comps:-$default_components}"
+
 
   if dialog_yesno "$pretty" "Enable mirroring for $pretty?" ; then
     config_set "$enable_key" "yes"
