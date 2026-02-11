@@ -135,10 +135,12 @@ PROXMOX_COMPONENTS="pve"
 PROXMOX_PUBLISH_PREFIX="proxmox"
 
 # ---------- RPM (reposync) ----------
+# Drop curated .repo files here. reposync will honor metalink/mirrorlist.
 RPM_REPO_DIR=""
-RPM_REPO_FILE=""
-RPM_ARCHS="x86_64"
-RPM_SELECTED_REPOIDS=""
+
+# Multiple RPM sources, one per line:
+# format: name|/full/path/to/file.repo|repoid1 repoid2 repoid3|x86_64 aarch64
+RPM_SOURCES=""
 
 # ---------- Alpine (rsync) ----------
 ALPINE_RSYNC_URL="rsync://rsync.alpinelinux.org/alpine"
@@ -410,8 +412,7 @@ rpm_list_repo_files() {
 }
 
 tui_configure_rpm() {
-  local mirror_root repo_dir repo_file
-
+  local mirror_root repo_dir
   mirror_root="$(config_get MIRROR_ROOT | sed 's/^$/\/mnt\/repo/')"
   repo_dir="$(config_get RPM_REPO_DIR)"
   [[ -n "$repo_dir" ]] || repo_dir="${mirror_root}/repo-defs/rpm"
@@ -420,54 +421,96 @@ tui_configure_rpm() {
 "Folder containing curated .repo files (from probe VMs):" "$repo_dir")" || return 1
   [[ -n "$repo_dir" ]] || return 1
   mkdirp "$repo_dir"
+  config_set "RPM_REPO_DIR" "$repo_dir"
 
-  local files args=()
-  mapfile -t files < <(rpm_list_repo_files "$repo_dir")
+  # Gather repo files
+  local files=()
+  shopt -s nullglob
+  files=("$repo_dir"/*.repo)
+  shopt -u nullglob
   if (( ${#files[@]} == 0 )); then
     dialog_msg "No .repo files" \
-"No .repo files found in:\n${repo_dir}\n\nHow to get them:\n- On Fedora/Rocky/RHEL probe VM, copy /etc/yum.repos.d/*.repo\n- Also install epel-release/rpmfusion-release/cuda repo pkg as needed\n\nThen copy the .repo files into this folder."
+"No .repo files found in:\n${repo_dir}\n\nHow to get them:\n- Fedora/Rocky/RHEL probe VM: copy /etc/yum.repos.d/*.repo\n- Add epel-release/rpmfusion/cuda repo packages, then copy those .repo files too."
     return 1
   fi
 
-  local i=1
+  # Multi-select repo files
+  local args=()
+  local idx=0
   for f in "${files[@]}"; do
-    args+=("$i" "$(basename "$f")")
-    ((i++))
+    args+=("$idx" "$(basename "$f")" "off")
+    ((idx++))
   done
 
-  local choice
-  choice="$(dialog_menu "RPM Repo File" "Select a .repo file to drive reposync:" "${args[@]}")" || return 1
-  repo_file="${files[$((choice-1))]}"
+  local selected_idxs
+  selected_idxs="$(dialog_checklist "RPM Repo Files" \
+"Select one or more .repo files to mirror:" \
+"${args[@]}")" || return 1
+  selected_idxs="$(echo "$selected_idxs" | tr -d '"')"
+  [[ -n "${selected_idxs// }" ]] || { dialog_msg "RPM" "No repo files selected."; return 0; }
 
-  local repo_ids args2=()
-  repo_ids="$(awk -F'[][]' '/^\[.*\]/{print $2}' "$repo_file")"
-  [[ -n "$repo_ids" ]] || { dialog_msg "RPM Config" "No repo IDs found in:\n$repo_file"; return 1; }
+  # Build RPM_SOURCES lines
+  local sources=""
+  local i
+  for i in $selected_idxs; do
+    local repo_file="${files[$i]}"
+    local default_name
+    default_name="$(basename "$repo_file" .repo)"
 
-  for id in $repo_ids; do
-    args2+=("$id" "" "off")
-  done
+    # Let user rename source (used for output namespace)
+    local name
+    name="$(dialog_input "Source Name" \
+"Name for this source (used as /repos/rpm/<name>/ ...). Avoid spaces and '|':" "$default_name")" || return 1
 
-  local selected
-  selected="$(dialog_checklist "RPM Repo IDs" \
-"Select repo IDs to mirror (metalink/mirrorlist preserved):\n$(basename "$repo_file")" \
+    # Basic validation
+    if [[ "$name" == *"|"* ]]; then
+      dialog_msg "Invalid Name" "Name cannot contain '|'."
+      return 1
+    fi
+    name="$(echo "$name" | xargs)"
+    [[ -n "$name" ]] || { dialog_msg "Invalid Name" "Name cannot be empty."; return 1; }
+
+    # Parse repo IDs from file
+    local repo_ids
+    repo_ids="$(awk -F'[][]' '/^\[.*\]/{print $2}' "$repo_file")"
+    [[ -n "$repo_ids" ]] || { dialog_msg "RPM" "No repo IDs found in:\n$repo_file"; return 1; }
+
+    local args2=()
+    local id
+    for id in $repo_ids; do
+      args2+=("$id" "" "off")
+    done
+
+    local chosen_ids
+    chosen_ids="$(dialog_checklist "RPM Repo IDs" \
+"Select repo IDs to mirror from:\n$(basename "$repo_file")" \
 "${args2[@]}")" || return 1
-  selected="$(echo "$selected" | tr -d '"')"
+    chosen_ids="$(echo "$chosen_ids" | tr -d '"' | xargs)"
 
-  local arch_sel
-  arch_sel="$(dialog_checklist "RPM Architectures" "Select architectures:" \
+    # Architectures
+    local chosen_arch
+    chosen_arch="$(dialog_checklist "RPM Architectures" \
+"Select architectures for this source:" \
 "x86_64"  "" "on" \
 "aarch64" "" "off" \
 "ppc64le" "" "off" \
 "s390x"   "" "off")" || return 1
-  arch_sel="$(echo "$arch_sel" | tr -d '"' | xargs)"
+    chosen_arch="$(echo "$chosen_arch" | tr -d '"' | xargs)"
 
-  config_set "RPM_REPO_DIR" "$repo_dir"
-  config_set "RPM_REPO_FILE" "$repo_file"
-  config_set "RPM_SELECTED_REPOIDS" "$selected"
-  config_set "RPM_ARCHS" "$arch_sel"
+    # Allow "none" (skip) cleanly
+    if [[ -z "${chosen_ids// }" ]]; then
+      # user chose none: just skip this source
+      continue
+    fi
+
+    # Append line: name|repo_file|repoids|archs
+    sources+="${name}|${repo_file}|${chosen_ids}|${chosen_arch}"$'\n'
+  done
+
+  config_set "RPM_SOURCES" "$sources"
 
   dialog_msg "RPM Configured" \
-"Repo dir: $repo_dir\nRepo file: $(basename "$repo_file")\nRepo IDs: ${selected:-<none>}\nArch: $arch_sel"
+"RPM sources saved.\n\nThey will mirror into:\n${mirror_root}/repos/rpm/<name>/<repoid>/\n\nYou can re-run RPM config anytime to change selections."
 }
 
 # ---------- Alpine ----------
@@ -624,20 +667,44 @@ if [[ "${ENABLE_RPM:-no}" == "yes" ]]; then
   need_cmd reposync
   need_cmd createrepo_c
 
-  RPM_OUT="${MIRROR_ROOT}/repos/rpm"
-  mkdir -p "$RPM_OUT"
+  repo_dir="${RPM_REPO_DIR:-}"
+  if [[ -z "$repo_dir" ]]; then
+    log "RPM: RPM_REPO_DIR not set; you can still use RPM_SOURCES with absolute repo_file paths."
+  fi
 
-  repo_file="${RPM_REPO_FILE:-}"
-  if [[ -z "$repo_file" || ! -r "$repo_file" ]]; then
-    log "RPM: RPM_REPO_FILE not set or not readable, skipping."
+  if [[ -z "${RPM_SOURCES:-}" ]]; then
+    log "RPM: RPM_SOURCES empty, skipping."
   else
-    repoids="${RPM_SELECTED_REPOIDS:-}"
-    if [[ -z "$repoids" ]]; then
-      log "RPM: No RPM_SELECTED_REPOIDS selected, skipping."
-    else
+    # RPM_SOURCES is multi-line: name|repo_file|repoids|archs
+    while IFS='|' read -r name repo_file repoids archs; do
+      # skip blanks/comments
+      [[ -z "${name// }" ]] && continue
+      [[ "$name" =~ ^[[:space:]]*# ]] && continue
+
+      if [[ -z "$name" || -z "$repo_file" ]]; then
+        log "RPM: malformed RPM_SOURCES line (missing name or repo_file), skipping."
+        continue
+      fi
+      if [[ ! -r "$repo_file" ]]; then
+        log "RPM: repo file not readable: $repo_file, skipping source=$name"
+        continue
+      fi
+
+      # Namespace output by source name to avoid repoid collisions across distros/vendors
+      RPM_OUT="${MIRROR_ROOT}/repos/rpm/${name}"
+      mkdir -p "$RPM_OUT"
+
+      # Defaults
+      [[ -n "${archs// }" ]] || archs="x86_64"
+
+      if [[ -z "${repoids// }" ]]; then
+        log "RPM: no repoids selected for source=$name, skipping."
+        continue
+      fi
+
       for id in $repoids; do
-        for arch in ${RPM_ARCHS:-x86_64}; do
-          log "RPM: reposync repoid=$id arch=$arch"
+        for arch in $archs; do
+          log "RPM: source=$name repoid=$id arch=$arch"
           reposync \
             --config="$repo_file" \
             --repoid="$id" \
@@ -652,7 +719,7 @@ if [[ "${ENABLE_RPM:-no}" == "yes" ]]; then
           createrepo_c "${RPM_OUT}/${id}"
         fi
       done
-    fi
+    done <<< "${RPM_SOURCES}"
   fi
 fi
 
