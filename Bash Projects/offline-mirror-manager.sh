@@ -837,6 +837,7 @@ main_menu() {
   init_if_needed
 
   while true; do
+    set +e
     local root
     root="$(config_get MIRROR_ROOT | sed 's/^$/\/mnt\/repo/')"
     local choice
@@ -864,6 +865,7 @@ main_menu() {
         ;;
       EXIT) clear; exit 0 ;;
     esac
+    set -e
   done
 }
 
