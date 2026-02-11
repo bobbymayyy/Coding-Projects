@@ -166,6 +166,64 @@ config_set() {
   fi
 }
 
+tui_rpm_probe_helper() {
+  dialog --clear --title "RPM Probe Helper (.repo harvesting)" --msgbox \
+"Goal:
+  Generate/collect authoritative .repo files from an RPM-family 'probe' VM
+  and copy them into:
+    <MIRROR_ROOT>/repo-defs/rpm/
+
+Why:
+  Those .repo files contain metalink=/mirrorlist= redirectors + GPG keys,
+  so your mirror host follows upstream changes automatically.
+
+--- Fedora probe (Fedora 39/40/etc) ---
+1) Ensure repos exist:
+  sudo dnf -y install fedora-repos
+
+2) (Optional) enable extras you want:
+  sudo dnf config-manager --set-enabled updates updates-testing
+
+3) Copy repo definitions to your removable drive (example path):
+  sudo cp -v /etc/yum.repos.d/*.repo /mnt/repo/repo-defs/rpm/
+
+--- Rocky / Alma / RHEL-like probe ---
+1) Repo files are typically already present:
+  ls -l /etc/yum.repos.d/
+
+2) Copy them:
+  sudo cp -v /etc/yum.repos.d/*.repo /mnt/repo/repo-defs/rpm/
+
+--- EPEL (common on Rocky/RHEL-like) ---
+1) Install EPEL release package:
+  sudo dnf -y install epel-release
+
+2) Copy EPEL repo file(s):
+  sudo cp -v /etc/yum.repos.d/epel*.repo /mnt/repo/repo-defs/rpm/
+
+--- RPM Fusion (Fedora) ---
+RPM Fusion provides its own release RPMs that drop .repo files.
+Follow RPM Fusion's official instructions on the Fedora probe VM, then:
+  sudo cp -v /etc/yum.repos.d/rpmfusion*.repo /mnt/repo/repo-defs/rpm/
+
+--- NVIDIA / CUDA repos (RPM) ---
+Install NVIDIA/CUDA repo package on the probe VM (per NVIDIA docs),
+then copy the created .repo (often named cuda*.repo or nvidia*.repo):
+  sudo cp -v /etc/yum.repos.d/cuda*.repo /mnt/repo/repo-defs/rpm/
+  sudo cp -v /etc/yum.repos.d/nvidia*.repo /mnt/repo/repo-defs/rpm/
+
+--- Verify what you harvested ---
+  grep -R \"^\\[\" -n /mnt/repo/repo-defs/rpm/*.repo
+  grep -R \"metalink=\\|mirrorlist=\\|baseurl=\" -n /mnt/repo/repo-defs/rpm/*.repo
+
+Tip:
+  If you want separation, rename files after copying:
+    fedora.repo, rocky.repo, epel.repo, cuda.repo
+  Your mirror tool will namespace output by source name anyway." \
+  28 86
+}
+
+
 # ---------- APT Release querying ----------
 fetch_apt_release() {
   local base_url="$1" suite="$2" out="$3"
@@ -665,6 +723,7 @@ tui_configure_menu() {
 "KALI"    "Configure Kali (Release query)" \
 "PROXMOX" "Configure Proxmox (Release query)" \
 "RPM"     "Configure RPM mirroring (.repo + repo IDs + arch)" \
+"RPMHELP" "RPM probe helper (how to harvest .repo files)" \
 "ALPINE"  "Configure Alpine branches" \
 "BACK"    "Back to main menu")" || return 0
 
@@ -679,6 +738,7 @@ tui_configure_menu() {
       PROXMOX) tui_configure_apt_distro "PROXMOX" "Proxmox" \
         "http://download.proxmox.com/debian/pve" "bookworm" "pve" "no" "proxmox" ;;
       RPM) tui_configure_rpm ;;
+      RPMHELP) tui_rpm_probe_helper ;;
       ALPINE) tui_configure_alpine ;;
       BACK) return 0 ;;
     esac
