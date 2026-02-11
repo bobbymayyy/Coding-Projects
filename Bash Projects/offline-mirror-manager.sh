@@ -612,10 +612,22 @@ if [[ "${ENABLE_APTLY:-no}" == "yes" ]]; then
   PUBLISH_ROOT="${MIRROR_ROOT}/repos"
 
   ensure_mirror() {
-    local name="$1" archs="$2" comps="$3" url="$4" suite="$5"
+    local name="$1" archs="$2" comps_csv="$3" url="$4" suite="$5"
+
+    # Convert "main,contrib,non-free-firmware" -> "main contrib non-free-firmware"
+    local comps_words
+    comps_words="$(echo "${comps_csv:-main}" | tr ',' ' ' | xargs)"
+
     if ! aptly mirror show "$name" >/dev/null 2>&1; then
-      aptly mirror create -architectures="$archs" -components="$comps" "$name" "$url" "$suite"
+      # shellcheck disable=SC2086
+      aptly mirror create \
+        -architectures="$archs" \
+        "$name" \
+        "$url" \
+        "$suite" \
+        $comps_words
     fi
+
     aptly mirror update "$name"
   }
 
