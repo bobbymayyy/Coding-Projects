@@ -331,6 +331,8 @@ CONFIG="${1:-/mirror/config/mirror.conf}"
 [[ -r "$CONFIG" ]] || { echo "Missing config: $CONFIG" >&2; exit 1; }
 # shellcheck disable=SC1090
 source "$CONFIG"
+CONFIG_MIRROR_ROOT="${MIRROR_ROOT:-}"
+MIRROR_ROOT="/mirror"
 
 timestamp() { date +"%Y-%m-%d %H:%M:%S"; }
 log() { echo "[$(timestamp)] $*"; }
@@ -465,7 +467,7 @@ run_update_now() {
   # Ensure logs dir exists on drive
   mkdirp "${MIRROR_ROOT}/logs"
   local log_file="${MIRROR_ROOT}/logs/mirror-update.log"
-  : >"$log_file" || true
+  echo "----- $(date) -----" >>"$log_file"
 
   clear
   echo "Running update inside container..."
