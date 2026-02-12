@@ -349,13 +349,25 @@ if [[ "${ENABLE_APTLY:-no}" == "yes" ]]; then
   mkdir -p "$APTLY_HOME"
   PUBLISH_ROOT="${MIRROR_ROOT}/repos"
 
-  # Import common archive keys if present in image
-  for f in /usr/share/keyrings/debian-archive-keyring.gpg \
-           /usr/share/keyrings/ubuntu-archive-keyring.gpg \
-           /usr/share/keyrings/kali-archive-keyring.gpg; do
-    [[ -r "$f" ]] || continue
-    gpg --no-default-keyring --keyring "$APTLY_HOME/trustedkeys.gpg" --import "$f" >/dev/null 2>&1 || true
-  done
+  import_archive_keys() {
+    local tk="$APTLY_HOME/trustedkeys.gpg"
+    mkdir -p "$APTLY_HOME"
+
+    # Debian + Ubuntu keyrings from the container packages
+    for f in /usr/share/keyrings/debian-archive-keyring.gpg \
+             /usr/share/keyrings/ubuntu-archive-keyring.gpg; do
+      [[ -r "$f" ]] || continue
+      gpg --no-default-keyring --keyring "$tk" --import "$f" >/dev/null 2>&1 || true
+    done
+
+    # Optional: keep your own cached keys too
+    if compgen -G "${MIRROR_ROOT}/keys/*.asc" >/dev/null; then
+      for f in "${MIRROR_ROOT}"/keys/*.asc; do
+        gpg --no-default-keyring --keyring "$tk" --import "$f" >/dev/null 2>&1 || true
+      done
+    fi
+  }
+
 
   ensure_mirror() {
     local name="$1" archs_csv="$2" comps_csv="$3" url="$4" suite="$5"
