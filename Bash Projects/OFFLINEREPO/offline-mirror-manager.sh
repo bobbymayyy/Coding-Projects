@@ -348,44 +348,66 @@ if [[ "${ENABLE_APTLY:-no}" == "yes" ]]; then
   export APTLY_HOME="${MIRROR_ROOT}/aptly"
   mkdir -p "$APTLY_HOME"
   PUBLISH_ROOT="${MIRROR_ROOT}/repos"
-  log "Bootstrapping Debian archive keys (cached on drive)..."
-  mkdir -p "${MIRROR_ROOT}/keys"
 
-  for u in \
-    "https://ftp-master.debian.org/keys/archive-key-12.asc" \
-    "https://ftp-master.debian.org/keys/archive-key-11.asc" \
-    "https://ftp-master.debian.org/keys/archive-key-10.asc"
-  do
-    f="${MIRROR_ROOT}/keys/$(basename "$u")"
-    [[ -s "$f" ]] || curl -fsSL "$u" -o "$f"
-  done
-
-  # Import into aptly trust store (persistent on drive)
-  for k in "${MIRROR_ROOT}/keys/"*.asc; do
-    gpg --no-default-keyring --keyring "$APTLY_HOME/trustedkeys.gpg" --import "$k" >/dev/null 2>&1 || true
-  done
-
-  log "Keyring now contains:"
-  gpg --no-default-keyring --keyring "$APTLY_HOME/trustedkeys.gpg" --list-keys | head -n 40 || true
-
-  import_archive_keys() {
+  ensure_repo_signing_keys() {
+    # args: base_url suite
+    local base_url="$1" suite="$2"
     local tk="$APTLY_HOME/trustedkeys.gpg"
-    mkdir -p "$APTLY_HOME"
+    mkdir -p "${MIRROR_ROOT}/keys"
 
-    # Debian + Ubuntu keyrings from the container packages
-    for f in /usr/share/keyrings/debian-archive-keyring.gpg \
-             /usr/share/keyrings/ubuntu-archive-keyring.gpg; do
-      [[ -r "$f" ]] || continue
-      gpg --no-default-keyring --keyring "$tk" --import "$f" >/dev/null 2>&1 || true
-    done
+    local inrel_url="${base_url}/dists/${suite}/InRelease"
+    local rel_url="${base_url}/dists/${suite}/Release"
+    local relgpg_url="${base_url}/dists/${suite}/Release.gpg"
 
-    # Optional: keep your own cached keys too
-    if compgen -G "${MIRROR_ROOT}/keys/*.asc" >/dev/null; then
-      for f in "${MIRROR_ROOT}"/keys/*.asc; do
-        gpg --no-default-keyring --keyring "$tk" --import "$f" >/dev/null 2>&1 || true
+    local tmpdir; tmpdir="$(mktemp -d)"
+    local inrel="$tmpdir/InRelease" rel="$tmpdir/Release" relgpg="$tmpdir/Release.gpg"
+
+    # Fetch InRelease if available, else use Release + Release.gpg
+    if curl -fsSL "$inrel_url" -o "$inrel"; then
+      # Extract key fingerprints mentioned by gpg (no trust needed)
+      # This prints something like: "using RSA key <LONGID>"
+      local ids
+      ids="$(gpgv --keyring /dev/null "$inrel" 2>&1 | awk '/using (RSA|EDDSA|DSA|ECDSA) key/{print $NF}' | sort -u)"
+      for id in $ids; do
+        fetch_and_import_key "$id" "$tk"
+      done
+    else
+      curl -fsSL "$rel_url" -o "$rel"
+      curl -fsSL "$relgpg_url" -o "$relgpg"
+      local ids
+      ids="$(gpgv --keyring /dev/null "$relgpg" "$rel" 2>&1 | awk '/using (RSA|EDDSA|DSA|ECDSA) key/{print $NF}' | sort -u)"
+      for id in $ids; do
+        fetch_and_import_key "$id" "$tk"
       done
     fi
+
+    rm -rf "$tmpdir"
   }
+
+  fetch_and_import_key() {
+    # arg1: key id/fingerprint from gpgv output, arg2: keyring path
+    local kid="$1" tk="$2"
+    local keyfile="${MIRROR_ROOT}/keys/${kid}.asc"
+
+    # If we already cached it, just import
+    if [[ ! -s "$keyfile" ]]; then
+      # Prefer HTTPS key fetch, avoid keyservers when possible
+      # keys.openpgp.org often works; Ubuntu keyserver is a fallback
+      if ! curl -fsSL "https://keys.openpgp.org/vks/v1/by-fingerprint/${kid}" -o "$keyfile"; then
+        # fallback: keyserver (works for many Debian-family keys)
+        gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$kid" >/dev/null 2>&1 || true
+        # export to cached file if retrieved
+        gpg --batch --armor --export "$kid" >"$keyfile" 2>/dev/null || true
+      fi
+    fi
+
+    # Import cached key into aptly trusted ring
+    if [[ -s "$keyfile" ]]; then
+      gpg --no-default-keyring --keyring "$tk" --import "$keyfile" >/dev/null 2>&1 || true
+    fi
+  }
+
+  ensure_repo_signing_keys "$DEBIAN_URL" "$DEBIAN_SUITE"
 
   ensure_mirror() {
     local name="$1" archs_csv="$2" comps_csv="$3" url="$4" suite="$5"
