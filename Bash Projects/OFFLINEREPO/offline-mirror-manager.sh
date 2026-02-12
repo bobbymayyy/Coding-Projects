@@ -368,7 +368,6 @@ if [[ "${ENABLE_APTLY:-no}" == "yes" ]]; then
     fi
   }
 
-
   ensure_mirror() {
     local name="$1" archs_csv="$2" comps_csv="$3" url="$4" suite="$5"
     local archs comps
@@ -378,11 +377,12 @@ if [[ "${ENABLE_APTLY:-no}" == "yes" ]]; then
     if ! aptly mirror show "$name" >/dev/null 2>&1; then
       # shellcheck disable=SC2086
       aptly mirror create \
+        -gpg-provider=gpg \
         -keyring="$APTLY_HOME/trustedkeys.gpg" \
         -architectures="$archs" \
         "$name" "$url" "$suite" $comps
     fi
-    aptly mirror update "$name"
+    aptly mirror update -gpg-provider=gpg -keyring="$APTLY_HOME/trustedkeys.gpg" "$name"
   }
 
   ensure_publish() {
