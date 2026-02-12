@@ -348,6 +348,25 @@ if [[ "${ENABLE_APTLY:-no}" == "yes" ]]; then
   export APTLY_HOME="${MIRROR_ROOT}/aptly"
   mkdir -p "$APTLY_HOME"
   PUBLISH_ROOT="${MIRROR_ROOT}/repos"
+  log "Bootstrapping Debian archive keys (cached on drive)..."
+  mkdir -p "${MIRROR_ROOT}/keys"
+
+  for u in \
+    "https://ftp-master.debian.org/keys/archive-key-12.asc" \
+    "https://ftp-master.debian.org/keys/archive-key-11.asc" \
+    "https://ftp-master.debian.org/keys/archive-key-10.asc"
+  do
+    f="${MIRROR_ROOT}/keys/$(basename "$u")"
+    [[ -s "$f" ]] || curl -fsSL "$u" -o "$f"
+  done
+
+  # Import into aptly trust store (persistent on drive)
+  for k in "${MIRROR_ROOT}/keys/"*.asc; do
+    gpg --no-default-keyring --keyring "$APTLY_HOME/trustedkeys.gpg" --import "$k" >/dev/null 2>&1 || true
+  done
+
+  log "Keyring now contains:"
+  gpg --no-default-keyring --keyring "$APTLY_HOME/trustedkeys.gpg" --list-keys | head -n 40 || true
 
   import_archive_keys() {
     local tk="$APTLY_HOME/trustedkeys.gpg"
@@ -374,15 +393,17 @@ if [[ "${ENABLE_APTLY:-no}" == "yes" ]]; then
     archs="$(echo "${archs_csv:-amd64}" | tr ',' ' ' | xargs)"
     comps="$(echo "${comps_csv:-main}" | tr ',' ' ' | xargs)"
 
-    if ! aptly mirror show "$name" >/dev/null 2>&1; then
+    local KR="-keyring=$APTLY_HOME/trustedkeys.gpg"
+    local GP="-gpg-provider=gpg"
+
+    if ! aptly $GP $KR mirror show "$name" >/dev/null 2>&1; then
       # shellcheck disable=SC2086
-      aptly mirror create \
-        -gpg-provider=gpg \
-        -keyring="$APTLY_HOME/trustedkeys.gpg" \
+      aptly $GP $KR mirror create \
         -architectures="$archs" \
         "$name" "$url" "$suite" $comps
     fi
-    aptly mirror update -gpg-provider=gpg -keyring="$APTLY_HOME/trustedkeys.gpg" "$name"
+
+    aptly $GP $KR mirror update "$name"
   }
 
   ensure_publish() {
