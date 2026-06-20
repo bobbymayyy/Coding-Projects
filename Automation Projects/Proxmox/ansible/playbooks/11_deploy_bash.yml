@@ -24,7 +24,7 @@
         api_password: 
         node: nerd
         password: 123456
-        hostname: ansible.nerd.cpb.mil
+        hostname: ansible.nerd.home.lab
         ostemplate: local:vztmpl/fedora-38-default_20230607_amd64.tar.xz
         storage: ansible
         cores: 1
